@@ -910,15 +910,15 @@ $(document).ready(function () {
       return formatIncomingCall(line);
     }
 
-    if (lowerLine === 'Çağrı cevaplandı.') {
+    if (lowerLine === 'çağrı cevaplandı.') {
       return wrapSpan('yellow', line);
     }
 
-    if (lowerLine === 'Aramayı sonlandırdın.') {
+    if (lowerLine === 'aramayı sonlandırdın.') {
       return wrapSpan('white', line);
     }
 
-    if (lowerLine === 'Karşı tarafı aramayı sonlandırdı.') {
+    if (lowerLine === 'karşı tarafı aramayı sonlandırdı.') {
       return wrapSpan('white', line);
     }
 
@@ -1059,7 +1059,7 @@ $(document).ready(function () {
       return handleGoods(line);
 
     if (
-      lowerLine.includes('says:') &&
+      lowerLine.includes(':') &&
       !lowerLine.includes('(kısık ses)') &&
       !lowerLine.includes('(alçak ses)') &&
       !lowerLine.includes('fısıldar') &&
