@@ -248,13 +248,21 @@ $(document).ready(function () {
 
       // Skip unfreeze instructions
       if (
-        line.includes('⚠️You can now press K to unfreeze yourself. Do not hold W while doing so.')
+        line.includes('⚠️Artık dondurmanızı kaldırmak için K tuşuna basabilirsiniz. Bunu yaparken W tuşuna basılı tutmayın.')
       ) {
         return;
       }
 
       // Skip animation stop info
-      if (line.includes("[INFO] If this doesn't work, use .stop or /anim stop.")) {
+      if (line.includes("[INFO] Animasyonları durdurmak ve elinde bulunan eşyaları kaldırmak için /anim stop komutunu kullanabilirsin.")) {
+        return;
+      }
+
+      if (line.includes("[BİLGİ] You can also use /anim list or /anim2 for modern, 'advanced' list for quicker and better animation searching! This information will only show once per character instance.")) {
+        return;
+      }
+
+      if (line.includes("[BİLGİ] If you will ever want to save that or other custom animations for the future that you can later on pick from the /anim or /anim2 or by using /anim [name], use /customanim [anim_name1] [flag] [anim_name2/'none'] [flag2/'none'] [your custom anim name here]! This information will be shown once per character instance.")) {
         return;
       }
 
@@ -279,7 +287,7 @@ $(document).ready(function () {
       // Skip hat info
       if (
         line.includes(
-          '[INFO] You can also use /hat custom1-5 to pick one of your saved favourite hats!'
+          "[BİLGİ] Kaydettiğin favori şapkanı giymek için /şapka özel1-5 komutunu kullanabilirsin."
         )
       ) {
         return;
@@ -298,7 +306,7 @@ $(document).ready(function () {
       // Skip F2/F3 instructions
       if (
         line.includes(
-          'Use F2 to re-enable the chat and use F3 to activate the cursor. You can also use /pc for the cursor.'
+          "Sohbeti yeniden başlatmak için F2'yi ve imleci görünür yapmak için F3'ü kullanabilirsin. F3 çalışmıyorsa /pc komutunu kullanın."
         )
       ) {
         return;
@@ -770,8 +778,8 @@ $(document).ready(function () {
       !lowerLine.includes('[low]') &&
       !lowerLine.includes('[lower]') &&
       !lowerLine.includes('whispers') &&
-      !lowerLine.includes('(phone)') &&
-      !lowerLine.includes('(loudspeaker)')
+      !lowerLine.includes('(Telefon)') &&
+      !lowerLine.includes('(hoparlör)')
     ) {
       return formatSaysLine(line, currentCharacterName);
     }
@@ -902,15 +910,15 @@ $(document).ready(function () {
       return formatIncomingCall(line);
     }
 
-    if (lowerLine === 'your call has been picked up.') {
+    if (lowerLine === 'Çağrı cevaplandı.') {
       return wrapSpan('yellow', line);
     }
 
-    if (lowerLine === 'you have hung up the call.') {
+    if (lowerLine === 'Aramayı sonlandırdın.') {
       return wrapSpan('white', line);
     }
 
-    if (lowerLine === 'the other party has declined the call.') {
+    if (lowerLine === 'Karşı tarafı aramayı sonlandırdı.') {
       return wrapSpan('white', line);
     }
 
@@ -924,9 +932,9 @@ $(document).ready(function () {
 
     if (line.startsWith('>')) return wrapSpan('ame', line);
 
-    if (lowerLine.includes('(phone) *')) return wrapSpan('me', line);
+    if (lowerLine.includes('(Telefon) *')) return wrapSpan('me', line);
 
-    if (lowerLine.includes('whispers') || line.startsWith('(Car)')) {
+    if (lowerLine.includes('fısıldar') || line.startsWith('(Araç İçi)')) {
       return handleWhispers(line);
     }
 
@@ -1004,11 +1012,11 @@ $(document).ready(function () {
     )
       return handleTransaction(line);
 
-    if (lowerLine.includes('you are now masked')) return wrapSpan('green', line);
+    if (lowerLine.includes('Maske taktın.')) return wrapSpan('green', line);
 
     if (lowerLine.includes('you have shown your inventory')) return wrapSpan('green', line);
 
-    if (lowerLine.includes('you are not masked anymore')) return wrapSpan('death', line);
+    if (lowerLine.includes('Maskeni çıkardın.')) return wrapSpan('death', line);
 
     if (lowerLine.includes("you're being robbed, use /arob")) return formatRobbery(line);
 
@@ -1052,11 +1060,11 @@ $(document).ready(function () {
 
     if (
       lowerLine.includes('says:') &&
-      !lowerLine.includes('[low]') &&
-      !lowerLine.includes('[lower]') &&
-      !lowerLine.includes('whispers') &&
-      !lowerLine.includes('(phone)') &&
-      !lowerLine.includes('(loudspeaker)')
+      !lowerLine.includes('(kısık ses)') &&
+      !lowerLine.includes('(alçak ses)') &&
+      !lowerLine.includes('fısıldar') &&
+      !lowerLine.includes('(Telefon)') &&
+      !lowerLine.includes('(hoparlör)')
     ) {
       return formatSaysLine(line, currentCharacterName);
     }
@@ -1386,7 +1394,7 @@ $(document).ready(function () {
 
   function formatSmsMessage(line) {
     // Match the pattern: (phone) Message from sender: content
-    const match = line.match(/^\(([^)]+)\)\s+Message from ([^:]+):\s*(.+)$/);
+    const match = line.match(/^(\([^)]+\))\s+([^\s]+)\s+kişisinden mesaj:\s*(.+)$/);
 
     if (match) {
       const phone = match[1];
@@ -1419,7 +1427,7 @@ $(document).ready(function () {
 
     // Try to match the full format with commands
     const fullMatch = line.match(
-      /\(([^)]+)\) Incoming call from (.+)\. Use (.+) to answer or (.+) to decline\./
+      /\(([^)]+)\) (.+)\ tarafından gelen çağrı. Açmak için (.+) veya kapatmak için (.+)\./
     );
     if (fullMatch) {
       const parenthetical = escapeHTML(fullMatch[1]);
@@ -1430,13 +1438,12 @@ $(document).ready(function () {
       return (
         '<span class="yellow">(' +
         parenthetical +
-        ')</span> <span class="white">Incoming call from </span><span class="yellow">' +
-        caller +
-        '</span><span class="white">. Use ' +
+        ')' + caller + '</span> <span class="white">tarafından gelen çağrı. </span><span class="yellow">' +
+        '</span><span class="white">. Açmak için ' +
         pickupCommand +
-        ' to answer or ' +
+        ' kapatmak için ' +
         hangupCommand +
-        ' to decline.</span>'
+        '.</span>'
       );
     }
 
