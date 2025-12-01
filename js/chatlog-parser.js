@@ -49,7 +49,7 @@ $(document).ready(function () {
 
     // Update visual state
     $toggleBackgroundBtn.toggleClass('active', applyBackground);
-    $toggleBackgroundBtn.find('.bg-text').text(applyBackground ? 'BG: On' : 'BG: Off');
+    $toggleBackgroundBtn.find('.bg-text').text(applyBackground ? 'Arka Plan: Açık' : 'Arka Plan: Kapalı');
 
     processOutput();
   }
@@ -61,7 +61,7 @@ $(document).ready(function () {
     $toggleCharacterNameColoringBtn.toggleClass('active', !disableCharacterNameColoring);
     $toggleCharacterNameColoringBtn
       .find('.name-color-text')
-      .text(disableCharacterNameColoring ? 'Names: Off' : 'Names: On');
+      .text(disableCharacterNameColoring ? 'İsimler: Kapalı' : 'İsimler: Açık');
     processOutput();
   }
 
@@ -76,7 +76,7 @@ $(document).ready(function () {
   function updateCensorStyleUI() {
     $toggleCensorStyleBtn
       .find('.censor-text')
-      .text(censorStyle === 'blur' ? 'Censor: Blur' : 'Censor: Remove');
+      .text(censorStyle === 'blur' ? 'Sansür: Bulanık' : 'Sansür: Kaldır');
     $toggleCensorStyleBtn.toggleClass('active', censorStyle === 'blur');
   }
 
@@ -146,7 +146,7 @@ $(document).ready(function () {
     const lineWithoutExclamation = hasExclamation ? line.substring(3).trim() : line;
 
     // Extract the speaker's name (before 'says')
-    const nameMatch = lineWithoutExclamation.match(/^([^:]+?)\s+says/);
+    const nameMatch = lineWithoutExclamation.match(/^([^:]+?)\s*:/);
     const speakerName = nameMatch ? nameMatch[1].trim().toLowerCase() : '';
 
     // Check if the line contains (to CharacterName) format
@@ -730,7 +730,7 @@ $(document).ready(function () {
         : wrapSpan('radioColor2', line);
     }
 
-    if (lowerLine.includes('says [lower]')) {
+    if (lowerLine.includes('(alçak ses)')) {
       if (!currentCharacterName || disableCharacterNameColoring) {
         return wrapSpan('grey', line);
       }
@@ -739,7 +739,7 @@ $(document).ready(function () {
         : wrapSpan('darkgrey', line);
     }
 
-    if (lowerLine.includes('says [low]:')) {
+    if (lowerLine.includes('(kısık ses):')) {
       if (!currentCharacterName || disableCharacterNameColoring) {
         return wrapSpan('lightgrey', line);
       }
@@ -748,7 +748,7 @@ $(document).ready(function () {
         : wrapSpan('grey', line);
     }
 
-    if (lowerLine.includes('says [low] (to')) {
+    if (lowerLine.includes('says (kısık ses) (to')) {
       if (!currentCharacterName || disableCharacterNameColoring) {
         return wrapSpan('lightgrey', line);
       }
@@ -761,7 +761,7 @@ $(document).ready(function () {
       return wrapSpan('grey', line);
     }
 
-    if (line.includes('says [low] (phone):') || line.includes('says (phone):')) {
+    if (line.includes('(kısık ses) (Telefon):') || line.includes('(Telefon):')) {
       if (currentCharacterName && line.toLowerCase().includes(currentCharacterName.toLowerCase())) {
         return wrapSpan('white', line);
       } else {
@@ -774,11 +774,11 @@ $(document).ready(function () {
     }
 
     if (
-      lowerLine.includes('says:') &&
-      !lowerLine.includes('[low]') &&
-      !lowerLine.includes('[lower]') &&
-      !lowerLine.includes('whispers') &&
-      !lowerLine.includes('(Telefon)') &&
+      lowerLine.includes(':') &&
+      !lowerLine.includes('(kısık ses)') &&
+      !lowerLine.includes('(alçak ses)') &&
+      !lowerLine.includes('fısıldar') &&
+      !lowerLine.includes('(telefon)') &&
       !lowerLine.includes('(hoparlör)')
     ) {
       return formatSaysLine(line, currentCharacterName);
@@ -932,7 +932,7 @@ $(document).ready(function () {
 
     if (line.startsWith('>')) return wrapSpan('ame', line);
 
-    if (lowerLine.includes('(Telefon) *')) return wrapSpan('me', line);
+    if (lowerLine.includes('(telefon) *')) return wrapSpan('me', line);
 
     if (lowerLine.includes('fısıldar') || line.startsWith('(Araç İçi)')) {
       return handleWhispers(line);
@@ -981,7 +981,7 @@ $(document).ready(function () {
 
     if (lowerLine.includes('[drug lab]')) return formatDrugLab();
 
-    if (lowerLine.includes('[character kill]')) return formatCharacterKill(line);
+    if (lowerLine.includes('[ck]')) return formatCharacterKill(line);
 
     if (/\[.*? intercom\]/i.test(lowerLine)) return formatIntercom(line);
 
@@ -999,7 +999,7 @@ $(document).ready(function () {
 
     if (lowerLine.includes('has shown you their')) return formatShown(line);
 
-    if (lowerLine.includes('you have successfully sent your current location'))
+    if (lowerLine.includes('konum gönderildi'))
       return wrapSpan('green', line);
 
     if (lowerLine.includes('you received a location from')) return colorLocationLine(line);
@@ -1059,11 +1059,11 @@ $(document).ready(function () {
       return handleGoods(line);
 
     if (
-      lowerLine.includes(':') &&
+      lowerLine.includes('says:') &&
       !lowerLine.includes('(kısık ses)') &&
       !lowerLine.includes('(alçak ses)') &&
       !lowerLine.includes('fısıldar') &&
-      !lowerLine.includes('(Telefon)') &&
+      !lowerLine.includes('(telefon)') &&
       !lowerLine.includes('(hoparlör)')
     ) {
       return formatSaysLine(line, currentCharacterName);
@@ -1245,14 +1245,14 @@ $(document).ready(function () {
 
   function formatWeatherLine(line) {
     const weatherPattern =
-      /^Temperature:\s*([\d.]+°C)\s*\(([\d.]+°?F)\),\s*it\s*is\s*currently\s*([^.]+)\.\s*Wind:\s*([\d.]+)\s*km\/h\s*\(([\d.]+)\s*mph\),\s*humidity:\s*([\d.]+%),\s*rain\s*precipitation:\s*([\d.]+)\s*mm\.\s*Current\s*time:\s*([\d\/A-Z\s-]+:\d{2}:\d{2}:\d{2})$/;
+      /^Sıcaklık:\s*([\d.]+°C)\s*\(([\d.]+°?F)\),\s*it\s*is\s*currently\s*([^.]+)\.\s*Rüzgar:\s*([\d.]+)\s*km\/h\s*\(([\d.]+)\s*mph\),\s*humidity:\s*([\d.]+%),\s*rain\s*precipitation:\s*([\d.]+)\s*mm\.\s*Current\s*time:\s*([\d\/A-Z\s-]+:\d{2}:\d{2}:\d{2})$/;
 
     const match = line.match(weatherPattern);
     if (match) {
       const [_, tempC, tempF, condition, windKmh, windMph, humidity, rain, time] = match;
 
       return (
-        wrapSpan('white', 'Temperature: ') +
+        wrapSpan('white', 'Sıcaklık: ') +
         wrapSpan('green', tempC) +
         ' ' +
         wrapSpan('white', '(') +
@@ -1275,27 +1275,27 @@ $(document).ready(function () {
       );
     }
 
-    if (line.startsWith('Temperature:')) {
+    if (line.startsWith('Sıcaklık:')) {
       const tempMatch = line.match(
-        /^Temperature:\s*([\d.]+°C)\s*\(([\d.]+°?F)\),\s*it\s*is\s*currently\s*([^.]+)\.?$/
+        /^Sıcaklık:\s*([\d.]+°C)\s*\(([\d.]+°?F)\).\s*Şu\s*anda\s*hava\s*([^.]+)\.?$/
       );
       if (tempMatch) {
         const [_, tempC, tempF, condition] = tempMatch;
         return (
-          wrapSpan('white', 'Temperature: ') +
+          wrapSpan('white', 'Sıcaklık: ') +
           wrapSpan('green', tempC) +
           ' ' +
           wrapSpan('white', '(') +
           wrapSpan('green', tempF) +
           wrapSpan('white', ')') +
-          wrapSpan('white', ', it is currently ') +
+          wrapSpan('white', '. Şu anda hava ') +
           wrapSpan('green', condition) +
           '.'
         );
       }
       return (
-        wrapSpan('white', 'Temperature: ') +
-        wrapSpan('green', line.replace('Temperature:', '').trim())
+        wrapSpan('white', 'Sıcaklık: ') +
+        wrapSpan('green', line.replace('Sıcaklık:', '').trim())
       );
     }
 
@@ -1306,20 +1306,20 @@ $(document).ready(function () {
       if (windMatch) {
         const [_, windKmh, windMph, humidity, rain] = windMatch;
         return (
-          wrapSpan('white', 'Wind: ') +
+          wrapSpan('white', 'Rüzgar: ') +
           wrapSpan('green', windKmh + ' km/h') +
           ' ' +
           wrapSpan('white', '(') +
           wrapSpan('green', windMph + ' mph') +
           wrapSpan('white', ')') +
-          wrapSpan('white', ', humidity: ') +
+          wrapSpan('white', ', Nem: ') +
           wrapSpan('green', humidity) +
-          wrapSpan('white', ', rain precipitation: ') +
+          wrapSpan('white', ', Yağış: ') +
           wrapSpan('green', rain + ' mm') +
           '.'
         );
       }
-      return wrapSpan('white', 'Wind: ') + wrapSpan('green', line.replace('Wind:', '').trim());
+      return wrapSpan('white', 'Rüzgar: ') + wrapSpan('green', line.replace('Wind:', '').trim());
     }
 
     if (line.startsWith('Current time:')) {
@@ -1413,21 +1413,21 @@ $(document).ready(function () {
   }
 
   function formatPhoneSet(line) {
-    line = line.replace(/\[(?!INFO\])|\](?!)/g, '');
+    line = line.replace(/\[(?!BİLGİ\])|\](?!)/g, '');
 
-    line = line.replace('[INFO]', '<span class="green">[INFO]</span>');
+    line = line.replace('[BİLGİ]', '<span class="green">[BİLGİ]</span>');
 
-    const infoTag = '<span class="green">[INFO]</span>';
-    const restOfLine = escapeHTML(line.replace(/\[INFO\]/, '').trim());
+    const infoTag = '<span class="green">[BİLGİ]</span>';
+    const restOfLine = escapeHTML(line.replace(/\[BİLGİ\]/, '').trim());
     return infoTag + ' <span class="white">' + restOfLine + '</span>';
   }
 
   function formatIncomingCall(line) {
-    line = line.replace(/[\[\]]/g, '');
+    line = line.replace(/[\[\]]/g, '').trim();
 
     // Try to match the full format with commands
     const fullMatch = line.match(
-      /\(([^)]+)\) (.+) tarafından gelen çağrı\. Açmak için\s+(.+?)s+veya kapatmak için\s+(.+?)\./
+    /\(([^)]+)\)\s+(.+?)\s+tarafından gelen çağrı\. Açmak için\s+(.+?)\s+veya kapatmak için\s+(.+?)\./
     );
     if (fullMatch) {
       const parenthetical = escapeHTML(fullMatch[1]);
@@ -1438,10 +1438,11 @@ $(document).ready(function () {
       return (
         '<span class="yellow">(' +
         parenthetical +
-        ')' + caller + '</span> <span class="white">tarafından gelen çağrı. </span><span class="yellow">' +
-        '</span><span class="white">. Açmak için ' +
+        ') ' + caller +
+        '</span> <span class="white">tarafından gelen çağrı. </span>' +
+        '<span class="white">Açmak için ' +
         pickupCommand +
-        ' kapatmak için ' +
+        ' veya kapatmak için ' +
         hangupCommand +
         '.</span>'
       );
@@ -1694,8 +1695,8 @@ $(document).ready(function () {
 
   function formatCharacterKill(line) {
     return (
-      '<span class="blue">[Character kill]</span> <span class="death">' +
-      escapeHTML(line.slice(16)) +
+      '<span class="blue">[CK]</span> <span class="death">' +
+      escapeHTML(line.slice(4)) +
       '</span>'
     );
   }
@@ -1983,7 +1984,7 @@ $(document).ready(function () {
           const originalBg = $btn.css('background-color');
           const originalText = $btn.text();
 
-          $btn.css('background-color', '#a8f0c6').text('Copied!');
+          $btn.css('background-color', '#a8f0c6').text('Kopyalandı!');
 
           setTimeout(() => {
             $btn.css('background-color', originalBg).text(originalText);
