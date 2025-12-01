@@ -708,7 +708,7 @@ function showCopySuccess(button) {
   const originalBg = $btn.css('background-color');
   const originalText = $btn.text();
 
-  $btn.css('background-color', '#a8f0c6').text('Copied!');
+  $btn.css('background-color', '#a8f0c6').text('Kopyalandı!');
 
   setTimeout(() => {
     $btn.css('background-color', originalBg).text(originalText);

@@ -119,7 +119,7 @@
 
       // Replace blocking alert with non-blocking toast
       showToast(
-        'Coloring mode: Click words to select. Ctrl+click or drag for multi-select. Click the button again to exit.'
+        'Renklendirme modu: Kelimelere tıklayarak seçin. Çoklu seçim için Ctrl+klik veya sürükleyin. Çıkmak için butona tekrar tıklayın.'
       );
 
       setTimeout(function () {
@@ -297,7 +297,7 @@
 
   function updateSelectionCounter() {
     const count = selectedElements.length;
-    $('.selection-counter').text(count + ' selected');
+    $('.selection-counter').text(count + ' seçildi');
   }
 
   function handleGlobalMouseUp(_e) {

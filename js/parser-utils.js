@@ -20,8 +20,8 @@ export function replaceCurlyApostrophes(text) {
   return result.replace(/[’‘‵′]/g, "'");
 }
 
-export function wrapSpan(className, content) {
-  content = escapeHTML(content.replace(/[’‘‵′]/g, "'"));
+export function wrapSpan(className, content, censorStyle = 'remove') {
+  content = escapeHTML(content.replace(/[''‵′]/g, "'"));
   const tokens = content.split(/(\s+)/g);
   let html = '';
   let censoring = false;
@@ -30,7 +30,8 @@ export function wrapSpan(className, content) {
 
   const flushCensor = () => {
     if (censorBuffer.length > 0) {
-      html += `<span class="hidden censored-content" data-original="${censorBuffer}">${censorBuffer}</span>`;
+      const blurClass = censorStyle === 'blur' ? ' blur-mode' : '';
+      html += `<span class="hidden censored-content${blurClass}" data-original="${censorBuffer}">${censorBuffer}</span>`;
       censorBuffer = '';
     }
   };

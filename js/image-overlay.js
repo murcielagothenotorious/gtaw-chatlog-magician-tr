@@ -271,7 +271,7 @@
         if (newMode === 'overlay') {
           toggleButton.classList.remove('active');
           const modeText = toggleButton.querySelector('.mode-text');
-          if (modeText) modeText.textContent = 'Overlay';
+          if (modeText) modeText.textContent = 'Fotoğraf';
           if (overlaySection) overlaySection.style.display = 'block';
           if (outputDiv) outputDiv.style.display = 'none';
           // Show all overlay controls
@@ -279,7 +279,7 @@
         } else {
           toggleButton.classList.add('active');
           const modeText = toggleButton.querySelector('.mode-text');
-          if (modeText) modeText.textContent = 'Chat';
+          if (modeText) modeText.textContent = 'Sohbet';
           if (overlaySection) overlaySection.style.display = 'none';
           if (outputDiv) outputDiv.style.display = 'block';
           // Hide all overlay controls

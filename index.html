@@ -100,7 +100,7 @@
                     <div class="input-group" style="position: relative;">
                       <input type="text" id="characterNameInput" placeholder="Enter character name" autocomplete="off" aria-label="Character name filter" />
                       <div class="input-group-button">
-                        <button class="button small success" id="addCharacterBtn" type="button" aria-label="Add character">Add</button>
+                        <button class="button small success" id="addCharacterBtn" type="button" aria-label="Add character">Ekle</button>
                         <button class="button small secondary" id="showCharacterListBtn" type="button" aria-label="Show character list">&#9660;</button>
                       </div>
                       <div id="characterNameDropdown" class="character-dropdown" style="display: none; position: absolute; top: 110%; left: 0; right: 0; background: var(--surface); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.12); z-index: 1000; max-height: 150px; overflow-y: auto; border-radius: 0;" role="listbox">
@@ -108,7 +108,7 @@
                     </div>
                  </div>
               </div>
-              <label for="chatlogInput">Chat Log:</label>
+              <label for="chatlogInput">Sohbet Kaydı:</label>
              <div class="textarea-container">
                  <textarea id="chatlogInput" class="form-control textarea-input" rows="15" placeholder="Enter your chat log here..." aria-label="Chat log input"></textarea>
               </div>
@@ -116,32 +116,32 @@
                  <div class="cell auto">
                     <div class="button-group">
                       <!-- Primary action - Download (Green = Success/Go) -->
-                      <button id="downloadOutputTransparent" class="button success" aria-label="Download chat log or overlay">Download</button>
+                      <button id="downloadOutputTransparent" class="button success" aria-label="Download chat log or overlay">İndir</button>
 
                       <!-- Mode toggle (Blue = Information/Primary) -->
                       <button id="toggleMode" class="button primary active" data-mode="chat" aria-label="Toggle mode">
-                        <span class="mode-text">Chat</span>
+                        <span class="mode-text">Sohbet</span>
                       </button>
 
                       <!-- Toggle background (Yellow = Warning/Toggle) -->
                       <button id="toggleBackground" class="button warning" aria-label="Toggle background color">
-                        <span class="bg-text">BG: Off</span>
+                        <span class="bg-text">Arka Plan: Kapalı</span>
                       </button>
 
                       <!-- Name colors toggle (Yellow = Warning/Toggle) -->
                       <button id="toggleCharacterNameColoring" class="button warning active" aria-label="Toggle character name coloring">
-                        <span class="name-color-text">Names: On</span>
+                        <span class="name-color-text">İsimler: Açık</span>
                       </button>
 
                       <!-- Color text (Blue = Info/Tool) -->
-                      <button id="toggleColorPalette" class="button info" aria-label="Toggle color palette">Color</button>
+                      <button id="toggleColorPalette" class="button info" aria-label="Toggle color palette">Renk</button>
 
                       <!-- Censor character (Secondary = Utility) -->
                       <button id="censorCharButton" class="button secondary censor-char-button" aria-label="Copy censor character" title="Copy censor character">÷</button>
 
                       <!-- Censor style toggle (Secondary = Utility) -->
                       <button id="toggleCensorStyle" class="button secondary" aria-label="Toggle censor style">
-                        <span class="censor-text">Censor: Remove</span>
+                        <span class="censor-text">Sansür: Kaldır</span>
                       </button>
 
                       <!-- Font toggle (Secondary = Utility) -->
@@ -150,10 +150,10 @@
                       </button>
 
                       <!-- Donate (Gray = Neutral/External) -->
-                      <button id="donateBtn" class="button" aria-label="Donate">Donate</button>
+                      <button id="donateBtn" class="button" aria-label="Donate">Bağış</button>
 
                       <!-- Discord (Discord Brand Color) -->
-                      <a href="https://discord.gg/V8jQJrDXxF" target="_blank" rel="noopener noreferrer" class="button" aria-label="Join Discord" style="background-color: #5865F2; color: #ffffff; text-decoration: none;">Discord</a>
+                      <!-- <a href="https://discord.gg/V8jQJrDXxF" target="_blank" rel="noopener noreferrer" class="button" aria-label="Join Discord" style="background-color: #5865F2; color: #ffffff; text-decoration: none;">Discord</a> -->
 
                       <!-- Overlay controls (only visible in overlay mode) -->
                       <div class="button info overlay-control button-hidden" id="textPaddingControl">
@@ -174,7 +174,7 @@
 
                       <!-- Clear image (Red = Alert/Remove) - Only visible in overlay mode -->
                       <button id="clearImageBtn" class="button alert overlay-control button-hidden" type="button" title="Remove image">
-                        <i class="fas fa-times" aria-hidden="true"></i> Clear Image
+                        <i class="fas fa-times" aria-hidden="true"></i> Görüntüyü Temizle
                       </button>
                     </div>
                  </div>
@@ -188,17 +188,17 @@
                 <div id="imageDropzone" class="image-dropzone">
                   <div class="dropzone-instructions">
                     <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-                    <p>Drop your screenshot here</p>
-                    <p style="font-size: 14px; opacity: 0.7;">or click to browse</p>
+                    <p>Ekran görüntünüzü buraya bırakın</p>
+                    <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için tıklayın</p>
                   </div>
                 </div>
 
                 <!-- Overlay Info -->
                 <div class="overlay-info" style="max-width: 900px; margin: 10px auto; text-align: center; color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.6;">
-                  <p style="margin: 5px 0;"><i class="fas fa-mouse" aria-hidden="true"></i> <strong>Image:</strong> Double-click to upload | Click and drag to move | Scroll to zoom</p>
+                  <p style="margin: 5px 0;"><i class="fas fa-mouse" aria-hidden="true"></i> <strong>Görüntü:</strong> Yüklemek için çift tıklayın | Taşımak için tıklayıp sürükleyin | Yakınlaştırmak için kaydırın</p>
                   <p style="margin: 5px 0; font-size: 12px; color: rgba(255,255,255,0.5);">
-                    <i class="fas fa-info-circle" aria-hidden="true"></i> Downloaded image shows exactly what you see in preview |
-                    Settings auto-save | Canvas resizes to match your export dimensions
+                    <i class="fas fa-info-circle" aria-hidden="true"></i> İndirilen görüntü, önizlemede gördüğünüzle tam olarak aynı şekilde gösterilir |
+                    Ayarlar otomatik kaydedilir | Tuval, dışa aktarma boyutlarınıza göre yeniden boyutlandırılır
                   </p>
                 </div>
               </div>
@@ -253,25 +253,25 @@
           aria-label="Chat history"
           aria-hidden="true">
          <div class="history-header">
-           <h3>Chatlog History</h3>
-           <button id="clearHistoryBtn" class="clear-history-btn" aria-label="Clear all history">Clear All</button>
+           <h3>Sohbet Kaydı Geçmişi</h3>
+           <button id="clearHistoryBtn" class="clear-history-btn" aria-label="Clear all history">Tümünü Temizle</button>
          </div>
          <div class="history-items" role="list"></div>
          <div class="history-loading">
            <div class="spinner" aria-hidden="true"></div>
-           <p>Loading your chatlog history...</p>
+           <p>Sohbet kaydı geçmişiniz yükleniyor...</p>
          </div>
          <div class="history-empty">
-           <p>No chatlogs saved yet</p>
-           <p style="font-size: 14px; opacity: 0.8;">Your processed chatlogs will appear here for easy access</p>
+           <p>Henüz sohbet kaydı kaydedilmedi</p>
+           <p style="font-size: 14px; opacity: 0.8;">İşlenmiş sohbet kayıtlarınız burada kolay erişim için görünecektir</p>
          </div>
      </div>
 
      <!-- Color Palette -->
      <div id="colorPalette" class="color-palette" style="display: none;">
              <div class="color-palette-header">
-                 Select Color
-                 <div class="selection-counter">0 selected</div>
+                 Renk Seç
+                 <div class="selection-counter">0 seçildi</div>
              </div>
              <div class="color-palette-items">
                  <div class="color-item me" data-color="me" data-tooltip="Me/Ame Actions"></div>
@@ -298,8 +298,8 @@
       <div style="background: #1a1d23; padding: 24px; border-radius: 0; max-width: 450px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin: auto;">
         <h3 style="margin-top: 0; margin-bottom: 16px; color: #f1f1f1; font-size: 18px; font-weight: 600;">Support Development</h3>
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          <iframe id='kofiframe' src='https://ko-fi.com/blancoleo/?hidefeed=true&widget=true&embed=true' style='border:none;width:100%;padding:4px;background:#000000;border-radius:0;' height='600' title='blancoleo' loading='lazy' allow='payment'></iframe>
-          <button id="closeDonateModal" class="button secondary" style="width: 100%; border-radius: 0; margin-top: 4px;">Close</button>
+          <iframe id='kofiframe' src='https://ko-fi.com/kthedev/?hidefeed=true&widget=true&embed=true&preview=true' style='border:none;width:100%;padding:4px;background:#f9f9f9;' height='712' title='kthedev'></iframe>
+          <button id="closeDonateModal" class="button secondary" style="width: 100%; border-radius: 0; margin-top: 4px;">Kapat</button>
         </div>
       </div>
     </div>
