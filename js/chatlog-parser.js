@@ -1337,7 +1337,7 @@ $(document).ready(function () {
   }
 
   function handleWhispers(line) {
-    if (line.startsWith('(Car)')) {
+    if (line.startsWith('(Araç İçi)')) {
       return wrapSpan('yellow', line);
     }
 
@@ -1427,7 +1427,7 @@ $(document).ready(function () {
 
     // Try to match the full format with commands
     const fullMatch = line.match(
-      /\(([^)]+)\) (.+)\ tarafından gelen çağrı. Açmak için (.+) veya kapatmak için (.+)\./
+      /\(([^)]+)\) (.+) tarafından gelen çağrı\. Açmak için (.+) veya kapatmak için (.+)\./
     );
     if (fullMatch) {
       const parenthetical = escapeHTML(fullMatch[1]);
