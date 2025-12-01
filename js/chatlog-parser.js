@@ -1427,7 +1427,7 @@ $(document).ready(function () {
 
     // Try to match the full format with commands
     const fullMatch = line.match(
-      /\(([^)]+)\) (.+) tarafından gelen çağrı\. Açmak için (.+) veya kapatmak için (.+)\./
+      /\(([^)]+)\) (.+) tarafından gelen çağrı\. Açmak için\s+(.+?)s+veya kapatmak için\s+(.+?)\./
     );
     if (fullMatch) {
       const parenthetical = escapeHTML(fullMatch[1]);
