@@ -994,7 +994,7 @@ $(document).ready(function () {
     const list = getCharacterList();
     const content =
       list.length === 0
-        ? '<div style="padding: 8px; color: #888;">No characters saved</div>'
+        ? '<div style="padding: 8px; color: #888;">Kayıtlı karakter bulunamadı</div>'
         : list
             .map(
               (name) =>
