@@ -884,7 +884,7 @@ window.clearHistory = function () {
 function refreshHistoryPanel() {
   const $historyItems = $('.history-items');
   const $loading = $('<div class="history-loading">Loading history...</div>');
-  const $empty = $('<div class="history-empty">No history items</div>');
+  const $empty = $('<div class="history-empty">Kaydedilmiş sohbet kaydı bulunamadı</div>');
 
   $historyItems.empty().append($loading.addClass('active'));
 
@@ -994,7 +994,7 @@ $(document).ready(function () {
     const list = getCharacterList();
     const content =
       list.length === 0
-        ? '<div style="padding: 8px; color: #888;">No characters saved</div>'
+        ? '<div style="padding: 8px; color: #888;">Kayıtlı karakter bulunamadı</div>'
         : list
             .map(
               (name) =>
