@@ -779,7 +779,8 @@ $(document).ready(function () {
       !lowerLine.includes('(alçak ses)') &&
       !lowerLine.includes('fısıldar') &&
       !lowerLine.includes('(telefon)') &&
-      !lowerLine.includes('(hoparlör)')
+      !lowerLine.includes('(hoparlör)') &&
+      !lowerLine.includes('kişisinden mesaj:')
     ) {
       return formatSaysLine(line, currentCharacterName);
     }
@@ -901,7 +902,7 @@ $(document).ready(function () {
     }
 
 
-    if (/\([^\)]+\)\s+.+?\s+kişisinden mesaj:\s*.+/.test(line)) {
+    if (/\s*\([^)]+\)\s+[^:]+\s+kişisinden mesaj:\s*.+/i.test(line)) {
       return formatSmsMessage(line);
     }
 
@@ -1394,9 +1395,18 @@ $(document).ready(function () {
   }
 
     function formatSmsMessage(line) {
-      // Remove any square brackets
-      //line = line.replace(/(\[\])/g, '');
-      // Wrap the entire line in yellow
+      const match = line.match(/\s*(\([^)]+\))\s+(.+?)\s+kişisinden mesaj:\s*(.+)/i);
+
+      if (match) {
+        const phone = match[1];
+        const sender = match[2];
+        const message = match[3];
+
+        return wrapSpan('yellow', `${phone} ${sender} kişisinden mesaj: ${message}`);
+      }
+
+      // Fallback: if pattern doesn't match, just remove brackets from the whole line
+      line = line.replace(/[\[\]]/g, '');
       return wrapSpan('yellow', line);
     }
 
