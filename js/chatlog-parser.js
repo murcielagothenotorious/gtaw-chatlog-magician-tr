@@ -900,7 +900,11 @@ $(document).ready(function () {
       return formatPoliceMDC(line);
     }
 
-    if (/\([^\)]+\) Message from [^:]+: .+/.test(line)) {
+
+    if (/\([^)]+\)\s+.+?\s+kişisinden mesaj:\s*.+/.test(line)) {
+      console.log(JSON.stringify(line));
+      console.log(/\([^)]+\)\s+.+?\s+kişisinden mesaj:\s*.+/.test(line));
+      console.log(line.match(/^(\([^)]+\))\s+(.+?)\s+kişisinden mesaj:\s*(.+)$/));
       return formatSmsMessage(line);
     }
 
@@ -1394,7 +1398,7 @@ $(document).ready(function () {
 
   function formatSmsMessage(line) {
     // Match the pattern: (phone) Message from sender: content
-    const match = line.match(/^(\([^)]+\))\s+([^\s]+)\s+kişisinden mesaj:\s*(.+)$/);
+    const match = line.match(/^(\([^)]+\))\s+(.+?)\s+kişisinden mesaj:\s*(.+)$/);
 
     if (match) {
       const phone = match[1];
@@ -1402,9 +1406,9 @@ $(document).ready(function () {
       const message = match[3];
 
       // Remove brackets only from the phone identifier, preserve them in the message
-      const cleanPhone = phone.replace(/[\[\]]/g, '');
+      const cleanPhone = phone.replace(/[()]/g, '');
 
-      return wrapSpan('yellow', `(${cleanPhone}) Message from ${sender}: ${message}`);
+      return wrapSpan('yellow', `${cleanPhone} ${sender} kişisinden mesaj: ${message}`);
     }
 
     // Fallback: if pattern doesn't match, just remove brackets from the whole line
