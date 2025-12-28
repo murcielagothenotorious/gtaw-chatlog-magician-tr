@@ -901,10 +901,7 @@ $(document).ready(function () {
     }
 
 
-    if (/\([^)]+\)\s+.+?\s+kişisinden mesaj:\s*.+/.test(line)) {
-      console.log(JSON.stringify(line));
-      console.log(/\([^)]+\)\s+.+?\s+kişisinden mesaj:\s*.+/.test(line));
-      console.log(line.match(/^(\([^)]+\))\s+(.+?)\s+kişisinden mesaj:\s*(.+)$/));
+    if (/\([^\)]+\)\s+.+?\s+kişisinden mesaj:\s*.+/.test(line)) {
       return formatSmsMessage(line);
     }
 
@@ -1176,7 +1173,7 @@ $(document).ready(function () {
     return text.replace(/[&<>"']/g, (m) => map[m]);
   }
 
-  function wrapSpan(className, content) {
+  window.wrapSpan = function wrapSpan(className, content) {
     // Normalize apostrophes and escape HTML to prevent tag injection
     content = escapeHTML(content.replace(/['''']/g, "'"));
 
@@ -1396,25 +1393,12 @@ $(document).ready(function () {
     return line;
   }
 
-  function formatSmsMessage(line) {
-    // Match the pattern: (phone) Message from sender: content
-    const match = line.match(/^(\([^)]+\))\s+(.+?)\s+kişisinden mesaj:\s*(.+)$/);
-
-    if (match) {
-      const phone = match[1];
-      const sender = match[2];
-      const message = match[3];
-
-      // Remove brackets only from the phone identifier, preserve them in the message
-      const cleanPhone = phone.replace(/[()]/g, '');
-
-      return wrapSpan('yellow', `${cleanPhone} ${sender} kişisinden mesaj: ${message}`);
+    function formatSmsMessage(line) {
+      // Remove any square brackets
+      //line = line.replace(/(\[\])/g, '');
+      // Wrap the entire line in yellow
+      return wrapSpan('yellow', line);
     }
-
-    // Fallback: if pattern doesn't match, just remove brackets from the whole line
-    line = line.replace(/[\[\]]/g, '');
-    return wrapSpan('yellow', line);
-  }
 
   function formatPhoneSet(line) {
     line = line.replace(/\[(?!BİLGİ\])|\](?!)/g, '');
