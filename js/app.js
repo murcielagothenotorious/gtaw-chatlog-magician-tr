@@ -332,42 +332,42 @@ function downloadOutputImage() {
     // Configure dom-to-image with CORS handling
     const domtoimageOptions = window.CORSHandler
       ? window.CORSHandler.getDomToImageOptions({
-          width: width,
-          height: height,
-          style: {
-            transform: 'scale(1)',
-            transformOrigin: 'top left',
-          },
-          filter: function (node) {
-            if (node.classList && node.classList.contains('selected-for-coloring')) return false;
-            return true;
-          },
-        })
+        width: width,
+        height: height,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+        },
+        filter: function (node) {
+          if (node.classList && node.classList.contains('selected-for-coloring')) return false;
+          return true;
+        },
+      })
       : {
-          width: width,
-          height: height,
-          style: {
-            transform: 'scale(1)',
-            transformOrigin: 'top left',
-          },
-          filter: function (node) {
-            // Filter out external stylesheets to prevent CORS issues
-            if (
-              node.tagName === 'LINK' &&
-              node.href &&
-              (node.href.includes('cdnjs.cloudflare.com') ||
-                node.href.includes('fonts.googleapis.com'))
-            ) {
-              return false;
-            }
-            if (node.classList && node.classList.contains('selected-for-coloring')) return false;
-            return true;
-          },
-          // Skip font embedding to prevent CORS and blob errors for external fonts
-          skipFonts: true,
-          imagePlaceholder:
-            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y0ZjRmNCIvPjwvc3ZnPg==',
-        };
+        width: width,
+        height: height,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+        },
+        filter: function (node) {
+          // Filter out external stylesheets to prevent CORS issues
+          if (
+            node.tagName === 'LINK' &&
+            node.href &&
+            (node.href.includes('cdnjs.cloudflare.com') ||
+              node.href.includes('fonts.googleapis.com'))
+          ) {
+            return false;
+          }
+          if (node.classList && node.classList.contains('selected-for-coloring')) return false;
+          return true;
+        },
+        // Skip font embedding to prevent CORS and blob errors for external fonts
+        skipFonts: true,
+        imagePlaceholder:
+          'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y0ZjRmNCIvPjwvc3ZnPg==',
+      };
 
     // Try with original output first
     if (typeof domtoimage === 'undefined') {
@@ -623,19 +623,7 @@ function hideLoadingIndicator() {
   $('#loadingIndicator').hide();
 }
 
-// Deprecated duplicate kept earlier; this definition is superseded by the top-level implementation
-
-/**
- * Toggles the black background on the output display
- * @returns {void}
- */
-function toggleBackground() {
-  $('#output').toggleClass('background-active');
-
-  if (typeof ChatlogParser.processOutput === 'function') {
-    ChatlogParser.processOutput();
-  }
-}
+// toggleBackground function removed - handled by chatlog-parser.js
 
 function autoResizeTextarea() {
   this.style.height = 'auto';
@@ -962,6 +950,8 @@ function _escapeHtml(unsafe) {
 }
 
 $(document).ready(function () {
+  // Background state is restored by chatlog-parser.js
+
   // Initialize ColorPalette after all scripts are loaded
   if (typeof window.ColorPalette !== 'undefined') {
     window.ColorPalette.init();
@@ -996,14 +986,14 @@ $(document).ready(function () {
       list.length === 0
         ? '<div style="padding: 8px; color: #888;">Kayıtlı karakter bulunamadı</div>'
         : list
-            .map(
-              (name) =>
-                `<div class="character-dropdown-item" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; cursor: pointer;">
+          .map(
+            (name) =>
+              `<div class="character-dropdown-item" style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; cursor: pointer;">
           <span class="character-name-select">${$('<div>').text(name).html()}</span>
           <button class="remove-character-btn" data-name="${$('<div>').text(name).html()}" style="background: none; border: none; color: #c00; font-size: 16px; cursor: pointer;">&times;</button>
         </div>`
-            )
-            .join('');
+          )
+          .join('');
 
     // If liquid glass wrapper exists, append to liquidGlass-text, otherwise append to dropdown
     if ($liquidGlassText.length > 0) {
@@ -1139,7 +1129,7 @@ $(document).ready(function () {
     }
   });
 
-  $(document).on('chatlogProcessed', function (_event, _text) {});
+  $(document).on('chatlogProcessed', function (_event, _text) { });
 
   $('#downloadOutputTransparent').click(async function () {
     // Check if we're in overlay mode and have an image

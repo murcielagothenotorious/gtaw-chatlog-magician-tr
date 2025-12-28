@@ -5,7 +5,7 @@ $(document).ready(function () {
   // Debug mode - set to false for production
   const DEBUG_MODE = false;
 
-  let applyBackground = false;
+  let applyBackground = localStorage.getItem('backgroundEnabled') === 'true';
   let disableCharacterNameColoring = false;
 
   // Censor style: 'remove' (hidden) or 'blur' (pixelated blur)
@@ -13,6 +13,10 @@ $(document).ready(function () {
 
   // Font style: 'arial' or 'trebuchet'
   let fontStyle = localStorage.getItem('chatlogFontStyle') || 'arial';
+
+  // Store user color overrides: Map<wordId, colorClass>
+  // This preserves user-applied colors across re-renders
+  const colorOverrides = new Map();
 
   const $textarea = $('#chatlogInput');
   const $output = $('#output');
@@ -39,6 +43,17 @@ $(document).ready(function () {
   updateCensorStyleUI();
   updateFontStyleUI();
   applyFontStyle();
+  updateBackgroundUI();
+
+  function updateBackgroundUI() {
+    // Apply background class to output
+    $output.toggleClass('background-active', applyBackground);
+    ChatlogParser.backgroundActive = applyBackground;
+
+    // Update button state
+    $toggleBackgroundBtn.toggleClass('active', applyBackground);
+    $toggleBackgroundBtn.find('.bg-text').text(applyBackground ? 'Arka Plan: Açık' : 'Arka Plan: Kapalı');
+  }
 
   function toggleBackground() {
     applyBackground = !applyBackground;
@@ -46,6 +61,9 @@ $(document).ready(function () {
 
     // Store background state for other modules (image-renderer, image-overlay)
     ChatlogParser.backgroundActive = applyBackground;
+
+    // Save to localStorage
+    localStorage.setItem('backgroundEnabled', applyBackground ? 'true' : 'false');
 
     // Update visual state
     $toggleBackgroundBtn.toggleClass('active', applyBackground);
@@ -384,19 +402,56 @@ $(document).ready(function () {
       fragment.appendChild(clearDiv);
     });
 
+    // Save user color overrides before clearing output
+    saveColorOverrides();
+
     $output.html('');
     $output.append(fragment);
     cleanUp();
 
     makeTextColorable();
+
+    // Restore user color overrides after re-rendering
+    restoreColorOverrides();
+  }
+
+  // Save user-applied colors to the colorOverrides Map
+  function saveColorOverrides() {
+    $output.find('.colorable[data-word-id]').each(function () {
+      const $el = $(this);
+      const wordId = $el.attr('data-word-id');
+      // Get color class (exclude 'colorable' and 'unrecognized')
+      const classes = $el.attr('class') || '';
+      const colorClass = classes.split(/\s+/).find(cls =>
+        cls !== 'colorable' && cls !== 'unrecognized' && cls !== 'selected-for-coloring' &&
+        ['me', 'ame', 'darkgrey', 'grey', 'lightgrey', 'death', 'yellow', 'green', 'orange', 'blue', 'white', 'radioColor', 'radioColor2', 'depColor', 'vesseltraffic', 'toyou'].includes(cls)
+      );
+      if (wordId && colorClass) {
+        colorOverrides.set(wordId, colorClass);
+      }
+    });
+  }
+
+  // Restore user-applied colors from the colorOverrides Map
+  function restoreColorOverrides() {
+    colorOverrides.forEach((colorClass, wordId) => {
+      const $el = $output.find(`[data-word-id="${wordId}"]`);
+      if ($el.length) {
+        // Remove default color classes and apply user override
+        $el.removeClass('me ame darkgrey grey lightgrey death yellow green orange blue white radioColor radioColor2 depColor vesseltraffic toyou');
+        $el.addClass(colorClass);
+      }
+    });
   }
 
   // Make processOutput accessible to other modules
   ChatlogParser.processOutput = processOutput;
 
   function makeTextColorable() {
+    let wordCounter = 0; // Global word counter for unique IDs
+
     // Process each .generated div individually
-    $output.find('.generated').each(function () {
+    $output.find('.generated').each(function (lineIndex) {
       const generatedDiv = $(this);
 
       // Skip if the div has the no-colorable class
@@ -436,7 +491,8 @@ $(document).ready(function () {
               if (token === '') return '';
               if (/^\s+$/.test(token)) return token;
               const normalized = token.replace(/[\u2018\u2019\u2032\u2035]/g, "'");
-              return `<span class="${classArray.join(' ')} colorable">${normalized}</span>`;
+              const wordId = `${lineIndex}-${wordCounter++}`;
+              return `<span class="${classArray.join(' ')} colorable" data-word-id="${wordId}">${normalized}</span>`;
             })
             .join('');
 
@@ -482,7 +538,8 @@ $(document).ready(function () {
             if (token === '') return '';
             if (/^\s+$/.test(token)) return token;
             const normalized = token.replace(/[\u2018\u2019\u2032\u2035]/g, "'");
-            return `<span class="colorable">${normalized}</span>`;
+            const wordId = `${lineIndex}-${wordCounter++}`;
+            return `<span class="colorable" data-word-id="${wordId}">${normalized}</span>`;
           })
           .join('');
 
@@ -769,6 +826,8 @@ $(document).ready(function () {
       } else {
         return wrapSpan('yellow', line);
       }
+    } else if (line.includes('(Telefon - Hoparlör):')) {
+      return wrapSpan('yellow', line);
     }
 
     if (line === 'Injuries:') {
@@ -781,7 +840,8 @@ $(document).ready(function () {
       !lowerLine.includes('(alçak ses)') &&
       !lowerLine.includes('fısıldar') &&
       !lowerLine.includes('(telefon)') &&
-      !lowerLine.includes('(hoparlör)')
+      !lowerLine.includes('(hoparlör)') &&
+      !lowerLine.includes('kişisinden mesaj:')
     ) {
       return formatSaysLine(line, currentCharacterName);
     }
@@ -894,7 +954,7 @@ $(document).ready(function () {
       return `<span class="death">You've been shot</span> <span class="white"> in the </span> <span class="death">${escapeHTML(text)}</span> <span class="white"> with a </span> <span class="death">${escapeHTML(text2)}</span> <span class="white"> for </span> <span class="death">${escapeHTML(numbers)}</span> <span class="white"> damage. ((Health : </span> <span class="death">${escapeHTML(numbers2)}</span> <span class="white">))</span>`;
     }
 
-    if (line === '********** EMERGENCY CALL **********') {
+    if (line === '********** ACİL ÇAĞRI **********') {
       return '<span class="blue">' + escapeHTML(line) + '</span>';
     }
 
@@ -902,7 +962,7 @@ $(document).ready(function () {
       return formatPoliceMDC(line);
     }
 
-    if (/\([^\)]+\) Message from [^:]+: .+/.test(line)) {
+    if (/\([^\)]+\) [^:]+ kişisinden mesaj: .+/.test(line)) {
       return formatSmsMessage(line);
     }
 
@@ -1075,7 +1135,7 @@ $(document).ready(function () {
       return formatPrisonPA(line);
     }
 
-    const emergencyCallPattern = /^(Log Number|Phone Number|Location|Situation):\s*(.*)$/;
+    const emergencyCallPattern = /^(Çağrı Numarası|Telefon Numarası|Konum|Durum):\s*(.*)$/;
     const emergencyMatch = line.match(emergencyCallPattern);
     if (emergencyMatch) {
       const key = escapeHTML(emergencyMatch[1]);
@@ -1406,7 +1466,7 @@ $(document).ready(function () {
       // Remove brackets only from the phone identifier, preserve them in the message
       const cleanPhone = phone.replace(/[\[\]]/g, '');
 
-      return wrapSpan('yellow', `(${cleanPhone}) Message from ${sender}: ${message}`);
+      return wrapSpan('yellow', `${cleanPhone} ${sender} kişisinden mesaj: ${message}`);
     }
 
     // Fallback: if pattern doesn't match, just remove brackets from the whole line
