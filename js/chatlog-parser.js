@@ -1173,7 +1173,7 @@ $(document).ready(function () {
     return text.replace(/[&<>"']/g, (m) => map[m]);
   }
 
-  window.wrapSpan = function wrapSpan(className, content) {
+  function wrapSpan(className, content) {
     // Normalize apostrophes and escape HTML to prevent tag injection
     content = escapeHTML(content.replace(/['''']/g, "'"));
 
