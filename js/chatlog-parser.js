@@ -165,16 +165,12 @@ $(document).ready(function () {
       // If the target is the current character, color as white (directed at you)
       if (targetName === currentCharacterName.toLowerCase()) {
         mainColor = 'white';
-      } else {
-        // If speaker is the current character, color as white, otherwise lightgrey
-        mainColor = speakerName === currentCharacterName.toLowerCase() ? 'white' : 'lightgrey';
       }
+
     } else {
       // No (to CharacterName) format, check if speaker is the current character
       if (speakerName === currentCharacterName.toLowerCase()) {
         mainColor = 'white';
-      } else {
-        mainColor = 'lightgrey';
       }
     }
 
@@ -761,7 +757,13 @@ $(document).ready(function () {
       return wrapSpan('grey', line);
     }
 
-    if (line.includes('(kısık ses) (Telefon):') || line.includes('(Telefon):')) {
+    if (line.includes('(kısık ses) (Telefon):')) {
+      if (currentCharacterName && line.toLowerCase().includes(currentCharacterName.toLowerCase())) {
+        return wrapSpan('lightgrey', line);
+      } else {
+        return wrapSpan('yellow', line);
+      }
+    } else if (line.includes('(Telefon):')) {
       if (currentCharacterName && line.toLowerCase().includes(currentCharacterName.toLowerCase())) {
         return wrapSpan('white', line);
       } else {
@@ -785,7 +787,7 @@ $(document).ready(function () {
     }
 
     // Check for shouts before other conditions
-    if (lowerLine.includes('shouts:') || lowerLine.includes('shouts (to')) {
+    if (lowerLine.includes('(bağırır):') || lowerLine.includes('shouts (to')) {
       return wrapSpan('white', line);
     }
 

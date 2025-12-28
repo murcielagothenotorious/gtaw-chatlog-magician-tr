@@ -884,7 +884,7 @@ window.clearHistory = function () {
 function refreshHistoryPanel() {
   const $historyItems = $('.history-items');
   const $loading = $('<div class="history-loading">Loading history...</div>');
-  const $empty = $('<div class="history-empty">No history items</div>');
+  const $empty = $('<div class="history-empty">Kaydedilmiş sohbet kaydı bulunamadı</div>');
 
   $historyItems.empty().append($loading.addClass('active'));
 
