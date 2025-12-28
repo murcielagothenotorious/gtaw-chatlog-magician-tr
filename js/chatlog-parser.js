@@ -779,8 +779,7 @@ $(document).ready(function () {
       !lowerLine.includes('(alçak ses)') &&
       !lowerLine.includes('fısıldar') &&
       !lowerLine.includes('(telefon)') &&
-      !lowerLine.includes('(hoparlör)') &&
-      !lowerLine.includes('kişisinden mesaj:')
+      !lowerLine.includes('(hoparlör)')
     ) {
       return formatSaysLine(line, currentCharacterName);
     }
@@ -901,8 +900,7 @@ $(document).ready(function () {
       return formatPoliceMDC(line);
     }
 
-
-    if (/\s*\([^)]+\)\s+[^:]+\s+kişisinden mesaj:\s*.+/i.test(line)) {
+    if (/\([^\)]+\) Message from [^:]+: .+/.test(line)) {
       return formatSmsMessage(line);
     }
 
@@ -1394,21 +1392,25 @@ $(document).ready(function () {
     return line;
   }
 
-    function formatSmsMessage(line) {
-      const match = line.match(/\s*(\([^)]+\))\s+(.+?)\s+kişisinden mesaj:\s*(.+)/i);
+  function formatSmsMessage(line) {
+    // Match the pattern: (phone) Message from sender: content
+    const match = line.match(/^(\([^)]+\))\s+([^\s]+)\s+kişisinden mesaj:\s*(.+)$/);
 
-      if (match) {
-        const phone = match[1];
-        const sender = match[2];
-        const message = match[3];
+    if (match) {
+      const phone = match[1];
+      const sender = match[2];
+      const message = match[3];
 
-        return wrapSpan('yellow', `${phone} ${sender} kişisinden mesaj: ${message}`);
-      }
+      // Remove brackets only from the phone identifier, preserve them in the message
+      const cleanPhone = phone.replace(/[\[\]]/g, '');
 
-      // Fallback: if pattern doesn't match, just remove brackets from the whole line
-      line = line.replace(/[\[\]]/g, '');
-      return wrapSpan('yellow', line);
+      return wrapSpan('yellow', `(${cleanPhone}) Message from ${sender}: ${message}`);
     }
+
+    // Fallback: if pattern doesn't match, just remove brackets from the whole line
+    line = line.replace(/[\[\]]/g, '');
+    return wrapSpan('yellow', line);
+  }
 
   function formatPhoneSet(line) {
     line = line.replace(/\[(?!BİLGİ\])|\](?!)/g, '');
@@ -1425,7 +1427,7 @@ $(document).ready(function () {
 
     // Try to match the full format with commands
     const fullMatch = line.match(
-    /\(([^)]+)\)\s+(.+?)\s+tarafından gelen çağrı\. Açmak için\s+(.+?)\s+veya kapatmak için\s+(.+?)\./
+      /\(([^)]+)\)\s+(.+?)\s+tarafından gelen çağrı\. Açmak için\s+(.+?)\s+veya kapatmak için\s+(.+?)\./
     );
     if (fullMatch) {
       const parenthetical = escapeHTML(fullMatch[1]);
