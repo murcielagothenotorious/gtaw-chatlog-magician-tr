@@ -1810,4 +1810,65 @@ label {
 	}
 
 	/* Removed duplicate .history-header rules - using .history-panel .history-header above for better specificity */
+
+	/* Font Selection Dropdown */
+	.font-select-dropdown {
+		position: absolute;
+		background: var(--surface);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		max-height: 400px;
+		overflow-y: auto;
+		z-index: 99999;
+		/* High z-index to stay on top */
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+		min-width: 200px;
+		display: none;
+		/* Hidden by default */
+	}
+
+	.font-select-dropdown.show {
+		display: block;
+	}
+
+	.font-option {
+		padding: 10px 16px;
+		cursor: pointer;
+		color: var(--text);
+		transition: background 0.2s ease;
+		font-size: 14px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.font-option:last-child {
+		border-bottom: none;
+	}
+
+	.font-option:hover {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.font-option.active {
+		background: var(--primary);
+		color: white;
+	}
+
+	/* Scrollbar for the dropdown */
+	.font-select-dropdown::-webkit-scrollbar {
+		width: 8px;
+	}
+
+	.font-select-dropdown::-webkit-scrollbar-track {
+		background: rgba(0, 0, 0, 0.2);
+	}
+
+	.font-select-dropdown::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.2);
+	}
+
+	.font-select-dropdown::-webkit-scrollbar-thumb:hover {
+		background: rgba(255, 255, 255, 0.3);
+	}
 }

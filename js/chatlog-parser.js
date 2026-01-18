@@ -11,8 +11,36 @@ $(document).ready(function () {
   // Censor style: 'remove' (hidden) or 'blur' (pixelated blur)
   let censorStyle = localStorage.getItem('chatlogCensorStyle') || 'remove';
 
-  // Font style: 'arial' or 'trebuchet'
-  let fontStyle = localStorage.getItem('chatlogFontStyle') || 'arial';
+  // All available font options with their CSS font-family values
+  const fontOptions = [
+    { name: 'Arial', family: 'Arial, Helvetica, sans-serif' },
+    { name: 'Trebuchet MS', family: '"Trebuchet MS", Helvetica, sans-serif' },
+    { name: 'Verdana', family: 'Verdana, Geneva, sans-serif' },
+    { name: 'Tahoma', family: 'Tahoma, Geneva, sans-serif' },
+    { name: 'Georgia', family: 'Georgia, serif' },
+    { name: 'Palatino', family: '"Palatino Linotype", "Book Antiqua", Palatino, serif' },
+    { name: 'Times New Roman', family: '"Times New Roman", Times, serif' },
+    { name: 'Arial Black', family: '"Arial Black", Gadget, sans-serif' },
+    { name: 'Comic Sans MS', family: '"Comic Sans MS", cursive, sans-serif' },
+    { name: 'Impact', family: 'Impact, Charcoal, sans-serif' },
+    { name: 'Lucida Sans', family: '"Lucida Sans Unicode", "Lucida Grande", sans-serif' },
+    { name: 'Courier New', family: '"Courier New", Courier, monospace' },
+    { name: 'Lucida Console', family: '"Lucida Console", Monaco, monospace' },
+    { name: 'Calibri', family: 'Calibri, sans-serif' },
+    { name: 'Raleway', family: '"Raleway", sans-serif' },
+    { name: 'Roboto', family: '"Roboto", sans-serif' },
+    { name: 'Ubuntu', family: '"Ubuntu", sans-serif' },
+    { name: 'Mukta', family: '"Mukta", sans-serif' },
+    { name: 'Open Sans', family: '"Open Sans", sans-serif' },
+    { name: 'Nunito Sans', family: '"Nunito Sans", sans-serif' },
+    { name: 'Inter', family: '"Inter", sans-serif' }
+  ];
+
+  // Font style: index in fontOptions array or legacy name
+  let fontStyle = localStorage.getItem('chatlogFontStyle') || '0';
+  // Handle legacy values ('arial', 'trebuchet')
+  if (fontStyle === 'arial') fontStyle = '0';
+  if (fontStyle === 'trebuchet') fontStyle = '1';
 
   // Contrast style: 'off', 'low', 'medium', 'high'
   let contrastStyle = localStorage.getItem('chatlogContrastStyle') || 'off';
@@ -105,25 +133,109 @@ $(document).ready(function () {
     $toggleCensorStyleBtn.toggleClass('active', censorStyle === 'blur');
   }
 
-  function toggleFontStyle() {
-    // Toggle between 'arial' and 'trebuchet'
-    fontStyle = fontStyle === 'arial' ? 'trebuchet' : 'arial';
+  function toggleFontStyle(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    let $dropdown = $('#fontSelectDropdown');
+
+    // Create dropdown if not exists
+    if ($dropdown.length === 0) {
+      createFontDropdown();
+      $dropdown = $('#fontSelectDropdown');
+    }
+
+    if ($dropdown.hasClass('show')) {
+      $dropdown.removeClass('show');
+    } else {
+      // Close other dropdowns if any
+      $('.font-select-dropdown').removeClass('show');
+
+      // Position and show
+      const btnRect = $toggleFontBtn[0].getBoundingClientRect();
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+
+      $dropdown.css({
+        top: (btnRect.bottom + scrollTop + 4) + 'px', // +4px spacing
+        left: (btnRect.left + scrollLeft) + 'px',
+        // minWidth: btnRect.width + 'px' // Let it be wider if needed defined in CSS
+      });
+
+      $dropdown.addClass('show');
+
+      // Scroll to active item
+      const activeItem = $dropdown.find('.font-option.active');
+      if (activeItem.length && activeItem[0]) {
+        $dropdown.scrollTop(activeItem[0].offsetTop - $dropdown.height() / 2 + activeItem.height() / 2);
+      }
+    }
+  }
+
+  function setFontStyle(index) {
+    fontStyle = String(index);
     localStorage.setItem('chatlogFontStyle', fontStyle);
     updateFontStyleUI();
     applyFontStyle();
+
+    // Update active class in dropdown if exists
+    $('#fontSelectDropdown .font-option').removeClass('active');
+    $(`#fontSelectDropdown .font-option[data-index="${index}"]`).addClass('active');
+  }
+
+  function createFontDropdown() {
+    const $dropdownHTML = $('<div id="fontSelectDropdown" class="font-select-dropdown"></div>');
+
+    fontOptions.forEach((font, index) => {
+      const isActive = parseInt(fontStyle, 10) === index;
+      const $option = $(`<div class="font-option ${isActive ? 'active' : ''}" data-index="${index}">
+        <span>${font.name}</span>
+        <span style="font-family: ${font.family}; font-size: 16px; opacity: 0.8; margin-left: 10px;">Aa</span>
+      </div>`);
+
+      $option.click(function (e) {
+        e.stopPropagation();
+        setFontStyle(index);
+        $('#fontSelectDropdown').removeClass('show');
+      });
+
+      $dropdownHTML.append($option);
+    });
+
+    $('body').append($dropdownHTML);
+
+    // Close on click outside
+    $(document).on('click', function (e) {
+      if (!$(e.target).closest('#fontSelectDropdown').length && !$(e.target).closest('#toggleFont').length) {
+        $('#fontSelectDropdown').removeClass('show');
+      }
+    });
+
+    // Close on resize to prevent positioning issues
+    $(window).on('resize', function () {
+      $('#fontSelectDropdown').removeClass('show');
+    });
   }
 
   function updateFontStyleUI() {
-    $toggleFontBtn.find('.font-text').text(fontStyle === 'trebuchet' ? 'Trebuchet' : 'Arial');
-    $toggleFontBtn.toggleClass('active', fontStyle === 'trebuchet');
+    const currentIndex = parseInt(fontStyle, 10);
+    const fontName = fontOptions[currentIndex]?.name || 'Arial';
+    $toggleFontBtn.find('.font-text').html(fontName + ' <span style="font-size: 0.8em; margin-left: 4px;">&#9660;</span>');
+    // Button is active when not on the first font (Arial)
+    $toggleFontBtn.toggleClass('active', currentIndex !== 0);
   }
 
   function applyFontStyle() {
-    if (fontStyle === 'trebuchet') {
-      $output.addClass('font-trebuchet');
-    } else {
-      $output.removeClass('font-trebuchet');
-    }
+    const currentIndex = parseInt(fontStyle, 10);
+    const fontFamily = fontOptions[currentIndex]?.family || 'Arial, Helvetica, sans-serif';
+    // Apply font-family directly to output element using setProperty for !important support
+    $output[0].style.setProperty('font-family', fontFamily, 'important');
+    // Also set a data attribute for image-renderer to read
+    $output.attr('data-font-family', fontFamily);
+    // Store for other modules
+    ChatlogParser.currentFontFamily = fontFamily;
   }
 
   // Toggle contrast style: off -> low -> medium -> high -> off

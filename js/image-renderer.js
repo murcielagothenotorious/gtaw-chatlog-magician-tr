@@ -10,7 +10,9 @@
   const CANVAS_IMAGE_QUALITY = 1.0;
   const TEXT_FONT_SIZE = 12; // pixels
   const TEXT_FONT_WEIGHT = 700;
-  const TEXT_FONT_FAMILY = 'Arial, sans-serif';
+  const TEXT_FONT_FAMILY_DEFAULT = 'Arial, sans-serif';
+  // Get current font family from ChatlogParser or use default
+  const getTextFontFamily = () => window.ChatlogParser?.currentFontFamily || TEXT_FONT_FAMILY_DEFAULT;
   const TEXT_LINE_HEIGHT_FALLBACK = 16; // pixels
   const TEXT_BASELINE = 'top';
   const TEXT_OFFSET_Y = 1; // pixel offset for text rendering
@@ -538,8 +540,8 @@
         ? parseInt(fontSizeInput.value) || TEXT_FONT_SIZE
         : TEXT_FONT_SIZE;
 
-      // Setup text rendering
-      ctx.font = `${TEXT_FONT_WEIGHT} ${fontSize}px ${TEXT_FONT_FAMILY}`;
+      // Setup text rendering - use dynamic font family from ChatlogParser
+      ctx.font = `${TEXT_FONT_WEIGHT} ${fontSize}px ${getTextFontFamily()}`;
       ctx.textBaseline = TEXT_BASELINE;
 
       // Get computed style from actual chat element for accurate rendering
