@@ -1,37 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
- <head>
-  <!-- Google tag (gtag.js) - Loaded with error handling for ad blockers -->
-  <script>
-    // Initialize dataLayer and gtag function even if script is blocked
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    
-    // Try to load Google Analytics script with error handling
-    try {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = 'https://www.googletagmanager.com/gtag/js?id=G-T6EJF6GQG3';
-      script.onerror = function() {
-        // Silently handle ad blocker blocking - no console errors
-        // gtag calls will still work but won't send data
-      };
-      document.head.appendChild(script);
-      
-      // Initialize gtag config (will queue if script hasn't loaded yet)
-      gtag('js', new Date());
-      gtag('config', 'G-T6EJF6GQG3');
-    } catch (e) {
-      // Silently handle any initialization errors
-    }
-  </script>
+
+<head>
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-NFRMGR33');</script>
+  <!-- End Google Tag Manager -->
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="author" content="blanco" />
-  <meta name="description" content="Chatlog Magician for GTA World made by Blanco, adapted for GTA World TR by k with love!" />
-  <meta name="keywords" content="GTAWTR, GTAWorldTR, GTA World Turkiye, GTA World Türkiye, RAGE MP, chatlog magician, chatlog" />
+  <meta name="description"
+    content="Chatlog Magician for GTA World made by Blanco, adapted for GTA World TR by k with love!" />
+  <meta name="keywords"
+    content="GTAWTR, GTAWorldTR, GTA World Turkiye, GTA World Türkiye, RAGE MP, chatlog magician, chatlog, roleplay, rp chatlog, chatlog düzenleyici, chatlog editörü, GTA roleplay, sohbet kaydi, screenshot overlay, ekran görüntüsü, rp screenshot, roleplay araç" />
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
   <meta name="msapplication-navbutton-color" content="#000000" />
@@ -45,7 +34,7 @@
 
   <!-- Cache version - bump this when deploying updates -->
   <!-- Current version: 1.1.0 -->
-  
+
   <!-- Preload critical assets -->
   <link rel="preload" href="css/foundation.fixed.css?v=1.1.0" as="style" />
   <link rel="preload" href="js/app.js?v=1.1.0" as="script" />
@@ -59,8 +48,8 @@
   <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.1.0" />
   <!-- FontAwesome 7.0.1 from CDN (includes all icon sets and fonts) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-        crossorigin="anonymous" />
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" />
   <link rel="icon" href="favicon.png" type="image/png" />
 
   <!-- Analytics removed - migrated to Cloudflare Pages -->
@@ -72,255 +61,276 @@
   <script src="js/cross-origin-fix.js?v=1.1.0" defer></script>
   <script src="js/cors-handler.js?v=1.1.0" defer></script>
 
-  
- </head>
- <body>
-    <a class="skip-link" href="#main">Skip to main content</a>
-    <header role="banner">
-      <h1 class="visually-hidden">Chatlog Magician</h1>
-      <nav aria-label="Primary" class="visually-hidden">
-        <a href="#output">Output</a>
-        <a href="#historyPanel">History</a>
-      </nav>
-    </header>
-    <main id="main" role="main">
+
+</head>
+
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NFRMGR33" height="0" width="0"
+      style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header role="banner">
+    <h1 class="visually-hidden">Chatlog Magician</h1>
+    <nav aria-label="Primary" class="visually-hidden">
+      <a href="#output">Output</a>
+      <a href="#historyPanel">History</a>
+    </nav>
+  </header>
+  <main id="main" role="main">
     <div class="grid-container">
-        <div class="grid-x grid-margin-x">
-           <div class="cell small-12">
+      <div class="grid-x grid-margin-x">
+        <div class="cell small-12">
 
-              <div class="grid-x grid-margin-x align-center">
-                 <div class="cell small-4 medium-2">
-                    <input name="font-label" id="font-label" type="number" min="8" max="24" step="1" value="12" aria-label="Font size" />
-                    <div class="golden-sizes-hint">Golden: 8, 10, 12, 15, 19, 24px</div>
-                 </div>
-                 <div class="cell small-4 medium-2">
-                    <input type="number" id="lineLengthInput" min="1" value="77" aria-label="Line length">
-                 </div>
-                 <div class="cell small-8 medium-8">
-                    <div class="input-group" style="position: relative;">
-                      <input type="text" id="characterNameInput" placeholder="Karakter adı girin" autocomplete="off" aria-label="Character name filter" />
-                      <div class="input-group-button">
-                        <button class="button small success" id="addCharacterBtn" type="button" aria-label="Add character">Ekle</button>
-                        <button class="button small secondary" id="showCharacterListBtn" type="button" aria-label="Show character list">&#9660;</button>
-                      </div>
-                      <div id="characterNameDropdown" class="character-dropdown" style="display: none; position: absolute; top: 110%; left: 0; right: 0; background: var(--surface); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.12); z-index: 1000; max-height: 150px; overflow-y: auto; border-radius: 0;" role="listbox">
-      </div>
-                    </div>
-                 </div>
-              </div>
-              <label for="chatlogInput">Sohbet Kaydı:</label>
-             <div class="textarea-container">
-                 <textarea id="chatlogInput" class="form-control textarea-input" rows="15" placeholder="Enter your chat log here..." aria-label="Chat log input"></textarea>
-              </div>
-              <div class="grid-x grid-margin-x align-middle">
-                 <div class="cell auto">
-                    <div class="button-group">
-                      <!-- Primary action - Download (Green = Success/Go) -->
-                      <button id="downloadOutputTransparent" class="button success" aria-label="Download chat log or overlay">İndir</button>
-
-                      <!-- Mode toggle (Blue = Information/Primary) -->
-                      <button id="toggleMode" class="button primary active" data-mode="chat" aria-label="Toggle mode">
-                        <span class="mode-text">Sohbet</span>
-                      </button>
-
-                      <!-- Toggle background (Yellow = Warning/Toggle) -->
-                      <button id="toggleBackground" class="button warning" aria-label="Toggle background color">
-                        <span class="bg-text">Arka Plan: Kapalı</span>
-                      </button>
-
-                      <!-- Name colors toggle (Yellow = Warning/Toggle) -->
-                      <button id="toggleCharacterNameColoring" class="button warning active" aria-label="Toggle character name coloring">
-                        <span class="name-color-text">İsimler: Açık</span>
-                      </button>
-
-                      <!-- Color text (Blue = Info/Tool) -->
-                      <button id="toggleColorPalette" class="button info" aria-label="Toggle color palette">Renk</button>
-
-                      <!-- Censor character (Secondary = Utility) -->
-                      <button id="censorCharButton" class="button secondary censor-char-button" aria-label="Copy censor character" title="Copy censor character">÷</button>
-
-                      <!-- Censor style toggle (Secondary = Utility) -->
-                      <button id="toggleCensorStyle" class="button secondary" aria-label="Toggle censor style">
-                        <span class="censor-text">Sansür: Kaldır</span>
-                      </button>
-
-                      <!-- Font toggle (Secondary = Utility) -->
-                      <button id="toggleFont" class="button secondary" aria-label="Toggle font">
-                        <span class="font-text">Arial</span>
-                      </button>
-
-                      <!-- Donate (Gray = Neutral/External) -->
-                      <button id="donateBtn" class="button" aria-label="Donate">Bağış</button>
-
-                      <!-- Discord (Discord Brand Color) -->
-                      <!-- <a href="https://discord.gg/V8jQJrDXxF" target="_blank" rel="noopener noreferrer" class="button" aria-label="Join Discord" style="background-color: #5865F2; color: #ffffff; text-decoration: none;">Discord</a> -->
-
-                      <!-- Overlay controls (only visible in overlay mode) -->
-                      <div class="button info overlay-control button-hidden" id="textPaddingControl">
-                        <input type="number" id="textPaddingHorizontal" min="0" max="200" value="0" step="5" style="width: 60px; height: auto; margin: 0; padding: 0; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center;" title="Horizontal padding (px)">
-                        <span style="opacity: 0.7;">×</span>
-                        <input type="number" id="textPaddingVertical" min="0" max="200" value="0" step="5" style="width: 60px; height: auto; margin: 0; padding: 0; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center;" title="Vertical padding (px)">
-                        <span style="opacity: 0.7; font-size: 12px;">px</span>
-                      </div>
-                      <div class="button warning overlay-control button-hidden" id="exportDimensionsControl">
-                        <input type="number" id="exportWidth" min="100" max="7680" value="1600" step="1" style="width: 70px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;" title="Export width (px)">
-                        <span style="opacity: 0.7;">×</span>
-                        <input type="number" id="exportHeight" min="100" max="4320" value="1200" step="1" style="width: 70px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;" title="Export height (px)">
-                        <span style="opacity: 0.7; font-size: 12px;">px</span>
-                        <span style="opacity: 0.5; margin: 0 4px;">|</span>
-                        <input type="number" id="exportPPI" min="72" max="600" value="96" step="1" style="width: 60px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;" title="Export PPI">
-                        <span style="opacity: 0.7; font-size: 12px;">PPI</span>
-                      </div>
-
-                      <!-- Clear image (Red = Alert/Remove) - Only visible in overlay mode -->
-                      <button id="clearImageBtn" class="button alert overlay-control button-hidden" type="button" title="Remove image">
-                        <i class="fas fa-times" aria-hidden="true"></i> Görüntüyü Temizle
-                      </button>
-                    </div>
-                 </div>
-              </div>
-              <div id="output" class="output" role="region" aria-label="Formatted chat log output"></div>
-
-              <!-- Image Overlay Drop Zone -->
-              <div id="imageOverlaySection" style="display: none;">
-                <input type="file" id="imageFileInput" accept="image/*" style="display: none;" aria-label="Upload screenshot">
-
-                <div id="imageDropzone" class="image-dropzone">
-                  <div class="dropzone-instructions">
-                    <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-                    <p>Ekran görüntünüzü buraya bırakın</p>
-                    <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için tıklayın</p>
-                  </div>
+          <div class="grid-x grid-margin-x align-center">
+            <div class="cell small-4 medium-2">
+              <input name="font-label" id="font-label" type="number" min="8" max="24" step="1" value="12"
+                aria-label="Font size" />
+              <div class="golden-sizes-hint">Golden: 8, 10, 12, 15, 19, 24px</div>
+            </div>
+            <div class="cell small-4 medium-2">
+              <input type="number" id="lineLengthInput" min="1" value="77" aria-label="Line length">
+            </div>
+            <div class="cell small-8 medium-8">
+              <div class="input-group" style="position: relative;">
+                <input type="text" id="characterNameInput" placeholder="Karakter adı girin" autocomplete="off"
+                  aria-label="Character name filter" />
+                <div class="input-group-button">
+                  <button class="button small success" id="addCharacterBtn" type="button"
+                    aria-label="Add character">Ekle</button>
+                  <button class="button small secondary" id="showCharacterListBtn" type="button"
+                    aria-label="Show character list">&#9660;</button>
                 </div>
-
-                <!-- Overlay Info -->
-                <div class="overlay-info" style="max-width: 900px; margin: 10px auto; text-align: center; color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.6;">
-                  <p style="margin: 5px 0;"><i class="fas fa-mouse" aria-hidden="true"></i> <strong>Görüntü:</strong> Yüklemek için çift tıklayın | Taşımak için tıklayıp sürükleyin | Yakınlaştırmak için kaydırın</p>
-                  <p style="margin: 5px 0; font-size: 12px; color: rgba(255,255,255,0.5);">
-                    <i class="fas fa-info-circle" aria-hidden="true"></i> İndirilen görüntü, önizlemede gördüğünüzle tam olarak aynı şekilde gösterilir |
-                    Ayarlar otomatik kaydedilir | Tuval, dışa aktarma boyutlarınıza göre yeniden boyutlandırılır
-                  </p>
+                <div id="characterNameDropdown" class="character-dropdown"
+                  style="display: none; position: absolute; top: 110%; left: 0; right: 0; background: var(--surface); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.12); z-index: 1000; max-height: 150px; overflow-y: auto; border-radius: 0;"
+                  role="listbox">
                 </div>
               </div>
-           </div>
-        </div>
-     </div>
-     </main>
+            </div>
+          </div>
+          <label for="chatlogInput">Sohbet Kaydı:</label>
+          <div class="textarea-container">
+            <textarea id="chatlogInput" class="form-control textarea-input" rows="15"
+              placeholder="Enter your chat log here..." aria-label="Chat log input"></textarea>
+          </div>
+          <div class="grid-x grid-margin-x align-middle">
+            <div class="cell auto">
+              <div class="button-group">
+                <!-- Primary action - Download (Green = Success/Go) -->
+                <button id="downloadOutputTransparent" class="button success"
+                  aria-label="Download chat log or overlay">İndir</button>
 
-    <!-- Third-party scripts with fallback handling -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/4.0.0-beta.2/jquery.min.js" 
-            integrity="sha512-JobWAqYk5CSjWuVV3mxgS+MmccJqkrBaDhk8SKS1BW+71dJ9gzascwzW85UwGhxiSyR7Pxhu50k+Nl3+o5I49A==" 
-            crossorigin="anonymous" 
-            defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.9.0/js/foundation.min.js" 
-            integrity="sha512-P4f0g0iAkyfUF2V2VX8dxkoBxPLULaV2TM8HQGXFRb75AzLVAf+sn+MRweu/C81rL2JaYutbY6cWAbmwJbtOcg==" 
-            crossorigin="anonymous" 
-            defer
-            onerror="console.warn('Foundation.js failed to load from CDN')"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.5.0/dom-to-image-more.min.js" 
-            integrity="sha512-ECdKPIiMdaihsCUpvDKFdrwwERCqyqojP0H1SV9J9k6/80yAzfHzhcA5xaexoNMR9JZSJ7gmzMkV/08Ie1asmw==" 
-            crossorigin="anonymous" 
-            defer
-            onerror="console.warn('dom-to-image-more.js failed to load from CDN')"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js" 
-            integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw==" 
-            crossorigin="anonymous" 
-            defer
-            onerror="console.warn('FileSaver.js failed to load from CDN')"></script>
+                <!-- Mode toggle (Blue = Information/Primary) -->
+                <button id="toggleMode" class="button primary active" data-mode="chat" aria-label="Toggle mode">
+                  <span class="mode-text">Sohbet</span>
+                </button>
 
-    <!-- Application scripts -->
-    <script src="js/image-dropzone.js?v=1.1.0" defer></script>
-    <script src="js/image-overlay.js?v=1.1.0" defer></script>
-    <script src="js/image-renderer.js?v=1.1.0" defer></script>
-    <script src="js/chat.js?v=1.1.0" defer></script>
-    <script src="color-palette/color-palette.js?v=1.1.0" defer></script>
-    <script src="js/chatlog-parser.js?v=1.1.0" defer></script>
-    <script src="js/app.js?v=1.1.0" defer></script>
+                <!-- Toggle background (Yellow = Warning/Toggle) -->
+                <button id="toggleBackground" class="button warning" aria-label="Toggle background color">
+                  <span class="bg-text">Arka Plan: Kapalı</span>
+                </button>
 
-     <!-- History panel -->
-    <div class="history-tab"
-         role="button"
-         tabindex="0"
-         aria-label="Open chat history"
-         aria-expanded="false"
-         aria-controls="historyPanel">
-         <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
-     </div>
+                <!-- Name colors toggle (Yellow = Warning/Toggle) -->
+                <button id="toggleCharacterNameColoring" class="button warning active"
+                  aria-label="Toggle character name coloring">
+                  <span class="name-color-text">İsimler: Açık</span>
+                </button>
 
-     <div id="historyPanel"
-          class="history-panel"
-          role="dialog"
-          aria-label="Chat history"
-          aria-hidden="true">
-         <div class="history-header">
-           <h3>Sohbet Kaydı Geçmişi</h3>
-           <button id="clearHistoryBtn" class="clear-history-btn" aria-label="Clear all history">Tümünü Temizle</button>
-         </div>
-         <div class="history-items" role="list"></div>
-         <div class="history-loading">
-           <div class="spinner" aria-hidden="true"></div>
-           <p>Sohbet kaydı geçmişiniz yükleniyor...</p>
-         </div>
-         <div class="history-empty">
-           <p>Henüz sohbet kaydı kaydedilmedi</p>
-           <p style="font-size: 14px; opacity: 0.8;">İşlenmiş sohbet kayıtlarınız burada kolay erişim için görünecektir</p>
-         </div>
-     </div>
+                <!-- Color text (Blue = Info/Tool) -->
+                <button id="toggleColorPalette" class="button info" aria-label="Toggle color palette">Renk</button>
 
-     <!-- Color Palette -->
-     <div id="colorPalette" class="color-palette" style="display: none;">
-             <div class="color-palette-header">
-                 Renk Seç
-                 <div class="selection-counter">0 seçildi</div>
-             </div>
-             <div class="color-palette-items">
-                 <div class="color-item me" data-color="me" data-tooltip="Me/Ame Actions"></div>
-                 <div class="color-item ame" data-color="ame" data-tooltip="Me/Ame Actions"></div>
-                 <div class="color-item darkgrey" data-color="darkgrey" data-tooltip="Lower Voice"></div>
-                 <div class="color-item grey" data-color="grey" data-tooltip="Low Voice"></div>
-                 <div class="color-item lightgrey" data-color="lightgrey" data-tooltip="Normal Text"></div>
-                 <div class="color-item death" data-color="death" data-tooltip="Death/Failures"></div>
-                 <div class="color-item yellow" data-color="yellow" data-tooltip="Important Info"></div>
-                 <div class="color-item green" data-color="green" data-tooltip="Success"></div>
-                 <div class="color-item orange" data-color="orange" data-tooltip="Warnings"></div>
-                 <div class="color-item blue" data-color="blue" data-tooltip="Info"></div>
-                 <div class="color-item white" data-color="white" data-tooltip="Normal Text"></div>
-                 <div class="color-item radioColor" data-color="radioColor" data-tooltip="Radio (Your Channel)"></div>
-                 <div class="color-item radioColor2" data-color="radioColor2" data-tooltip="Radio (Other Channel)"></div>
-                 <div class="color-item depColor" data-color="depColor" data-tooltip="Department"></div>
-                 <div class="color-item vesseltraffic" data-color="vesseltraffic" data-tooltip="Vessel Traffic"></div>
-                 <div class="color-item toyou" data-color="toyou" data-tooltip="Directed at You [!]"></div>
-             </div>
-     </div>
+                <!-- Censor character (Secondary = Utility) -->
+                <button id="censorCharButton" class="button secondary censor-char-button"
+                  aria-label="Copy censor character" title="Copy censor character">÷</button>
 
-    <!-- Donate choice modal -->
-    <div id="donateModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
-      <div style="background: #1a1d23; padding: 24px; border-radius: 0; max-width: 450px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin: auto;">
-        <h3 style="margin-top: 0; margin-bottom: 16px; color: #f1f1f1; font-size: 18px; font-weight: 600;">Support Development</h3>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-          <iframe id='kofiframe' src='https://ko-fi.com/kthedev/?hidefeed=true&widget=true&embed=true&preview=true' style='border:none;width:100%;padding:4px;background:#f9f9f9;' height='712' title='kthedev'></iframe>
-          <button id="closeDonateModal" class="button secondary" style="width: 100%; border-radius: 0; margin-top: 4px;">Kapat</button>
+                <!-- Censor style toggle (Secondary = Utility) -->
+                <button id="toggleCensorStyle" class="button secondary" aria-label="Toggle censor style">
+                  <span class="censor-text">Sansür: Kaldır</span>
+                </button>
+
+                <!-- Font toggle (Secondary = Utility) -->
+                <button id="toggleFont" class="button secondary" aria-label="Toggle font">
+                  <span class="font-text">Arial</span>
+                </button>
+
+                <!-- Donate (Gray = Neutral/External) -->
+                <button id="donateBtn" class="button" aria-label="Donate">Bağış</button>
+
+                <!-- Discord (Discord Brand Color) -->
+                <!-- <a href="https://discord.gg/V8jQJrDXxF" target="_blank" rel="noopener noreferrer" class="button" aria-label="Join Discord" style="background-color: #5865F2; color: #ffffff; text-decoration: none;">Discord</a> -->
+
+                <!-- Overlay controls (only visible in overlay mode) -->
+                <div class="button info overlay-control button-hidden" id="textPaddingControl">
+                  <input type="number" id="textPaddingHorizontal" min="0" max="200" value="0" step="5"
+                    style="width: 60px; height: auto; margin: 0; padding: 0; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center;"
+                    title="Horizontal padding (px)">
+                  <span style="opacity: 0.7;">×</span>
+                  <input type="number" id="textPaddingVertical" min="0" max="200" value="0" step="5"
+                    style="width: 60px; height: auto; margin: 0; padding: 0; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center;"
+                    title="Vertical padding (px)">
+                  <span style="opacity: 0.7; font-size: 12px;">px</span>
+                </div>
+                <div class="button warning overlay-control button-hidden" id="exportDimensionsControl">
+                  <input type="number" id="exportWidth" min="100" max="7680" value="1600" step="1"
+                    style="width: 70px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;"
+                    title="Export width (px)">
+                  <span style="opacity: 0.7;">×</span>
+                  <input type="number" id="exportHeight" min="100" max="4320" value="1200" step="1"
+                    style="width: 70px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;"
+                    title="Export height (px)">
+                  <span style="opacity: 0.7; font-size: 12px;">px</span>
+                  <span style="opacity: 0.5; margin: 0 4px;">|</span>
+                  <input type="number" id="exportPPI" min="72" max="600" value="96" step="1"
+                    style="width: 60px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;"
+                    title="Export PPI">
+                  <span style="opacity: 0.7; font-size: 12px;">PPI</span>
+                </div>
+
+                <!-- Clear image (Red = Alert/Remove) - Only visible in overlay mode -->
+                <button id="clearImageBtn" class="button alert overlay-control button-hidden" type="button"
+                  title="Remove image">
+                  <i class="fas fa-times" aria-hidden="true"></i> Görüntüyü Temizle
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="output" class="output" role="region" aria-label="Formatted chat log output"></div>
+
+          <!-- Image Overlay Drop Zone -->
+          <div id="imageOverlaySection" style="display: none;">
+            <input type="file" id="imageFileInput" accept="image/*" style="display: none;"
+              aria-label="Upload screenshot">
+
+            <div id="imageDropzone" class="image-dropzone">
+              <div class="dropzone-instructions">
+                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                <p>Ekran görüntünüzü buraya bırakın</p>
+                <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için tıklayın</p>
+              </div>
+            </div>
+
+            <!-- Overlay Info -->
+            <div class="overlay-info"
+              style="max-width: 900px; margin: 10px auto; text-align: center; color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.6;">
+              <p style="margin: 5px 0;"><i class="fas fa-mouse" aria-hidden="true"></i> <strong>Görüntü:</strong>
+                Yüklemek için çift tıklayın | Taşımak için tıklayıp sürükleyin | Yakınlaştırmak için kaydırın</p>
+              <p style="margin: 5px 0; font-size: 12px; color: rgba(255,255,255,0.5);">
+                <i class="fas fa-info-circle" aria-hidden="true"></i> İndirilen görüntü, önizlemede gördüğünüzle tam
+                olarak aynı şekilde gösterilir |
+                Ayarlar otomatik kaydedilir | Tuval, dışa aktarma boyutlarınıza göre yeniden boyutlandırılır
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+  </main>
 
-    <script>
-      // Donate modal handler
-      document.getElementById('donateBtn').addEventListener('click', function() {
-        document.getElementById('donateModal').style.display = 'flex';
-      });
-      document.getElementById('closeDonateModal').addEventListener('click', function() {
-        document.getElementById('donateModal').style.display = 'none';
-      });
-      document.getElementById('donateModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-          this.style.display = 'none';
-        }
-      });
-    </script>
+  <!-- Third-party scripts with fallback handling -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/4.0.0-beta.2/jquery.min.js"
+    integrity="sha512-JobWAqYk5CSjWuVV3mxgS+MmccJqkrBaDhk8SKS1BW+71dJ9gzascwzW85UwGhxiSyR7Pxhu50k+Nl3+o5I49A=="
+    crossorigin="anonymous" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.9.0/js/foundation.min.js"
+    integrity="sha512-P4f0g0iAkyfUF2V2VX8dxkoBxPLULaV2TM8HQGXFRb75AzLVAf+sn+MRweu/C81rL2JaYutbY6cWAbmwJbtOcg=="
+    crossorigin="anonymous" defer onerror="console.warn('Foundation.js failed to load from CDN')"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/3.5.0/dom-to-image-more.min.js"
+    integrity="sha512-ECdKPIiMdaihsCUpvDKFdrwwERCqyqojP0H1SV9J9k6/80yAzfHzhcA5xaexoNMR9JZSJ7gmzMkV/08Ie1asmw=="
+    crossorigin="anonymous" defer onerror="console.warn('dom-to-image-more.js failed to load from CDN')"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"
+    integrity="sha512-Qlv6VSKh1gDKGoJbnyA5RMXYcvnpIqhO++MhIM2fStMcGT9i2T//tSwYFlcyoRRDcDZ+TYHpH8azBBCyhpSeqw=="
+    crossorigin="anonymous" defer onerror="console.warn('FileSaver.js failed to load from CDN')"></script>
 
-    <script src="js/init.js?v=1.1.0" defer></script>
+  <!-- Application scripts -->
+  <script src="js/image-dropzone.js?v=1.1.0" defer></script>
+  <script src="js/image-overlay.js?v=1.1.0" defer></script>
+  <script src="js/image-renderer.js?v=1.1.0" defer></script>
+  <script src="js/chat.js?v=1.1.0" defer></script>
+  <script src="color-palette/color-palette.js?v=1.1.0" defer></script>
+  <script src="js/chatlog-parser.js?v=1.1.0" defer></script>
+  <script src="js/app.js?v=1.1.0" defer></script>
 
-    <!-- Speed Insights removed - migrated to Cloudflare Pages -->
- </body>
+  <!-- History panel -->
+  <div class="history-tab" role="button" tabindex="0" aria-label="Open chat history" aria-expanded="false"
+    aria-controls="historyPanel">
+    <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+  </div>
+
+  <div id="historyPanel" class="history-panel" role="dialog" aria-label="Chat history" aria-hidden="true">
+    <div class="history-header">
+      <h3>Sohbet Kaydı Geçmişi</h3>
+      <button id="clearHistoryBtn" class="clear-history-btn" aria-label="Clear all history">Tümünü Temizle</button>
+    </div>
+    <div class="history-items" role="list"></div>
+    <div class="history-loading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Sohbet kaydı geçmişiniz yükleniyor...</p>
+    </div>
+    <div class="history-empty">
+      <p>Henüz sohbet kaydı kaydedilmedi</p>
+      <p style="font-size: 14px; opacity: 0.8;">İşlenmiş sohbet kayıtlarınız burada kolay erişim için görünecektir</p>
+    </div>
+  </div>
+
+  <!-- Color Palette -->
+  <div id="colorPalette" class="color-palette" style="display: none;">
+    <div class="color-palette-header">
+      Renk Seç
+      <div class="selection-counter">0 seçildi</div>
+    </div>
+    <div class="color-palette-items">
+      <div class="color-item me" data-color="me" data-tooltip="Me/Ame Actions"></div>
+      <div class="color-item ame" data-color="ame" data-tooltip="Me/Ame Actions"></div>
+      <div class="color-item darkgrey" data-color="darkgrey" data-tooltip="Lower Voice"></div>
+      <div class="color-item grey" data-color="grey" data-tooltip="Low Voice"></div>
+      <div class="color-item lightgrey" data-color="lightgrey" data-tooltip="Normal Text"></div>
+      <div class="color-item death" data-color="death" data-tooltip="Death/Failures"></div>
+      <div class="color-item yellow" data-color="yellow" data-tooltip="Important Info"></div>
+      <div class="color-item green" data-color="green" data-tooltip="Success"></div>
+      <div class="color-item orange" data-color="orange" data-tooltip="Warnings"></div>
+      <div class="color-item blue" data-color="blue" data-tooltip="Info"></div>
+      <div class="color-item white" data-color="white" data-tooltip="Normal Text"></div>
+      <div class="color-item radioColor" data-color="radioColor" data-tooltip="Radio (Your Channel)"></div>
+      <div class="color-item radioColor2" data-color="radioColor2" data-tooltip="Radio (Other Channel)"></div>
+      <div class="color-item depColor" data-color="depColor" data-tooltip="Department"></div>
+      <div class="color-item vesseltraffic" data-color="vesseltraffic" data-tooltip="Vessel Traffic"></div>
+      <div class="color-item toyou" data-color="toyou" data-tooltip="Directed at You [!]"></div>
+    </div>
+  </div>
+
+  <!-- Donate choice modal -->
+  <div id="donateModal"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
+    <div
+      style="background: #1a1d23; padding: 24px; border-radius: 0; max-width: 450px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin: auto;">
+      <h3 style="margin-top: 0; margin-bottom: 16px; color: #f1f1f1; font-size: 18px; font-weight: 600;">Support
+        Development</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <iframe id='kofiframe' src='https://ko-fi.com/kthedev/?hidefeed=true&widget=true&embed=true&preview=true'
+          style='border:none;width:100%;padding:4px;background:#f9f9f9;' height='712' title='kthedev'></iframe>
+        <button id="closeDonateModal" class="button secondary"
+          style="width: 100%; border-radius: 0; margin-top: 4px;">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Donate modal handler
+    document.getElementById('donateBtn').addEventListener('click', function () {
+      document.getElementById('donateModal').style.display = 'flex';
+    });
+    document.getElementById('closeDonateModal').addEventListener('click', function () {
+      document.getElementById('donateModal').style.display = 'none';
+    });
+    document.getElementById('donateModal').addEventListener('click', function (e) {
+      if (e.target === this) {
+        this.style.display = 'none';
+      }
+    });
+  </script>
+
+  <script src="js/init.js?v=1.1.0" defer></script>
+
+  <!-- Speed Insights removed - migrated to Cloudflare Pages -->
+</body>
+
 </html>

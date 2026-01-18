@@ -272,7 +272,7 @@ $(document).ready(function () {
         return;
       }
 
-      if (line.includes("[BİLGİ] You can also use /anim list or /anim2 for modern, 'advanced' list for quicker and better animation searching! This information will only show once per character instance.")) {
+      if (line.includes("[BİLGİ] Ayrıca /anim list veya /anim2 ile modern ve gelişmiş listeyle daha hızlı ve daha iyi animasyon araması yapabilirsin! Bu bilgi sadece bir kez gösterilecektir.")) {
         return;
       }
 
@@ -283,8 +283,14 @@ $(document).ready(function () {
       // Skip vehicle teleport info
       if (
         line.includes(
-          'You may now use /vget, your vehicle will be automatically teleported on you.'
+          'Artık /vget komutunu kullanabilirsin.'
         )
+      ) {
+        return;
+      }
+
+      if (
+        line.includes('Oyuncu(lar) bulunamadı.')
       ) {
         return;
       }
@@ -292,7 +298,7 @@ $(document).ready(function () {
       // Skip fixveh warning
       if (
         line.includes(
-          '((ANY MISUSAGE OF /FIXVEH IS BANNABLE, YOU MAY ONLY USE IT AFTER A BUG THAT LEFT YOU WITHOUT VEHICLES OOCLY.))'
+          '(( BU KOMUTUN YANLIŞ KULLANIMI SONUCUNDA YASAKLANIRSIN. ))'
         )
       ) {
         return;
@@ -308,12 +314,12 @@ $(document).ready(function () {
       }
 
       // Skip animation error
-      if (line.includes('[ERROR] That animation was not found.')) {
+      if (line.includes('[HATA] Belirtilen animasyon bulunamadı.')) {
         return;
       }
 
       // Skip phone locked error
-      if (line.includes('[ERROR] This phone is locked.')) {
+      if (line.includes('[HATA] Bu telefon kilitli.')) {
         return;
       }
 
@@ -328,6 +334,8 @@ $(document).ready(function () {
 
       const div = document.createElement('div');
       div.className = 'generated';
+      // Store original line text for stable color override matching
+      div.setAttribute('data-source-line', line);
 
       // Check if this is a [!] line first, before any other processing
       if (line.startsWith('[!]')) {
@@ -416,27 +424,75 @@ $(document).ready(function () {
   }
 
   // Save user-applied colors to the colorOverrides Map
+  // Uses source line (from textarea) + word content + position for stable matching
   function saveColorOverrides() {
-    $output.find('.colorable[data-word-id]').each(function () {
-      const $el = $(this);
-      const wordId = $el.attr('data-word-id');
-      // Get color class (exclude 'colorable' and 'unrecognized')
-      const classes = $el.attr('class') || '';
-      const colorClass = classes.split(/\s+/).find(cls =>
-        cls !== 'colorable' && cls !== 'unrecognized' && cls !== 'selected-for-coloring' &&
-        ['me', 'ame', 'darkgrey', 'grey', 'lightgrey', 'death', 'yellow', 'green', 'orange', 'blue', 'white', 'radioColor', 'radioColor2', 'depColor', 'vesseltraffic', 'toyou'].includes(cls)
-      );
-      if (wordId && colorClass) {
-        colorOverrides.set(wordId, colorClass);
-      }
+    // Group by parent .generated div to get original line from data-source-line
+    $output.find('.generated[data-source-line]').each(function () {
+      const $generatedDiv = $(this);
+      // Get the ORIGINAL source line text (from textarea, stored in data attribute)
+      const sourceLine = $generatedDiv.attr('data-source-line');
+      if (!sourceLine) return;
+
+      // Track word positions within this line
+      let wordPositionInLine = 0;
+
+      // Find ALL .colorable elements, not just ones with data-word-id
+      $generatedDiv.find('.colorable').each(function () {
+        const $el = $(this);
+        const wordContent = $el.text().trim();
+        if (!wordContent) return;
+
+        // Get color class (exclude 'colorable' and 'unrecognized')
+        const classes = $el.attr('class') || '';
+        const colorClass = classes.split(/\s+/).find(cls =>
+          cls !== 'colorable' && cls !== 'unrecognized' && cls !== 'selected-for-coloring' &&
+          ['me', 'ame', 'darkgrey', 'grey', 'lightgrey', 'death', 'yellow', 'green', 'orange', 'blue', 'white', 'radioColor', 'radioColor2', 'depColor', 'vesseltraffic', 'toyou'].includes(cls)
+        );
+
+        if (colorClass) {
+          // Create a stable key based on: sourceLine|wordContent|position
+          // sourceLine is the original textarea line, so it won't change when other lines change
+          const stableKey = `${sourceLine}|${wordContent}|${wordPositionInLine}`;
+          colorOverrides.set(stableKey, colorClass);
+        }
+
+        wordPositionInLine++;
+      });
     });
   }
 
   // Restore user-applied colors from the colorOverrides Map
+  // Matches elements using source line (from data-source-line attribute)
   function restoreColorOverrides() {
-    colorOverrides.forEach((colorClass, wordId) => {
-      const $el = $output.find(`[data-word-id="${wordId}"]`);
-      if ($el.length) {
+    // Build a lookup for all colorable elements by their stable keys
+    const elementsByKey = new Map();
+
+    $output.find('.generated[data-source-line]').each(function () {
+      const $generatedDiv = $(this);
+      // Get the ORIGINAL source line text (from textarea, stored in data attribute)
+      const sourceLine = $generatedDiv.attr('data-source-line');
+      if (!sourceLine) return;
+
+      let wordPositionInLine = 0;
+
+      // Find ALL .colorable elements, not just ones with data-word-id
+      $generatedDiv.find('.colorable').each(function () {
+        const $el = $(this);
+        const wordContent = $el.text().trim();
+        if (!wordContent) return;
+
+        // Use the same key format as saveColorOverrides
+        const stableKey = `${sourceLine}|${wordContent}|${wordPositionInLine}`;
+        elementsByKey.set(stableKey, $el);
+
+        wordPositionInLine++;
+      });
+    });
+
+    // Apply saved color overrides
+    colorOverrides.forEach((colorClass, stableKey) => {
+      const $el = elementsByKey.get(stableKey);
+      if ($el && $el.length) {
         // Remove default color classes and apply user override
         $el.removeClass('me ame darkgrey grey lightgrey death yellow green orange blue white radioColor radioColor2 depColor vesseltraffic toyou');
         $el.addClass(colorClass);
@@ -841,7 +897,8 @@ $(document).ready(function () {
       !lowerLine.includes('fısıldar') &&
       !lowerLine.includes('(telefon)') &&
       !lowerLine.includes('(hoparlör)') &&
-      !lowerLine.includes('kişisinden mesaj:')
+      !lowerLine.includes('kişisinden mesaj:') &&
+      !lowerLine.includes('kişisine mesaj gönderildi:')
     ) {
       return formatSaysLine(line, currentCharacterName);
     }
@@ -960,6 +1017,10 @@ $(document).ready(function () {
 
     if (line.includes('[POLICE MDC]')) {
       return formatPoliceMDC(line);
+    }
+
+    if (/\([^\)]+\) [^:]+ kişisine mesaj gönderildi: .+/.test(line)) {
+      return formatOutgoingSmsMessage(line);
     }
 
     if (/\([^\)]+\) [^:]+ kişisinden mesaj: .+/.test(line)) {
@@ -1472,6 +1533,26 @@ $(document).ready(function () {
     // Fallback: if pattern doesn't match, just remove brackets from the whole line
     line = line.replace(/[\[\]]/g, '');
     return wrapSpan('yellow', line);
+  }
+
+  function formatOutgoingSmsMessage(line) {
+    // Match the pattern: (phone) Message from sender: content
+    const match = line.match(/^(\([^)]+\))\s+([^\s]+)\s+kişisine mesaj gönderildi:\s*(.+)$/);
+
+    if (match) {
+      const phone = match[1];
+      const sender = match[2];
+      const message = match[3];
+
+      // Remove brackets only from the phone identifier, preserve them in the message
+      const cleanPhone = phone.replace(/[\[\]]/g, '');
+
+      return wrapSpan('orange', `${cleanPhone} ${sender} kişisine mesaj gönderildi: ${message}`);
+    }
+
+    // Fallback: if pattern doesn't match, just remove brackets from the whole line
+    line = line.replace(/[\[\]]/g, '');
+    return wrapSpan('orange', line);
   }
 
   function formatPhoneSet(line) {
