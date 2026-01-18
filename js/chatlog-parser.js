@@ -14,6 +14,9 @@ $(document).ready(function () {
   // Font style: 'arial' or 'trebuchet'
   let fontStyle = localStorage.getItem('chatlogFontStyle') || 'arial';
 
+  // Contrast style: 'off', 'low', 'medium', 'high'
+  let contrastStyle = localStorage.getItem('chatlogContrastStyle') || 'off';
+
   // Store user color overrides: Map<wordId, colorClass>
   // This preserves user-applied colors across re-renders
   const colorOverrides = new Map();
@@ -25,6 +28,7 @@ $(document).ready(function () {
   const $censorCharButton = $('#censorCharButton');
   const $toggleCensorStyleBtn = $('#toggleCensorStyle');
   const $toggleFontBtn = $('#toggleFont');
+  const $toggleContrastBtn = $('#toggleContrast');
   const $lineLengthInput = $('#lineLengthInput');
   const $characterNameInput = $('#characterNameInput');
 
@@ -33,6 +37,7 @@ $(document).ready(function () {
   $censorCharButton.click(copyCensorChar);
   $toggleCensorStyleBtn.click(toggleCensorStyle);
   $toggleFontBtn.click(toggleFontStyle);
+  $toggleContrastBtn.click(toggleContrastStyle);
   $lineLengthInput.on('input', processOutput);
   $characterNameInput.on('input', applyFilter);
   // Use CONFIG if available, fallback to 200ms
@@ -43,6 +48,8 @@ $(document).ready(function () {
   updateCensorStyleUI();
   updateFontStyleUI();
   applyFontStyle();
+  updateContrastStyleUI();
+  applyContrastStyle();
   updateBackgroundUI();
 
   function updateBackgroundUI() {
@@ -118,6 +125,45 @@ $(document).ready(function () {
       $output.removeClass('font-trebuchet');
     }
   }
+
+  // Toggle contrast style: off -> low -> medium -> high -> off
+  function toggleContrastStyle() {
+    const styles = ['off', 'low', 'medium', 'high'];
+    const currentIndex = styles.indexOf(contrastStyle);
+    contrastStyle = styles[(currentIndex + 1) % styles.length];
+    localStorage.setItem('chatlogContrastStyle', contrastStyle);
+    updateContrastStyleUI();
+    applyContrastStyle();
+  }
+
+  function updateContrastStyleUI() {
+    const labels = {
+      'off': 'Kontrast: Kapalı',
+      'low': 'Kontrast: Düşük',
+      'medium': 'Kontrast: Orta',
+      'high': 'Kontrast: Yüksek'
+    };
+    $toggleContrastBtn.find('.contrast-text').text(labels[contrastStyle]);
+    $toggleContrastBtn.toggleClass('active', contrastStyle !== 'off');
+  }
+
+  function applyContrastStyle() {
+    // Remove all contrast classes first
+    $output.removeClass('contrast-low contrast-medium contrast-high');
+
+    // Apply the selected contrast class
+    if (contrastStyle !== 'off') {
+      $output.addClass('contrast-' + contrastStyle);
+    }
+
+    // Store for other modules
+    ChatlogParser.contrastStyle = contrastStyle;
+  }
+
+  // Expose contrast style getter for other modules
+  ChatlogParser.getContrastStyle = function () {
+    return contrastStyle;
+  };
 
   // Expose censor style getter for other modules
   ChatlogParser.getCensorStyle = function () {
