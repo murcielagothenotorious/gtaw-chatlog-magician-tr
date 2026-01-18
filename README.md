@@ -1,12 +1,12 @@
 <section class="bg-gray-900 text-white p-6 rounded-xl shadow-2xl max-w-3xl mx-auto mt-10">
   <h1 id="chatlog-magician-for-gta-world" class="text-4xl font-extrabold text-center text-blue-400 drop-shadow-md mb-4">
-    Chatlog Magician for GTA World
+    Chatlog Magician for GTA World Türkiye
   </h1>
   <p class="text-lg text-gray-300 text-center mb-6">
     This is a <strong class="text-white font-semibold">remake</strong> of the 
     <a href="https://github.com/ulasbayraktar/chatlog-magician" class="text-blue-500 hover:text-blue-300 underline transition-all duration-300">
       original Chatlog Magician
-    </a> project, which converts SA-MP logs into images—making screenshot editing easier.
+    </a> project, which converts SA-MP logs into images—making screenshot editing easier. This is also a localized fork of the <a href="https://github.com/aayorishy/gtaw-chatlog-magician" class="text-blue-500 hover:text-blue-300 underline transition-all duration-300">GTAW Chatlog Magician</a> project, adapted for GTA World Türkiye.
   </p>
   <div class="border-t border-purple-500 mb-4"></div>
   <h4 id="credits" class="text-2xl font-semibold text-purple-300 border-b border-purple-500 pb-2 mb-4">
@@ -27,6 +27,11 @@
       <a href="https://github.com/blancodagoat" class="text-blue-400 hover:text-blue-200 font-medium">
         @blanco
       </a> — Contributed enhancements and performance optimizations
+    </li>
+    <li>
+      <a href="https://github.com/murcielagothenotorious" class="text-blue-400 hover:text-blue-200 font-medium">
+        @murcielagothenotorious
+      </a> — Adapted the site for GTA World Türkiye, providing localized support and specific formatting for Turkish players
     </li>
   </ul>
 </section>
