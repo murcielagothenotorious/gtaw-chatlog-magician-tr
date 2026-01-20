@@ -63,15 +63,8 @@ export default async (req, res) => {
   }
 
   try {
-    // Check if webhook URL is configured
+    // Get Discord webhook (optional)
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-    if (!webhookUrl) {
-      console.error('❌ DISCORD_WEBHOOK_URL environment variable is not set');
-      return res.status(500).json({ 
-        error: 'Webhook not configured',
-        message: 'DISCORD_WEBHOOK_URL environment variable is missing'
-      });
-    }
 
     // Parse request body
     let body;
@@ -95,7 +88,7 @@ export default async (req, res) => {
       platform,
       errorCount,
       warningCount,
-      errors,
+      errors: errorListFromBody,
       performance,
       fullReport
     } = body;
@@ -113,15 +106,13 @@ export default async (req, res) => {
     const safeWarningCount = Number.isFinite(warningCount) ? Math.min(warningCount, 1000) : 0;
     const safeUA = (typeof userAgent === 'string' ? userAgent : '').slice(0, 256);
     const safePlatform = (typeof platform === 'string' ? platform : '').slice(0, 64);
-    const safeErrors = Array.isArray(errors) ? errors.slice(0, 10).map(e => ({
+    const safeErrors = Array.isArray(errorListFromBody) ? errorListFromBody.slice(0, 10).map(e => ({
       message: (e && typeof e.message === 'string' ? e.message.slice(0, 300) : ''),
       stack: (e && typeof e.stack === 'string' ? e.stack.slice(0, 500) : undefined)
     })) : [];
     const safePerf = performance && typeof performance === 'object' ? performance : undefined;
     // Discord content field has 2000 char limit, leave room for markdown formatting
     const truncatedReport = fullReport.slice(0, 1800);
-
-    const developerEmail = process.env.DEVELOPER_EMAIL;
 
     // Send reports (try Discord first, then email)
     let discordSent = false;
