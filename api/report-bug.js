@@ -244,7 +244,18 @@ export default async (req, res) => {
           }
         });
 
-        // Build HTML email
+        // Build HTML email with safe escaping
+        const escapeHtml = (text) => {
+          const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+          };
+          return String(text).replace(/[&<>"']/g, m => map[m]);
+        };
+
         const htmlEmail = `
 <html>
   <head>
@@ -270,9 +281,9 @@ export default async (req, res) => {
       <div class="section">
         <h3>📋 Session Information</h3>
         <div class="info">
-          <strong>Session ID:</strong> <code>${sessionId}</code><br>
-          <strong>Browser:</strong> ${(safeUA || 'Unknown').split(' ').pop() || 'Unknown'}<br>
-          <strong>Platform:</strong> ${safePlatform || 'Unknown'}<br>
+          <strong>Session ID:</strong> <code>${escapeHtml(sessionId)}</code><br>
+          <strong>Browser:</strong> ${escapeHtml((safeUA || 'Unknown').split(' ').pop() || 'Unknown')}<br>
+          <strong>Platform:</strong> ${escapeHtml(safePlatform || 'Unknown')}<br>
           <strong>Time:</strong> ${new Date().toISOString()}
         </div>
       </div>
@@ -300,8 +311,8 @@ export default async (req, res) => {
         <h3>❌ Recent Errors</h3>
         ${safeErrors.slice(0, 5).map((err, i) => `
         <div class="error">
-          <strong>${i + 1}. ${err.message}</strong>
-          ${err.stack ? `<pre style="background: white; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;"><code>${err.stack.slice(0, 300)}</code></pre>` : ''}
+          <strong>${i + 1}. ${escapeHtml(err.message)}</strong>
+          ${err.stack ? `<pre style="background: white; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;"><code>${escapeHtml(err.stack.slice(0, 300))}</code></pre>` : ''}
         </div>
         `).join('')}
       </div>
@@ -309,7 +320,7 @@ export default async (req, res) => {
 
       <div class="section">
         <h3>📝 Full Report</h3>
-        <pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #ddd;">${truncatedReport}</pre>
+        <pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #ddd;">${escapeHtml(truncatedReport)}</pre>
       </div>
 
       <div class="footer">
@@ -332,14 +343,18 @@ export default async (req, res) => {
         const emailResponse = await transporter.sendMail(mailOptions);
 
         if (emailResponse.messageId) {
-          console.log('✅ Successfully sent bug report via Gmail');
+          console.log('✅ Successfully sent bug report via Gmail', { messageId: emailResponse.messageId });
           emailSent = true;
         } else {
           console.error('❌ Email sending failed - no message ID');
           errors.push('Email sending failed - no message ID');
         }
       } catch (emailError) {
-        console.error('❌ Error sending email:', emailError.message);
+        console.error('❌ Error sending email:', {
+          message: emailError.message,
+          code: emailError.code,
+          command: emailError.command
+        });
         errors.push(`Email error: ${emailError.message}`);
       }
     } else if (!gmailUser || !gmailAppPassword || !emailTo) {
@@ -371,7 +386,9 @@ export default async (req, res) => {
     console.error('❌ Uncaught error in bug report handler:', {
       message: error.message,
       stack: error.stack,
-      name: error.name
+      name: error.name,
+      gmailConfigured: !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD && process.env.REPORT_EMAIL_TO),
+      discordConfigured: !!process.env.DISCORD_WEBHOOK_URL
     });
     return res.status(500).json({ 
       error: 'Internal server error',
