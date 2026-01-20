@@ -1,18 +1,35 @@
 /**
  * Vercel Serverless Function - Bug Report API
- * Sends bug reports to Discord via webhook
+ * Sends bug reports to Discord webhook AND/OR Email (Gmail)
  * 
  * Environment Variables Required:
- * - DISCORD_WEBHOOK_URL: Your Discord webhook URL
+ * - DISCORD_WEBHOOK_URL: Your Discord webhook URL (optional but recommended)
  * 
- * Environment Variables Optional:
- * - DEVELOPER_EMAIL: Fallback email for notifications
+ * Environment Variables for Email (Gmail + Nodemailer):
+ * - GMAIL_USER: Your Gmail address (e.g., your_email@gmail.com)
+ * - GMAIL_APP_PASSWORD: Gmail App Password (NOT your main password!)
+ * - REPORT_EMAIL_TO: Recipient email for bug reports
  * 
  * Setup in Vercel Dashboard:
  * 1. Go to project Settings → Environment Variables
- * 2. Add: DISCORD_WEBHOOK_URL = your_webhook_url
- * 3. Redeploy the project
+ * 2. Add: GMAIL_USER = your_email@gmail.com
+ * 3. Add: GMAIL_APP_PASSWORD = your_app_password (from Gmail)
+ * 4. Add: REPORT_EMAIL_TO = your_email@gmail.com (usually same as GMAIL_USER)
+ * 5. Add: DISCORD_WEBHOOK_URL = your_webhook_url (optional)
+ * 6. Redeploy the project
+ * 
+ * Gmail Setup Instructions:
+ * 1. Enable 2-Factor Authentication on your Gmail account
+ * 2. Go to https://myaccount.google.com/apppasswords
+ * 3. Select "Mail" and "Windows Computer" (or other device)
+ * 4. Google will generate a 16-character password
+ * 5. Copy that password to GMAIL_APP_PASSWORD in Vercel
+ * 
+ * Install dependency:
+ * npm install nodemailer
  */
+
+import nodemailer from 'nodemailer';
 
 // Naive in-memory rate limiter (best-effort within a single function instance)
 const RATE_WINDOW_MS = 60_000; // 1 minute
@@ -106,7 +123,10 @@ export default async (req, res) => {
 
     const developerEmail = process.env.DEVELOPER_EMAIL;
 
-    // Try Discord first
+    // Send reports (try Discord first, then email)
+    let discordSent = false;
+    let emailSent = false;
+    let errors = [];
     if (webhookUrl) {
       console.log(`📤 Sending bug report for session: ${sessionId}`);
       
@@ -193,11 +213,7 @@ export default async (req, res) => {
 
         if (discordResponse.ok) {
           console.log('✅ Successfully sent bug report to Discord');
-          return res.status(200).json({
-            success: true,
-            message: 'Report sent to Discord',
-            method: 'discord'
-          });
+          discordSent = true;
         } else {
           const errorText = await discordResponse.text().catch(() => 'Unable to read error');
           console.error('❌ Discord webhook failed:', {
@@ -208,13 +224,7 @@ export default async (req, res) => {
             embedFieldsCount: embed.fields.length,
             payloadSize: JSON.stringify(payload).length
           });
-          
-          // Return the Discord error for debugging
-          return res.status(discordResponse.status).json({
-            error: 'Discord webhook failed',
-            discordStatus: discordResponse.status,
-            discordError: errorText
-          });
+          errors.push(`Discord failed: ${discordResponse.status}`);
         }
       } catch (fetchError) {
         console.error('❌ Error sending to Discord:', fetchError.message);
@@ -225,11 +235,145 @@ export default async (req, res) => {
       }
     }
 
-    // If we get here, Discord sending failed or wasn't configured
-    console.error('❌ No reporting method succeeded');
-    return res.status(500).json({ 
-      error: 'No reporting method configured or all failed',
-      fallback: 'manual'
+    // Try Email via Gmail + Nodemailer
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+    const emailTo = process.env.REPORT_EMAIL_TO;
+
+    if (gmailUser && gmailAppPassword && emailTo) {
+      try {
+        console.log('📧 Sending bug report via Gmail...');
+        
+        // Create transporter
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: gmailUser,
+            pass: gmailAppPassword, // Use App Password, not your main Gmail password!
+          }
+        });
+
+        // Build HTML email
+        const htmlEmail = `
+<html>
+  <head>
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+      .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+      .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+      .section { margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 5px; }
+      .section h3 { margin-top: 0; color: #667eea; }
+      .error { background: #ffebee; border-left: 4px solid #ff5252; padding: 15px; margin: 10px 0; border-radius: 3px; }
+      .info { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin: 10px 0; border-radius: 3px; }
+      code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; }
+      .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #999; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🐛 Bug Report - GTAW Chatlog Magician</h1>
+        <p>${safeErrorCount > 0 ? `⚠️ ${safeErrorCount} error(s) detected` : 'User feedback'}</p>
+      </div>
+
+      <div class="section">
+        <h3>📋 Session Information</h3>
+        <div class="info">
+          <strong>Session ID:</strong> <code>${sessionId}</code><br>
+          <strong>Browser:</strong> ${(safeUA || 'Unknown').split(' ').pop() || 'Unknown'}<br>
+          <strong>Platform:</strong> ${safePlatform || 'Unknown'}<br>
+          <strong>Time:</strong> ${new Date().toISOString()}
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>📊 Error Summary</h3>
+        <div class="info">
+          <strong>Total Errors:</strong> ${safeErrorCount || 0}<br>
+          <strong>Total Warnings:</strong> ${safeWarningCount || 0}
+        </div>
+      </div>
+
+      ${safePerf?.timing ? `
+      <div class="section">
+        <h3>⚡ Performance</h3>
+        <div class="info">
+          <strong>Load Time:</strong> ${safePerf.timing.loadTime}ms<br>
+          <strong>Memory Usage:</strong> ${safePerf.memory?.usedJSHeapSize || 'N/A'}
+        </div>
+      </div>
+      ` : ''}
+
+      ${safeErrors && safeErrors.length > 0 ? `
+      <div class="section">
+        <h3>❌ Recent Errors</h3>
+        ${safeErrors.slice(0, 5).map((err, i) => `
+        <div class="error">
+          <strong>${i + 1}. ${err.message}</strong>
+          ${err.stack ? `<pre style="background: white; padding: 10px; border-radius: 3px; overflow-x: auto; font-size: 12px;"><code>${err.stack.slice(0, 300)}</code></pre>` : ''}
+        </div>
+        `).join('')}
+      </div>
+      ` : ''}
+
+      <div class="section">
+        <h3>📝 Full Report</h3>
+        <pre style="background: white; padding: 15px; border-radius: 5px; overflow-x: auto; border: 1px solid #ddd;">${truncatedReport}</pre>
+      </div>
+
+      <div class="footer">
+        <p>This is an automated bug report from GTAW Chatlog Magician. Please do not reply to this email.</p>
+      </div>
+    </div>
+  </body>
+</html>
+        `;
+
+        // Send email
+        const mailOptions = {
+          from: gmailUser,
+          to: emailTo,
+          subject: `🐛 Bug Report: ${safeErrorCount > 0 ? safeErrorCount + ' error(s)' : 'User feedback'} - ${sessionId}`,
+          html: htmlEmail,
+          text: `Bug Report from session ${sessionId}\n\nErrors: ${safeErrorCount}\nWarnings: ${safeWarningCount}\n\n${truncatedReport}`
+        };
+
+        const emailResponse = await transporter.sendMail(mailOptions);
+
+        if (emailResponse.messageId) {
+          console.log('✅ Successfully sent bug report via Gmail');
+          emailSent = true;
+        } else {
+          console.error('❌ Email sending failed - no message ID');
+          errors.push('Email sending failed - no message ID');
+        }
+      } catch (emailError) {
+        console.error('❌ Error sending email:', emailError.message);
+        errors.push(`Email error: ${emailError.message}`);
+      }
+    } else if (!gmailUser || !gmailAppPassword || !emailTo) {
+      console.warn('⚠️ Gmail configuration incomplete. Skipping email sending.');
+      if (!gmailUser) console.warn('  Missing: GMAIL_USER');
+      if (!gmailAppPassword) console.warn('  Missing: GMAIL_APP_PASSWORD');
+      if (!emailTo) console.warn('  Missing: REPORT_EMAIL_TO');
+    }
+
+    // Return results
+    if (discordSent || emailSent) {
+      return res.status(200).json({
+        success: true,
+        message: 'Report sent successfully',
+        methods: {
+          discord: discordSent,
+          email: emailSent
+        }
+      });
+    }
+
+    // If nothing was sent, return error
+    return res.status(500).json({
+      error: 'Failed to send report',
+      details: errors.length > 0 ? errors : 'No reporting methods configured'
     });
 
   } catch (error) {
