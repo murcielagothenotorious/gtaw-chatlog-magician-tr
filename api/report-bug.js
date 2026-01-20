@@ -1,11 +1,20 @@
 /**
- * DEPRECATED: This file is for Vercel. 
- * For Cloudflare Pages, use: functions/api/report-bug.js
+ * Vercel Serverless Function - Bug Report API
+ * Sends bug reports to Discord via webhook
  * 
- * This file is kept for reference but will not be used on Cloudflare Pages.
+ * Environment Variables Required:
+ * - DISCORD_WEBHOOK_URL: Your Discord webhook URL
+ * 
+ * Environment Variables Optional:
+ * - DEVELOPER_EMAIL: Fallback email for notifications
+ * 
+ * Setup in Vercel Dashboard:
+ * 1. Go to project Settings → Environment Variables
+ * 2. Add: DISCORD_WEBHOOK_URL = your_webhook_url
+ * 3. Redeploy the project
  */
 
-// naive in-memory rate limiter (best-effort within a single function instance)
+// Naive in-memory rate limiter (best-effort within a single function instance)
 const RATE_WINDOW_MS = 60_000; // 1 minute
 const RATE_MAX = 5;
 const requestLog = new Map(); // key -> [timestamps]
@@ -21,13 +30,8 @@ function allowRequest(key) {
 }
 
 export default async (req, res) => {
-  // Only allow POST requests
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  // CORS headers for your domain
-  res.setHeader('Access-Control-Allow-Origin', '*'); // Consider restricting to your domain in production
+  // CORS headers first
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
@@ -36,9 +40,34 @@ export default async (req, res) => {
     return res.status(200).end();
   }
 
+  // Only allow POST requests
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
-    // basic rate limit by session or IP
-    const key = (req.body && req.body.sessionId) || req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    // Check if webhook URL is configured
+    const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+    if (!webhookUrl) {
+      console.error('❌ DISCORD_WEBHOOK_URL environment variable is not set');
+      return res.status(500).json({ 
+        error: 'Webhook not configured',
+        message: 'DISCORD_WEBHOOK_URL environment variable is missing'
+      });
+    }
+
+    // Parse request body
+    let body;
+    try {
+      body = req.body || {};
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
+      return res.status(400).json({ error: 'Invalid JSON in request body' });
+    }
+
+    // Basic rate limit by session or IP
+    const clientIP = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+    const key = body?.sessionId || clientIP;
     if (!allowRequest(String(key))) {
       return res.status(429).json({ error: 'Too many reports. Please wait and try again.' });
     }
@@ -52,11 +81,14 @@ export default async (req, res) => {
       errors,
       performance,
       fullReport
-    } = req.body;
+    } = body;
 
     // Basic validation
-    if (typeof sessionId !== 'string' || typeof fullReport !== 'string') {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (typeof sessionId !== 'string' || !sessionId.trim()) {
+      return res.status(400).json({ error: 'Missing or invalid sessionId' });
+    }
+    if (typeof fullReport !== 'string' || !fullReport.trim()) {
+      return res.status(400).json({ error: 'Missing or invalid fullReport' });
     }
 
     // Sanitize/limit payload sizes
@@ -72,12 +104,12 @@ export default async (req, res) => {
     // Discord content field has 2000 char limit, leave room for markdown formatting
     const truncatedReport = fullReport.slice(0, 1800);
 
-    // Get webhook URL from environment variable (kept private!)
-    const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
     const developerEmail = process.env.DEVELOPER_EMAIL;
 
     // Try Discord first
     if (webhookUrl) {
+      console.log(`📤 Sending bug report for session: ${sessionId}`);
+      
       const embed = {
         title: '🐛 Bug Report - Chatlog Magician',
         description: safeErrorCount > 0 ? `**${safeErrorCount} error(s) detected**` : 'No errors (user feedback)',
@@ -85,7 +117,7 @@ export default async (req, res) => {
         fields: [
           {
             name: '📋 Session Info',
-            value: `**ID:** ${sessionId}\n**Browser:** ${(safeUA || '').split(' ').pop()}\n**Platform:** ${safePlatform || 'Unknown'}`,
+            value: `**ID:** ${sessionId}\n**Browser:** ${(safeUA || '').split(' ').pop() || 'Unknown'}\n**Platform:** ${safePlatform || 'Unknown'}`,
             inline: false
           },
           {
@@ -141,56 +173,71 @@ export default async (req, res) => {
 
       // Validate Discord limits before sending
       if (content.length > 2000) {
-        console.error('Content exceeds Discord limit:', content.length);
+        console.warn('⚠️ Content exceeds Discord limit, truncating:', content.length);
         // Truncate further if needed
         payload.content = content.slice(0, 1990) + '...```';
       }
 
       // Send to Discord
-      const discordResponse = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
+      try {
+        console.log('📡 Sending to Discord webhook...');
+        const discordResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload)
+        });
 
-      if (discordResponse.ok) {
-        return res.status(200).json({
-          success: true,
-          message: 'Report sent to Discord',
-          method: 'discord'
+        console.log(`Discord response: ${discordResponse.status} ${discordResponse.statusText}`);
+
+        if (discordResponse.ok) {
+          console.log('✅ Successfully sent bug report to Discord');
+          return res.status(200).json({
+            success: true,
+            message: 'Report sent to Discord',
+            method: 'discord'
+          });
+        } else {
+          const errorText = await discordResponse.text().catch(() => 'Unable to read error');
+          console.error('❌ Discord webhook failed:', {
+            status: discordResponse.status,
+            statusText: discordResponse.statusText,
+            error: errorText,
+            contentLength: content.length,
+            embedFieldsCount: embed.fields.length,
+            payloadSize: JSON.stringify(payload).length
+          });
+          
+          // Return the Discord error for debugging
+          return res.status(discordResponse.status).json({
+            error: 'Discord webhook failed',
+            discordStatus: discordResponse.status,
+            discordError: errorText
+          });
+        }
+      } catch (fetchError) {
+        console.error('❌ Error sending to Discord:', fetchError.message);
+        return res.status(500).json({
+          error: 'Failed to send to Discord',
+          message: fetchError.message
         });
-      } else {
-        const errorText = await discordResponse.text().catch(() => 'Unable to read error');
-        console.error('Discord webhook failed:', {
-          status: discordResponse.status,
-          statusText: discordResponse.statusText,
-          error: errorText,
-          contentLength: content.length,
-          embedFieldsCount: embed.fields.length
-        });
-        // Continue to email fallback
       }
     }
 
-    // Try email fallback if Discord failed or not configured
-    if (developerEmail) {
-      // Note: For email, you'd need another serverless function or use client-side FormSubmit
-      // For now, return error to trigger client-side email fallback
-      return res.status(500).json({ 
-        error: 'Discord failed, use client-side email fallback',
-        fallback: 'email'
-      });
-    }
-
+    // If we get here, Discord sending failed or wasn't configured
+    console.error('❌ No reporting method succeeded');
     return res.status(500).json({ 
-      error: 'No reporting method configured',
+      error: 'No reporting method configured or all failed',
       fallback: 'manual'
     });
 
   } catch (error) {
-    console.error('Error in bug report handler:', error);
+    console.error('❌ Uncaught error in bug report handler:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return res.status(500).json({ 
       error: 'Internal server error',
       message: error.message,
