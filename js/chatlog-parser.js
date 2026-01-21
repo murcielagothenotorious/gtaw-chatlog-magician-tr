@@ -330,7 +330,7 @@ $(document).ready(function () {
     const hasToSection = toSectionPattern.test(lineWithoutExclamation);
 
     // Determine the color for the main content
-    let mainColor;
+    let mainColor = 'lightgrey'; // Default to lightgrey for other characters
     if (hasToSection) {
       // Extract the target name from (to CharacterName)
       const toSectionMatch = lineWithoutExclamation.match(toSectionPattern);
@@ -341,8 +341,10 @@ $(document).ready(function () {
       // If the target is the current character, color as white (directed at you)
       if (targetName === currentCharacterName.toLowerCase()) {
         mainColor = 'white';
+      } else if (speakerName === currentCharacterName.toLowerCase()) {
+        // If speaker is the current character, color as white
+        mainColor = 'white';
       }
-
     } else {
       // No (to CharacterName) format, check if speaker is the current character
       if (speakerName === currentCharacterName.toLowerCase()) {

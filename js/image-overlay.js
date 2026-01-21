@@ -45,11 +45,23 @@
 
     // Chat overlay state
     chatTransform: { x: 0, y: 0, scale: DEFAULT_SCALE },
-    isChatDraggingEnabled: false,
+    isChatDraggingEnabled: true, // Enabled by default now
     isChatPanning: false,
     chatPanStart: { x: 0, y: 0 },
     chatPanStartPos: { x: 0, y: 0 },
     chatElement: null,
+
+    // Per-line dragging state
+    lineTransforms: {}, // { lineIndex: { x: 0, y: 0 } }
+    isLineDraggingEnabled: true, // Per-line mode active
+    isLinePanning: false,
+    currentDragLine: null, // Currently dragged line element
+    linePanStart: { x: 0, y: 0 },
+    linePanStartPos: { x: 0, y: 0 },
+
+    // Snap-to-edge settings
+    snapEnabled: true,
+    snapThreshold: 20, // pixels
 
     // Drop zone dimensions
     dropZoneWidth: DEFAULT_DROPZONE_WIDTH,
@@ -80,10 +92,14 @@
         console.warn('[ImageOverlay] Dropzone element not found, using default dimensions');
       }
 
+      // Load saved chat settings
+      this.loadChatSettings();
+
       this.setupModeSwitching();
       this.setupControlButtons();
       this.setupMouseHandlers();
       this.setupDimensionControls();
+      this.setupQuickPositionButtons();
 
       // Listen for image loaded event
       document.addEventListener('imageLoaded', (e) => {
@@ -165,6 +181,10 @@
         existing.remove();
       }
 
+      // Remove existing independent lines
+      const existingLines = dropzone.querySelectorAll('.chat-line-wrapper.independent-line');
+      existingLines.forEach(line => line.remove());
+
       // Get generated lines
       const generatedLines = output.querySelectorAll('.generated');
       if (generatedLines.length === 0) return;
@@ -180,6 +200,10 @@
         output.style.display = 'none';
       }
 
+      // Get dropzone dimensions for proper containment
+      const dropzoneWidth = dropzone.offsetWidth;
+      const dropzoneHeight = dropzone.offsetHeight;
+
       // Create chat overlay container
       const chatOverlay = document.createElement('div');
       chatOverlay.className = 'chat-overlay-container';
@@ -189,37 +213,61 @@
         chatOverlay.setAttribute('data-background', 'active');
       }
 
-      chatOverlay.style.width = '100%';
-      chatOverlay.style.maxWidth = outputWidth + 'px';
+      // Limit chat width to dropzone - with padding for better appearance
+      const maxChatWidth = Math.min(outputWidth, dropzoneWidth - 40); // 20px padding each side
+      chatOverlay.style.width = 'auto';
+      chatOverlay.style.maxWidth = maxChatWidth + 'px';
+      chatOverlay.style.wordWrap = 'break-word';
+      chatOverlay.style.overflowWrap = 'break-word';
 
-      // Copy chat lines with proper styling
-      const chatLinesContainer = document.createElement('div');
-      chatLinesContainer.className = 'chat-lines-container';
+      // Get font size for line height calculation
+      const fontSizeInput = document.getElementById('font-label');
+      const fontSize = fontSizeInput ? (parseInt(fontSizeInput.value) || 12) : 12;
+      const lineHeight = fontSize * 1.4; // Approximate line height
 
-      generatedLines.forEach((line) => {
+      // Each line is now completely independent and can be positioned anywhere
+      generatedLines.forEach((line, index) => {
+        // Create a wrapper for each line - positioned absolutely on dropzone
+        const lineWrapper = document.createElement('div');
+        lineWrapper.className = 'chat-line-wrapper independent-line';
+        lineWrapper.dataset.lineIndex = index;
+
+        // Set default position (stacked like original) or saved position
+        const savedTransform = this.lineTransforms[index];
+        const defaultY = 10 + (index * lineHeight); // Stack lines vertically
+        const defaultX = 10;
+
+        if (savedTransform) {
+          lineWrapper.style.left = savedTransform.x + 'px';
+          lineWrapper.style.top = savedTransform.y + 'px';
+        } else {
+          lineWrapper.style.left = defaultX + 'px';
+          lineWrapper.style.top = defaultY + 'px';
+          // Store default position
+          this.lineTransforms[index] = { x: defaultX, y: defaultY };
+        }
+
         const clone = line.cloneNode(true);
         // Preserve all classes from original - they include color classes
         // Just add the overlay-specific line class
         clone.classList.add('chat-overlay-line');
 
-        chatLinesContainer.appendChild(clone);
+        // Apply font styling to each line
+        lineWrapper.style.fontSize = fontSize + 'px';
 
-        // Add a clear div after each line to force new line breaks
-        // This matches the original parser structure
-        const clearDiv = document.createElement('div');
-        clearDiv.className = 'clear';
-        chatLinesContainer.appendChild(clearDiv);
+        lineWrapper.appendChild(clone);
+
+        // Add directly to dropzone (not to container)
+        dropzone.appendChild(lineWrapper);
       });
 
-      chatOverlay.appendChild(chatLinesContainer);
+      // Container still needed for reference but not for containing lines
       dropzone.appendChild(chatOverlay);
 
       this.chatElement = chatOverlay;
 
-      // Apply font size from input
-      const fontSizeInput = document.getElementById('font-label');
+      // Apply font size from input (reuse fontSizeInput from above)
       if (fontSizeInput) {
-        const fontSize = parseInt(fontSizeInput.value) || 12;
         chatOverlay.style.fontSize = fontSize + 'px';
 
         // Apply size-aware classes (same as #output)
@@ -315,6 +363,51 @@
     },
 
     /**
+     * Setup quick position buttons
+     */
+    setupQuickPositionButtons: function () {
+      // Quick position buttons
+      const positionButtons = document.querySelectorAll('[data-quick-position]');
+      positionButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const position = btn.dataset.quickPosition;
+          if (position) {
+            this.setQuickPosition(position);
+          }
+        });
+      });
+
+      // Auto position button
+      const autoPositionBtn = document.getElementById('autoPositionBtn');
+      autoPositionBtn?.addEventListener('click', () => {
+        this.autoPositionChat();
+      });
+
+      // Reset chat position button
+      const resetChatBtn = document.getElementById('resetChatPositionBtn');
+      resetChatBtn?.addEventListener('click', () => {
+        this.resetChatPosition();
+      });
+
+      // Chat scale slider
+      const scaleSlider = document.getElementById('chatScaleSlider');
+      const scaleValue = document.getElementById('chatScaleValue');
+
+      if (scaleSlider) {
+        // Initialize slider with current scale
+        scaleSlider.value = this.chatTransform.scale * 100;
+        if (scaleValue) {
+          scaleValue.textContent = Math.round(this.chatTransform.scale * 100) + '%';
+        }
+
+        scaleSlider.addEventListener('input', () => {
+          const scale = parseInt(scaleSlider.value) / 100;
+          this.setChatScale(scale);
+        });
+      }
+    },
+
+    /**
      * Setup mouse handlers for dragging and zooming
      */
     setupMouseHandlers: function () {
@@ -324,40 +417,59 @@
       }
 
       dropzone.addEventListener('mousedown', (e) => {
-        // Check if image dragging is actually enabled
-        if (!this.isImageDraggingEnabled && !this.isChatDraggingEnabled) {
-          return;
-        }
-
         // Check if image exists
         const img = document.getElementById('overlayImage');
         if (!img) {
           return;
         }
 
-        // Ctrl/Cmd + drag for chat, regular drag for image
-        if ((e.ctrlKey || e.metaKey) && this.isChatDraggingEnabled) {
+        // Intelligent target detection: check what was clicked
+        const clickedElement = e.target;
+        const chatOverlay = document.querySelector('.chat-overlay-container');
+
+        // Check if click is on a specific chat line (for per-line dragging)
+        const lineWrapper = clickedElement.closest('.chat-line-wrapper');
+
+        if (lineWrapper && this.isLineDraggingEnabled) {
+          // Clicked on a specific line - drag just that line
+          e.preventDefault();
+          this.startLinePan(e, lineWrapper);
+          return;
+        }
+
+        // Check if click is on chat overlay container (but not on a line)
+        const isClickOnChat = chatOverlay && (
+          clickedElement === chatOverlay ||
+          chatOverlay.contains(clickedElement)
+        );
+
+        if (isClickOnChat && this.isChatDraggingEnabled && !lineWrapper) {
+          // Clicked on chat container (not on a line) - drag entire chat
+          e.preventDefault();
           this.startChatPan(e);
         } else if (this.isImageDraggingEnabled) {
+          // Clicked elsewhere - drag image
           this.startImagePan(e);
         }
       });
 
       document.addEventListener('mousemove', (e) => {
-        if (this.isPanning && !(e.ctrlKey || e.metaKey)) {
+        if (this.isPanning) {
           this.updateImagePan(e);
         } else if (this.isChatPanning) {
           this.updateChatPan(e);
+        } else if (this.isLinePanning) {
+          this.updateLinePan(e);
         }
       });
 
       document.addEventListener('mouseup', () => {
-        if (this.isPanning || this.isChatPanning) {
+        if (this.isPanning || this.isChatPanning || this.isLinePanning) {
           this.stopPan();
         }
       });
 
-      // Mouse wheel zoom - image only when no modifier
+      // Mouse wheel zoom - Ctrl for chat, regular for image
       dropzone.addEventListener('wheel', (e) => {
         const img = document.getElementById('overlayImage');
         if (!img) {
@@ -376,6 +488,7 @@
           );
           this.chatTransform.scale = newScale;
           this.updateChatTransform();
+          this.saveChatSettings();
         } else if (this.isImageDraggingEnabled) {
           // Regular scroll zooms image centered on mouse position
           const delta = e.deltaY > 0 ? 0.9 : 1.1;
@@ -405,6 +518,54 @@
           this.imageTransform.scale = newScale;
           this.updateImageTransform();
           this.updateZoomIndicator();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        // Only handle shortcuts in overlay mode
+        if (this.currentMode !== 'overlay') return;
+
+        // R key - reset positions
+        if (e.key === 'r' || e.key === 'R') {
+          if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+            const activeElement = document.activeElement;
+            const isInInput = activeElement && (
+              activeElement.tagName === 'INPUT' ||
+              activeElement.tagName === 'TEXTAREA'
+            );
+            if (!isInInput) {
+              e.preventDefault();
+              this.resetChatPosition();
+            }
+          }
+        }
+
+        // Number keys 1-9 for quick positions (numpad style)
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+          const activeElement = document.activeElement;
+          const isInInput = activeElement && (
+            activeElement.tagName === 'INPUT' ||
+            activeElement.tagName === 'TEXTAREA'
+          );
+          if (isInInput) return;
+
+          const positionMap = {
+            '7': 'top-left',
+            '8': 'top-center',
+            '9': 'top-right',
+            '4': 'middle-left',
+            '5': 'middle-center',
+            '6': 'middle-right',
+            '1': 'bottom-left',
+            '2': 'bottom-center',
+            '3': 'bottom-right',
+          };
+
+          if (positionMap[e.key]) {
+            e.preventDefault();
+            this.setQuickPosition(positionMap[e.key]);
+          }
         }
       });
     },
@@ -474,8 +635,18 @@
       const deltaX = e.clientX - this.chatPanStart.x;
       const deltaY = e.clientY - this.chatPanStart.y;
 
-      this.chatTransform.x = this.chatPanStartPos.x + deltaX;
-      this.chatTransform.y = this.chatPanStartPos.y + deltaY;
+      let newX = this.chatPanStartPos.x + deltaX;
+      let newY = this.chatPanStartPos.y + deltaY;
+
+      // Apply snap-to-edge (unless Shift is held)
+      if (!e.shiftKey) {
+        const snapped = this.applySnapToEdge(newX, newY);
+        newX = snapped.x;
+        newY = snapped.y;
+      }
+
+      this.chatTransform.x = newX;
+      this.chatTransform.y = newY;
 
       this.updateChatTransform();
       this.updateCoordinateDisplay();
@@ -485,8 +656,12 @@
      * Stop panning
      */
     stopPan: function () {
+      const wasChatPanning = this.isChatPanning;
+      const wasLinePanning = this.isLinePanning;
+
       this.isPanning = false;
       this.isChatPanning = false;
+      this.isLinePanning = false;
 
       const img = document.getElementById('overlayImage');
       if (img) {
@@ -498,7 +673,63 @@
         chatOverlay.classList.remove('dragging');
       }
 
+      // Remove dragging class from any line
+      if (this.currentDragLine) {
+        this.currentDragLine.classList.remove('line-dragging');
+        this.currentDragLine = null;
+      }
+
+      // Save chat settings if we were panning chat or line
+      if (wasChatPanning || wasLinePanning) {
+        this.saveChatSettings();
+      }
+
       this.updateCursor();
+    },
+
+    /**
+     * Start line panning (per-line dragging)
+     */
+    startLinePan: function (e, lineWrapper) {
+      this.isLinePanning = true;
+      this.currentDragLine = lineWrapper;
+
+      const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
+
+      // Initialize transform for this line if not exists
+      if (!this.lineTransforms[lineIndex]) {
+        this.lineTransforms[lineIndex] = { x: 0, y: 0 };
+      }
+
+      this.linePanStart.x = e.clientX;
+      this.linePanStart.y = e.clientY;
+      this.linePanStartPos.x = this.lineTransforms[lineIndex].x;
+      this.linePanStartPos.y = this.lineTransforms[lineIndex].y;
+
+      lineWrapper.classList.add('line-dragging');
+      this.updateCursor();
+    },
+
+    /**
+     * Update line pan during drag
+     */
+    updateLinePan: function (e) {
+      if (!this.currentDragLine) return;
+
+      const lineIndex = parseInt(this.currentDragLine.dataset.lineIndex);
+
+      const deltaX = e.clientX - this.linePanStart.x;
+      const deltaY = e.clientY - this.linePanStart.y;
+
+      const newX = this.linePanStartPos.x + deltaX;
+      const newY = this.linePanStartPos.y + deltaY;
+
+      // Update line position
+      this.lineTransforms[lineIndex] = { x: newX, y: newY };
+
+      // Apply position to line wrapper (using left/top for absolute positioning)
+      this.currentDragLine.style.left = newX + 'px';
+      this.currentDragLine.style.top = newY + 'px';
     },
 
     /**
@@ -868,8 +1099,11 @@
      */
     resetChatPosition: function () {
       this.chatTransform = { x: 0, y: 0, scale: 1 };
+      this.lineTransforms = {}; // Clear per-line positions
       this.updateChatTransform();
+      this.renderChatOverlay(); // Re-render to reset line positions
       this.updateCoordinateDisplay();
+      this.saveChatSettings();
     },
 
     /**
@@ -905,6 +1139,166 @@
       this.isChatPanning = false;
       this.imageElement = null;
       this.chatElement = null;
+    },
+
+    /**
+     * Set chat to a quick position (9 positions like numpad)
+     * @param {string} position - Position name: 'top-left', 'top-center', 'top-right',
+     *                            'middle-left', 'middle-center', 'middle-right',
+     *                            'bottom-left', 'bottom-center', 'bottom-right'
+     */
+    setQuickPosition: function (position) {
+      const dropzone = document.getElementById('imageDropzone');
+      const chatOverlay = document.querySelector('.chat-overlay-container');
+      if (!dropzone || !chatOverlay) return;
+
+      const dropzoneWidth = dropzone.offsetWidth;
+      const dropzoneHeight = dropzone.offsetHeight;
+      const chatWidth = chatOverlay.offsetWidth * this.chatTransform.scale;
+      const chatHeight = chatOverlay.offsetHeight * this.chatTransform.scale;
+
+      const padding = 20; // Padding from edges
+      let x = 0, y = 0;
+
+      // Calculate X position
+      if (position.includes('left')) {
+        x = padding;
+      } else if (position.includes('right')) {
+        x = dropzoneWidth - chatWidth - padding;
+      } else {
+        // center
+        x = (dropzoneWidth - chatWidth) / 2;
+      }
+
+      // Calculate Y position
+      if (position.includes('top')) {
+        y = padding;
+      } else if (position.includes('bottom')) {
+        y = dropzoneHeight - chatHeight - padding;
+      } else {
+        // middle
+        y = (dropzoneHeight - chatHeight) / 2;
+      }
+
+      this.chatTransform.x = x;
+      this.chatTransform.y = y;
+      this.updateChatTransform();
+      this.saveChatSettings();
+    },
+
+    /**
+     * Auto-position chat to bottom-left (default GTA style)
+     */
+    autoPositionChat: function () {
+      this.setQuickPosition('bottom-left');
+    },
+
+    /**
+     * Apply snap-to-edge when dragging
+     * @param {number} x - Current X position
+     * @param {number} y - Current Y position
+     * @returns {Object} - Snapped {x, y} positions
+     */
+    applySnapToEdge: function (x, y) {
+      if (!this.snapEnabled) return { x, y };
+
+      const dropzone = document.getElementById('imageDropzone');
+      const chatOverlay = document.querySelector('.chat-overlay-container');
+      if (!dropzone || !chatOverlay) return { x, y };
+
+      const threshold = this.snapThreshold;
+      const dropzoneWidth = dropzone.offsetWidth;
+      const dropzoneHeight = dropzone.offsetHeight;
+      const chatWidth = chatOverlay.offsetWidth * this.chatTransform.scale;
+      const chatHeight = chatOverlay.offsetHeight * this.chatTransform.scale;
+
+      let snappedX = x;
+      let snappedY = y;
+
+      // Snap to left edge
+      if (Math.abs(x) < threshold) {
+        snappedX = 0;
+      }
+      // Snap to right edge
+      if (Math.abs(x - (dropzoneWidth - chatWidth)) < threshold) {
+        snappedX = dropzoneWidth - chatWidth;
+      }
+      // Snap to horizontal center
+      if (Math.abs(x - (dropzoneWidth - chatWidth) / 2) < threshold) {
+        snappedX = (dropzoneWidth - chatWidth) / 2;
+      }
+
+      // Snap to top edge
+      if (Math.abs(y) < threshold) {
+        snappedY = 0;
+      }
+      // Snap to bottom edge
+      if (Math.abs(y - (dropzoneHeight - chatHeight)) < threshold) {
+        snappedY = dropzoneHeight - chatHeight;
+      }
+      // Snap to vertical center
+      if (Math.abs(y - (dropzoneHeight - chatHeight) / 2) < threshold) {
+        snappedY = (dropzoneHeight - chatHeight) / 2;
+      }
+
+      return { x: snappedX, y: snappedY };
+    },
+
+    /**
+     * Save chat settings to localStorage
+     */
+    saveChatSettings: function () {
+      try {
+        const settings = {
+          chatTransform: this.chatTransform,
+          snapEnabled: this.snapEnabled,
+          lineTransforms: this.lineTransforms,
+        };
+        localStorage.setItem('overlayChatSettings', JSON.stringify(settings));
+      } catch (e) {
+        console.warn('[ImageOverlay] Could not save chat settings:', e);
+      }
+    },
+
+    /**
+     * Load chat settings from localStorage
+     */
+    loadChatSettings: function () {
+      try {
+        const saved = localStorage.getItem('overlayChatSettings');
+        if (saved) {
+          const settings = JSON.parse(saved);
+          if (settings.chatTransform) {
+            this.chatTransform = settings.chatTransform;
+          }
+          if (typeof settings.snapEnabled === 'boolean') {
+            this.snapEnabled = settings.snapEnabled;
+          }
+          if (settings.lineTransforms) {
+            this.lineTransforms = settings.lineTransforms;
+          }
+          console.log('[ImageOverlay] Loaded chat settings from localStorage');
+        }
+      } catch (e) {
+        console.warn('[ImageOverlay] Could not load chat settings:', e);
+      }
+    },
+
+    /**
+     * Set chat scale
+     * @param {number} scale - Scale value (0.5 to 2.0)
+     */
+    setChatScale: function (scale) {
+      const newScale = Math.max(0.5, Math.min(2.0, scale));
+      this.chatTransform.scale = newScale;
+      this.updateChatTransform();
+      this.saveChatSettings();
+
+      // Update scale display
+      const scaleDisplay = document.getElementById('chatScaleValue');
+      if (scaleDisplay) {
+        scaleDisplay.textContent = Math.round(newScale * 100) + '%';
+      }
     },
   };
 

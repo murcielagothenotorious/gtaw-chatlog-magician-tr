@@ -62,6 +62,9 @@
       dropzone.addEventListener('drop', this.handleDrop.bind(this));
       dropzone.addEventListener('dblclick', this.handleDoubleClick.bind(this));
 
+      // Clipboard paste handler (Ctrl+V)
+      document.addEventListener('paste', this.handlePaste.bind(this));
+
       // Prevent default drag behaviors
       DRAG_EVENTS.forEach((eventName) => {
         dropzone.addEventListener(eventName, (e) => {
@@ -132,9 +135,37 @@
       const file = event.dataTransfer?.files?.[0];
       if (file) {
         this.processFile(file);
-      } else {
+      } else if (!this.state.droppedImageSrc) {
+        // Only show error if no image is loaded and no file was dropped
         console.warn('[ImageDropZone] No file found in drop event');
         this.showError('No file detected. Please try again.');
+      }
+      // If image is already loaded and no file in drop, this was likely a drag operation - ignore silently
+    },
+
+    /**
+     * Handle paste from clipboard (Ctrl+V)
+     */
+    handlePaste: function (event) {
+      // Check if we're in overlay mode
+      if (window.ImageOverlayState?.currentMode !== 'overlay') {
+        return; // Don't handle paste in chat mode
+      }
+
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.startsWith('image/')) {
+          event.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            console.log('[ImageDropZone] Image pasted from clipboard');
+            this.processFile(file);
+          }
+          return;
+        }
       }
     },
 

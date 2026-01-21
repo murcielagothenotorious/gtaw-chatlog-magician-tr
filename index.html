@@ -204,6 +204,16 @@
 
           <!-- Image Overlay Drop Zone -->
           <div id="imageOverlaySection" style="display: none;">
+            <!-- Experimental Feature Badge -->
+            <div class="experimental-badge">
+              <span class="experimental-stripe"></span>
+              <span class="experimental-text">
+                <i class="fas fa-flask" aria-hidden="true"></i>
+                Deneysel Özellik
+              </span>
+              <span class="experimental-stripe"></span>
+            </div>
+
             <input type="file" id="imageFileInput" accept="image/*" style="display: none;"
               aria-label="Upload screenshot">
 
@@ -211,19 +221,88 @@
               <div class="dropzone-instructions">
                 <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
                 <p>Ekran görüntünüzü buraya bırakın</p>
-                <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için tıklayın</p>
+                <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için çift tıklayın • <strong>Ctrl+V</strong>
+                  ile yapıştırın</p>
               </div>
             </div>
 
-            <!-- Overlay Info -->
-            <div class="overlay-info"
-              style="max-width: 900px; margin: 10px auto; text-align: center; color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.6;">
-              <p style="margin: 5px 0;"><i class="fas fa-mouse" aria-hidden="true"></i> <strong>Görüntü:</strong>
-                Yüklemek için çift tıklayın | Taşımak için tıklayıp sürükleyin | Yakınlaştırmak için kaydırın</p>
-              <p style="margin: 5px 0; font-size: 12px; color: rgba(255,255,255,0.5);">
-                <i class="fas fa-info-circle" aria-hidden="true"></i> İndirilen görüntü, önizlemede gördüğünüzle tam
-                olarak aynı şekilde gösterilir |
-                Ayarlar otomatik kaydedilir | Tuval, dışa aktarma boyutlarınıza göre yeniden boyutlandırılır
+            <!-- Quick Position & Controls -->
+            <div class="overlay-quick-controls">
+              <!-- Position Grid -->
+              <div class="position-grid-container">
+                <span class="control-label">Sohbet Pozisyonu:</span>
+                <div class="position-grid">
+                  <button type="button" class="position-btn" data-quick-position="top-left"
+                    title="Sol Üst (7)">↖</button>
+                  <button type="button" class="position-btn" data-quick-position="top-center"
+                    title="Orta Üst (8)">↑</button>
+                  <button type="button" class="position-btn" data-quick-position="top-right"
+                    title="Sağ Üst (9)">↗</button>
+                  <button type="button" class="position-btn" data-quick-position="middle-left"
+                    title="Sol (4)">←</button>
+                  <button type="button" class="position-btn" data-quick-position="middle-center"
+                    title="Orta (5)">⊕</button>
+                  <button type="button" class="position-btn" data-quick-position="middle-right"
+                    title="Sağ (6)">→</button>
+                  <button type="button" class="position-btn" data-quick-position="bottom-left"
+                    title="Sol Alt (1)">↙</button>
+                  <button type="button" class="position-btn" data-quick-position="bottom-center"
+                    title="Orta Alt (2)">↓</button>
+                  <button type="button" class="position-btn" data-quick-position="bottom-right"
+                    title="Sağ Alt (3)">↘</button>
+                </div>
+              </div>
+
+              <!-- Scale Slider -->
+              <div class="scale-slider-container">
+                <span class="control-label">Sohbet Boyutu:</span>
+                <div class="scale-slider-wrapper">
+                  <input type="range" id="chatScaleSlider" min="50" max="200" value="100" step="5" class="scale-slider">
+                  <span id="chatScaleValue" class="scale-value">100%</span>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="quick-action-buttons">
+                <button type="button" id="autoPositionBtn" class="button small secondary"
+                  title="Sohbeti sol alta yerleştir">
+                  <i class="fas fa-magic" aria-hidden="true"></i> Otomatik
+                </button>
+                <button type="button" id="resetChatPositionBtn" class="button small secondary"
+                  title="Sohbet konumunu sıfırla (R)">
+                  <i class="fas fa-undo" aria-hidden="true"></i> Sıfırla
+                </button>
+                <button type="button" id="showHelpBtn" class="button small info" title="Nasıl kullanılır?">
+                  <i class="fas fa-question-circle" aria-hidden="true"></i> Yardım
+                </button>
+              </div>
+            </div>
+
+            <!-- Quick Resolution Presets -->
+            <div class="resolution-presets">
+              <span class="control-label">Çıktı Boyutu:</span>
+              <div class="preset-buttons">
+                <button type="button" class="preset-btn" data-width="1920" data-height="1080" title="Full HD">
+                  1080p
+                </button>
+                <button type="button" class="preset-btn active" data-width="1600" data-height="1200" title="Varsayılan">
+                  Varsayılan
+                </button>
+                <button type="button" class="preset-btn" data-width="1280" data-height="720" title="HD">
+                  720p
+                </button>
+                <button type="button" class="preset-btn" data-width="800" data-height="600" title="Küçük">
+                  Küçük
+                </button>
+              </div>
+            </div>
+
+            <!-- Simplified Info -->
+            <div class="overlay-help-hint">
+              <p>
+                <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                <strong>Hızlı başlangıç:</strong> Görsel yapıştır (Ctrl+V) → Sohbeti konumlandır → İndir
+                <button type="button" id="showHelpBtn2" class="help-link">Detaylı yardım →</button>
               </p>
             </div>
           </div>
@@ -233,8 +312,8 @@
   </main>
 
   <!-- Third-party scripts with fallback handling -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/4.0.0-beta.2/jquery.min.js"
-    integrity="sha512-JobWAqYk5CSjWuVV3mxgS+MmccJqkrBaDhk8SKS1BW+71dJ9gzascwzW85UwGhxiSyR7Pxhu50k+Nl3+o5I49A=="
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
     crossorigin="anonymous" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.9.0/js/foundation.min.js"
     integrity="sha512-P4f0g0iAkyfUF2V2VX8dxkoBxPLULaV2TM8HQGXFRb75AzLVAf+sn+MRweu/C81rL2JaYutbY6cWAbmwJbtOcg=="
@@ -319,6 +398,117 @@
     </div>
   </div>
 
+  <!-- Help Modal - Nasıl Kullanılır -->
+  <div id="helpModal" class="help-modal" style="display: none;">
+    <div class="help-modal-backdrop"></div>
+    <div class="help-modal-content">
+      <div class="help-modal-header">
+        <h2><i class="fas fa-question-circle"></i> Fotoğraf Modu Nasıl Kullanılır?</h2>
+        <button type="button" id="closeHelpModal" class="help-modal-close" aria-label="Kapat">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="help-modal-body">
+        <!-- Quick Start -->
+        <div class="help-section">
+          <h3><i class="fas fa-rocket"></i> Hızlı Başlangıç</h3>
+          <div class="help-steps">
+            <div class="help-step">
+              <span class="step-number">1</span>
+              <div class="step-content">
+                <strong>Görsel Yükle</strong>
+                <p>Ekran görüntünüzü sürükle-bırak veya <kbd>Ctrl+V</kbd> ile yapıştır</p>
+              </div>
+            </div>
+            <div class="help-step">
+              <span class="step-number">2</span>
+              <div class="step-content">
+                <strong>Sohbeti Yazın</strong>
+                <p>Üstteki metin alanına chatlog'unuzu yapıştırın</p>
+              </div>
+            </div>
+            <div class="help-step">
+              <span class="step-number">3</span>
+              <div class="step-content">
+                <strong>Konumlandır</strong>
+                <p>Sohbeti istediğiniz yere sürükleyin veya hızlı pozisyon butonlarını kullanın</p>
+              </div>
+            </div>
+            <div class="help-step">
+              <span class="step-number">4</span>
+              <div class="step-content">
+                <strong>İndir</strong>
+                <p>Yeşil "İndir" butonuna tıklayın</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="help-section">
+          <h3><i class="fas fa-mouse-pointer"></i> Kontroller</h3>
+          <table class="help-table">
+            <tr>
+              <td><strong>Görüntüyü hareket ettir</strong></td>
+              <td>Boş alana tıklayıp sürükle</td>
+            </tr>
+            <tr>
+              <td><strong>Sohbeti hareket ettir</strong></td>
+              <td>Sohbetin üzerine tıklayıp sürükle</td>
+            </tr>
+            <tr>
+              <td><strong>Görüntüyü yakınlaştır</strong></td>
+              <td>Fare tekerleği (scroll)</td>
+            </tr>
+            <tr>
+              <td><strong>Sohbeti yakınlaştır</strong></td>
+              <td><kbd>Ctrl</kbd> + Fare tekerleği</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="help-section">
+          <h3><i class="fas fa-keyboard"></i> Klavye Kısayolları</h3>
+          <div class="shortcut-grid">
+            <div class="shortcut-item">
+              <kbd>Ctrl+V</kbd>
+              <span>Görsel yapıştır</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>1-9</kbd>
+              <span>Hızlı pozisyon (numpad)</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>R</kbd>
+              <span>Sohbeti sıfırla</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>Shift</kbd>
+              <span>Kenar yapışmayı kapat</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="help-section">
+          <h3><i class="fas fa-lightbulb"></i> İpuçları</h3>
+          <ul class="help-tips">
+            <li>Sohbet kenarlara yaklaştığında otomatik olarak yapışır</li>
+            <li>Ayarlarınız otomatik kaydedilir, sayfa yenilendiğinde korunur</li>
+            <li>"Otomatik" butonu sohbeti sol alt köşeye yerleştirir (GTA tarzı)</li>
+            <li>Çıktı boyutunu değiştirmek için preset butonlarını kullanın</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="help-modal-footer">
+        <button type="button" id="closeHelpModalBtn" class="button primary">Anladım!</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Donate modal handler
     document.getElementById('donateBtn').addEventListener('click', function () {
@@ -331,6 +521,41 @@
       if (e.target === this) {
         this.style.display = 'none';
       }
+    });
+
+    // Help modal handler
+    function showHelpModal() {
+      document.getElementById('helpModal').style.display = 'flex';
+    }
+    function hideHelpModal() {
+      document.getElementById('helpModal').style.display = 'none';
+    }
+
+    document.getElementById('showHelpBtn')?.addEventListener('click', showHelpModal);
+    document.getElementById('showHelpBtn2')?.addEventListener('click', showHelpModal);
+    document.getElementById('closeHelpModal')?.addEventListener('click', hideHelpModal);
+    document.getElementById('closeHelpModalBtn')?.addEventListener('click', hideHelpModal);
+    document.querySelector('.help-modal-backdrop')?.addEventListener('click', hideHelpModal);
+
+    // Preset resolution buttons
+    document.querySelectorAll('.preset-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const width = this.dataset.width;
+        const height = this.dataset.height;
+
+        // Update input fields
+        const widthInput = document.getElementById('exportWidth');
+        const heightInput = document.getElementById('exportHeight');
+        if (widthInput) widthInput.value = width;
+        if (heightInput) heightInput.value = height;
+
+        // Trigger input event to update dimensions
+        widthInput?.dispatchEvent(new Event('input'));
+
+        // Update active state
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
     });
   </script>
 
