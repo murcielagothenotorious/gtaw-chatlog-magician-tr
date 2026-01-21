@@ -207,6 +207,18 @@
   outline-offset: 4px;
 }
 
+/* Selected state for keyboard control */
+.chat-overlay-container.selected {
+  outline: 2px solid rgba(46, 204, 113, 0.7);
+  outline-offset: 4px;
+}
+
+.chat-line-wrapper.selected {
+  outline: 2px solid rgba(46, 204, 113, 0.7);
+  outline-offset: 2px;
+  background: rgba(46, 204, 113, 0.1);
+}
+
 /* ========================================
    RESOLUTION PRESETS
    ======================================== */
@@ -759,6 +771,40 @@
   background: rgba(52, 152, 219, 0.1);
 }
 
+/* Alignment Guide Lines */
+.alignment-guide {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1000;
+  display: none;
+}
+
+.alignment-guide-horizontal {
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 0, 127, 0.8) 10%,
+      rgba(255, 0, 127, 1) 50%,
+      rgba(255, 0, 127, 0.8) 90%,
+      transparent 100%);
+  box-shadow: 0 0 4px rgba(255, 0, 127, 0.6);
+}
+
+.alignment-guide-vertical {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(0, 255, 127, 0.8) 10%,
+      rgba(0, 255, 127, 1) 50%,
+      rgba(0, 255, 127, 0.8) 90%,
+      transparent 100%);
+  box-shadow: 0 0 4px rgba(0, 255, 127, 0.6);
+}
+
 /* Chat Lines Container */
 .chat-lines-container {
   width: 100%;
@@ -1024,13 +1070,190 @@
   }
 }
 
+/* Image Settings Panel */
+.image-settings-panel {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.image-settings-panel .settings-header {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.image-settings-panel .settings-header .control-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.image-settings-panel .settings-header i {
+  margin-right: 8px;
+  color: #3498db;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.setting-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.dimension-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dimension-controls input[type="number"] {
+  width: 80px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+}
+
+.dimension-controls input[type="number"]:focus {
+  outline: none;
+  border-color: #3498db;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.dimension-separator {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+}
+
+.dimension-unit {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.preset-buttons.compact {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.preset-buttons.compact .preset-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-buttons.compact .preset-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.preset-buttons.compact .preset-btn.active {
+  background: #3498db;
+  border-color: #3498db;
+  color: #fff;
+}
+
+.slider-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.effect-slider {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.effect-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #3498db;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.effect-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+.effect-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #3498db;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider-value {
+  min-width: 45px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: right;
+}
+
+.checkbox-item {
+  flex-direction: row;
+  align-items: center;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: #3498db;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
 /* Print Styles */
 @media print {
 
   .overlay-controls,
   .dropzone-instructions,
   .zoom-indicator,
-  .coordinate-display {
+  .coordinate-display,
+  .image-settings-panel {
     display: none !important;
   }
 

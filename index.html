@@ -165,33 +165,6 @@
                 <!-- Discord (Discord Brand Color) -->
                 <!-- <a href="https://discord.gg/V8jQJrDXxF" target="_blank" rel="noopener noreferrer" class="button" aria-label="Join Discord" style="background-color: #5865F2; color: #ffffff; text-decoration: none;">Discord</a> -->
 
-                <!-- Overlay controls (only visible in overlay mode) -->
-                <div class="button info overlay-control button-hidden" id="textPaddingControl">
-                  <input type="number" id="textPaddingHorizontal" min="0" max="200" value="0" step="5"
-                    style="width: 60px; height: auto; margin: 0; padding: 0; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center;"
-                    title="Horizontal padding (px)">
-                  <span style="opacity: 0.7;">×</span>
-                  <input type="number" id="textPaddingVertical" min="0" max="200" value="0" step="5"
-                    style="width: 60px; height: auto; margin: 0; padding: 0; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center;"
-                    title="Vertical padding (px)">
-                  <span style="opacity: 0.7; font-size: 12px;">px</span>
-                </div>
-                <div class="button warning overlay-control button-hidden" id="exportDimensionsControl">
-                  <input type="number" id="exportWidth" min="100" max="7680" value="1600" step="1"
-                    style="width: 70px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;"
-                    title="Export width (px)">
-                  <span style="opacity: 0.7;">×</span>
-                  <input type="number" id="exportHeight" min="100" max="4320" value="1200" step="1"
-                    style="width: 70px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;"
-                    title="Export height (px)">
-                  <span style="opacity: 0.7; font-size: 12px;">px</span>
-                  <span style="opacity: 0.5; margin: 0 4px;">|</span>
-                  <input type="number" id="exportPPI" min="72" max="600" value="96" step="1"
-                    style="width: 60px; height: auto; margin: 0; padding: 2px 4px; border: none; background: transparent; color: inherit; font-size: inherit; text-align: center; border-radius: 0;"
-                    title="Export PPI">
-                  <span style="opacity: 0.7; font-size: 12px;">PPI</span>
-                </div>
-
                 <!-- Clear image (Red = Alert/Remove) - Only visible in overlay mode -->
                 <button id="clearImageBtn" class="button alert overlay-control button-hidden" type="button"
                   title="Remove image">
@@ -278,22 +251,55 @@
               </div>
             </div>
 
-            <!-- Quick Resolution Presets -->
-            <div class="resolution-presets">
-              <span class="control-label">Çıktı Boyutu:</span>
-              <div class="preset-buttons">
-                <button type="button" class="preset-btn" data-width="1920" data-height="1080" title="Full HD">
-                  1080p
-                </button>
-                <button type="button" class="preset-btn active" data-width="1600" data-height="1200" title="Varsayılan">
-                  Varsayılan
-                </button>
-                <button type="button" class="preset-btn" data-width="1280" data-height="720" title="HD">
-                  720p
-                </button>
-                <button type="button" class="preset-btn" data-width="800" data-height="600" title="Küçük">
-                  Küçük
-                </button>
+            <!-- Image Settings Panel -->
+            <div class="image-settings-panel">
+              <div class="settings-header">
+                <span class="control-label"><i class="fas fa-sliders-h"></i> Görüntü Ayarları</span>
+              </div>
+              <div class="settings-grid">
+                <!-- Export Dimensions -->
+                <div class="setting-item">
+                  <label class="setting-label">Çıktı Boyutu:</label>
+                  <div class="dimension-controls">
+                    <input type="number" id="exportWidth" min="100" max="7680" value="1920" step="1"
+                      title="Genişlik (px)">
+                    <span class="dimension-separator">×</span>
+                    <input type="number" id="exportHeight" min="100" max="4320" value="1080" step="1"
+                      title="Yükseklik (px)">
+                    <span class="dimension-unit">px</span>
+                  </div>
+                  <div class="preset-buttons compact">
+                    <button type="button" class="preset-btn active" data-width="1920" data-height="1080">1080p</button>
+                    <button type="button" class="preset-btn" data-width="1280" data-height="720">720p</button>
+                    <button type="button" class="preset-btn" data-width="0" data-height="0">Orijinal</button>
+                  </div>
+                </div>
+
+                <!-- Opacity -->
+                <div class="setting-item">
+                  <label class="setting-label">Görüntü Opaklığı:</label>
+                  <div class="slider-control">
+                    <input type="range" id="imageOpacity" min="0" max="100" value="100" step="1" class="effect-slider">
+                    <span id="opacityValue" class="slider-value">100%</span>
+                  </div>
+                </div>
+
+                <!-- Blur -->
+                <div class="setting-item">
+                  <label class="setting-label">Görüntü Bulanıklığı:</label>
+                  <div class="slider-control">
+                    <input type="range" id="imageBlur" min="0" max="20" value="0" step="1" class="effect-slider">
+                    <span id="blurValue" class="slider-value">0px</span>
+                  </div>
+                </div>
+
+                <!-- Grayscale -->
+                <div class="setting-item checkbox-item">
+                  <label class="checkbox-label">
+                    <input type="checkbox" id="imageGrayscale">
+                    <span class="checkbox-text">Siyah Beyaz</span>
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -497,7 +503,7 @@
           <ul class="help-tips">
             <li>Sohbet kenarlara yaklaştığında otomatik olarak yapışır</li>
             <li>Ayarlarınız otomatik kaydedilir, sayfa yenilendiğinde korunur</li>
-            <li>"Otomatik" butonu sohbeti sol alt köşeye yerleştirir (GTA tarzı)</li>
+            <li>"Otomatik" butonu sohbeti sol alt köşeye yerleştirir</li>
             <li>Çıktı boyutunu değiştirmek için preset butonlarını kullanın</li>
           </ul>
         </div>
@@ -537,26 +543,7 @@
     document.getElementById('closeHelpModalBtn')?.addEventListener('click', hideHelpModal);
     document.querySelector('.help-modal-backdrop')?.addEventListener('click', hideHelpModal);
 
-    // Preset resolution buttons
-    document.querySelectorAll('.preset-btn').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const width = this.dataset.width;
-        const height = this.dataset.height;
 
-        // Update input fields
-        const widthInput = document.getElementById('exportWidth');
-        const heightInput = document.getElementById('exportHeight');
-        if (widthInput) widthInput.value = width;
-        if (heightInput) heightInput.value = height;
-
-        // Trigger input event to update dimensions
-        widthInput?.dispatchEvent(new Event('input'));
-
-        // Update active state
-        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
-        this.classList.add('active');
-      });
-    });
   </script>
 
   <script src="js/init.js?v=1.1.0" defer></script>

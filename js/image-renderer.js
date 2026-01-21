@@ -203,14 +203,25 @@
           throw error;
         }
 
-        // Get custom dimensions from inputs
+        // Get export dimensions from inputs or use image natural dimensions
+        const state = window.ImageOverlayState;
         const exportWidthInput = document.getElementById('exportWidth');
         const exportHeightInput = document.getElementById('exportHeight');
-        const exportPPIInput = document.getElementById('exportPPI');
 
-        const exportWidth = exportWidthInput ? parseInt(exportWidthInput.value) || 1600 : 1600;
-        const exportHeight = exportHeightInput ? parseInt(exportHeightInput.value) || 1200 : 1200;
-        const exportPPI = exportPPIInput ? parseInt(exportPPIInput.value) || 96 : 96;
+        const inputWidth = exportWidthInput ? parseInt(exportWidthInput.value) : 0;
+        const inputHeight = exportHeightInput ? parseInt(exportHeightInput.value) : 0;
+
+        // Use input values if valid, otherwise fall back to natural dimensions or defaults
+        const exportWidth = (inputWidth > 0) ? inputWidth :
+          (state?.naturalDimensions?.width || dropzone.offsetWidth || 1920);
+        const exportHeight = (inputHeight > 0) ? inputHeight :
+          (state?.naturalDimensions?.height || dropzone.offsetHeight || 1080);
+        const exportPPI = 96; // Default PPI
+
+        // Get image effect settings
+        const imageOpacity = state?.imageOpacity ?? 100;
+        const imageBlur = state?.imageBlur ?? 0;
+        const imageGrayscale = state?.imageGrayscale ?? false;
 
         if (window.ErrorLogger) {
           window.ErrorLogger.logInfo('Starting overlay image render', {
@@ -265,60 +276,19 @@
         ctx.fillStyle = '#000000';
         ctx.fillRect(0, 0, exportWidth, exportHeight);
 
-        // 2. Draw the background image with its transforms
+        // 2. Draw the background image with its transforms and effects
         await this.drawImageWithTransforms(
           ctx,
           exportWidth,
           exportHeight,
           scaleRatioX,
-          scaleRatioY
+          scaleRatioY,
+          { opacity: imageOpacity, blur: imageBlur, grayscale: imageGrayscale }
         );
 
-        // 3. Draw the chat overlay - use dom-to-image to capture CSS-styled overlay
-        const overlayContainer = document.querySelector('.chat-overlay-container');
-        if (overlayContainer) {
-          try {
-            // Capture the overlay container as an image (preserves all CSS styling)
-            const overlayBlob = await domtoimage.toBlob(overlayContainer, {
-              fontEmbedFn: () => Promise.resolve(null),
-            });
-
-            // Convert blob to image
-            const overlayImg = await new Promise((resolve, reject) => {
-              const img = new Image();
-              img.onload = () => resolve(img);
-              img.onerror = reject;
-              img.src = URL.createObjectURL(overlayBlob);
-            });
-
-            // Get overlay transform from state
-            const state = window.ImageOverlayState;
-            const scaledChatX = state.chatTransform.x * scaleRatioX;
-            const scaledChatY = state.chatTransform.y * scaleRatioY;
-
-            // Draw the overlay image with transforms
-            ctx.save();
-            ctx.translate(scaledChatX, scaledChatY);
-            ctx.scale(state.chatTransform.scale, state.chatTransform.scale);
-            ctx.drawImage(overlayImg, 0, 0);
-            ctx.restore();
-
-            // Clean up
-            URL.revokeObjectURL(overlayImg.src);
-          } catch (error) {
-            // Fallback to manual drawing if dom-to-image fails
-            if (window.ErrorLogger) {
-              window.ErrorLogger.logWarning('Overlay capture failed, using fallback', {
-                error: error.message,
-                context: 'renderOverlayImage overlay capture',
-              });
-            }
-            await this.drawChatOverlay(ctx, exportWidth, exportHeight, scaleRatioX, scaleRatioY);
-          }
-        } else {
-          // No overlay container, use manual drawing
-          await this.drawChatOverlay(ctx, exportWidth, exportHeight, scaleRatioX, scaleRatioY);
-        }
+        // 3. Draw the chat overlay - use manual canvas drawing to properly capture per-line positions
+        // This is more reliable than dom-to-image for independently positioned lines
+        await this.drawChatOverlayPerLine(ctx, exportWidth, exportHeight, scaleRatioX, scaleRatioY);
 
         // Convert canvas to blob
         let blob;
@@ -397,13 +367,15 @@
      * @param {number} canvasHeight - Canvas height in pixels
      * @param {number} scaleRatioX - Scale ratio for width (export/display)
      * @param {number} scaleRatioY - Scale ratio for height (export/display)
+     * @param {Object} effects - Optional image effects {opacity, blur, grayscale}
      */
     drawImageWithTransforms: async function (
       ctx,
       canvasWidth,
       canvasHeight,
       scaleRatioX = 1.0,
-      scaleRatioY = 1.0
+      scaleRatioY = 1.0,
+      effects = {}
     ) {
       const state = window.ImageOverlayState;
       const imgSrc = window.ImageDropZone?.state?.droppedImageSrc;
@@ -439,13 +411,10 @@
           imageSource: imgSrc?.substring(0, 100) + '...', // Log first 100 chars
         };
 
-        if (window.ImageErrorHandler) {
-          window.ImageErrorHandler.logImageError(errorInfo);
+        if (window.ErrorLogger) {
+          window.ErrorLogger.logError('Image load failed for rendering', errorInfo);
         }
-
-        throw new Error(
-          'Failed to load image. The image may be too large or corrupted. Please try uploading a smaller image or refresh the page.'
-        );
+        return;
       }
 
       // Calculate object-fit: contain dimensions
@@ -471,6 +440,25 @@
       // Apply transforms scaled to export dimensions (WYSIWYG)
       ctx.save();
 
+      // Apply image effects
+      const opacity = effects.opacity ?? 100;
+      const blur = effects.blur ?? 0;
+      const grayscale = effects.grayscale ?? false;
+
+      ctx.globalAlpha = opacity / 100;
+
+      // Build filter string for blur and grayscale
+      const filters = [];
+      if (blur > 0) {
+        filters.push(`blur(${blur}px)`);
+      }
+      if (grayscale) {
+        filters.push('grayscale(100%)');
+      }
+      if (filters.length > 0) {
+        ctx.filter = filters.join(' ');
+      }
+
       // Scale the user's transforms by the ratio between export and display
       const scaledTransformX = state.imageTransform.x * scaleRatioX;
       const scaledTransformY = state.imageTransform.y * scaleRatioY;
@@ -489,6 +477,131 @@
       ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 
       ctx.restore();
+    },
+
+    /**
+     * Draw chat overlay with per-line positioning
+     * Each line is drawn at its individual position stored in lineTransforms
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     * @param {number} canvasWidth - Canvas width in pixels
+     * @param {number} canvasHeight - Canvas height in pixels
+     * @param {number} scaleRatioX - Scale ratio for width (export/display)
+     * @param {number} scaleRatioY - Scale ratio for height (export/display)
+     */
+    drawChatOverlayPerLine: async function (
+      ctx,
+      canvasWidth,
+      canvasHeight,
+      scaleRatioX = 1.0,
+      scaleRatioY = 1.0
+    ) {
+      const state = window.ImageOverlayState;
+
+      // Get chat lines from output
+      const output = document.getElementById('output');
+      if (!output) return;
+
+      const generatedLines = output.querySelectorAll('.generated');
+      if (generatedLines.length === 0) return;
+
+      // Check if background is active
+      const hasBackground = window.ChatlogParser?.backgroundActive || false;
+
+      // Get font size from input field
+      const fontSizeInput = document.getElementById('font-label');
+      const fontSize = fontSizeInput
+        ? parseInt(fontSizeInput.value) || TEXT_FONT_SIZE
+        : TEXT_FONT_SIZE;
+
+      // Setup text rendering
+      ctx.font = `${TEXT_FONT_WEIGHT} ${fontSize}px ${getTextFontFamily()}`;
+      ctx.textBaseline = TEXT_BASELINE;
+
+      // Calculate line height
+      const LINE_HEIGHT = fontSize * 1.3;
+
+      // Process each generated line element
+      generatedLines.forEach((line, lineIndex) => {
+        // Get the per-line position from state
+        const lineTransform = state?.lineTransforms?.[lineIndex] || { x: 10, y: 10 + (lineIndex * LINE_HEIGHT * 2) };
+
+        // Scale positions for export  
+        const scaledLineX = lineTransform.x * scaleRatioX;
+        const scaledLineY = lineTransform.y * scaleRatioY;
+
+        ctx.save();
+
+        // Apply chat scale if set
+        const chatScale = state?.chatTransform?.scale || 1;
+        ctx.translate(scaledLineX, scaledLineY);
+        ctx.scale(chatScale, chatScale);
+
+        // Parse the line to get visual lines (handles <br> tags for line wrapping)
+        const visualLines = this.parseHTMLToVisualLines(line);
+
+        let visualLineY = 0;
+
+        // Draw each visual line (wrapped lines)
+        visualLines.forEach((visualLine) => {
+          let currentX = 0;
+
+          // If background is active, draw black bar first
+          if (hasBackground) {
+            let totalWidth = 0;
+            visualLine.forEach(seg => {
+              totalWidth += ctx.measureText(seg.text).width;
+            });
+
+            ctx.fillStyle = BACKGROUND_COLOR;
+            const bgPaddingH = 4;
+            const bgPaddingV = 1;
+            ctx.fillRect(-bgPaddingH, visualLineY - bgPaddingV, totalWidth + bgPaddingH * 2, LINE_HEIGHT + bgPaddingV * 2);
+          }
+
+          // Draw each text segment in this visual line
+          visualLine.forEach(segment => {
+            this.drawTextWithOutline(ctx, segment.text, currentX, visualLineY + TEXT_OFFSET_Y, segment.color);
+            currentX += ctx.measureText(segment.text).width;
+          });
+
+          visualLineY += LINE_HEIGHT;
+        });
+
+        ctx.restore();
+      });
+    },
+
+    /**
+     * Parse a line element to extract text segments with their colors
+     * @param {HTMLElement} lineElement - The .generated element
+     * @returns {Array} Array of {text, color} segments
+     */
+    parseLineToSegments: function (lineElement) {
+      const segments = [];
+
+      const processNode = (node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent;
+          if (text) {
+            const parentSpan = node.parentElement;
+            let color = '#f1f1f1';
+            if (parentSpan && parentSpan.tagName === 'SPAN') {
+              const style = window.getComputedStyle(parentSpan);
+              color = style.color || '#f1f1f1';
+            }
+            segments.push({ text, color });
+          }
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.tagName === 'BR') {
+            // Skip line breaks - we handle one line at a time
+            return;
+          }
+          node.childNodes.forEach(processNode);
+        }
+      };
+
+      lineElement.childNodes.forEach(processNode);
+      return segments;
     },
 
     /**

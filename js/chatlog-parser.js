@@ -1469,7 +1469,8 @@ $(document).ready(function () {
       if (censorBuffer.length > 0) {
         // Apply class based on censor style setting
         const blurClass = censorStyle === 'blur' ? ' blur-mode' : '';
-        html += `<span class="hidden censored-content${blurClass}" data-original="${censorBuffer}">${censorBuffer}</span>`;
+        // Wrap in color class to ensure color inheritance works with blur-mode
+        html += `<span class="${className}"><span class="hidden censored-content${blurClass}" data-original="${censorBuffer}">${censorBuffer}</span></span>`;
         censorBuffer = '';
       }
     };

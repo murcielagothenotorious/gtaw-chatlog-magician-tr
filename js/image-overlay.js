@@ -59,13 +59,26 @@
     linePanStart: { x: 0, y: 0 },
     linePanStartPos: { x: 0, y: 0 },
 
+    // Selection state for keyboard control
+    selectedElement: null, // 'chat' or line index number
+    selectedLineWrapper: null, // Reference to selected line element
+
     // Snap-to-edge settings
     snapEnabled: true,
     snapThreshold: 20, // pixels
 
+    // Alignment guide settings
+    alignmentThreshold: 3, // pixels - tolerance for alignment detection
+    alignmentGuideElements: { horizontal: null, vertical: null },
+
     // Drop zone dimensions
     dropZoneWidth: DEFAULT_DROPZONE_WIDTH,
     dropZoneHeight: DEFAULT_DROPZONE_HEIGHT,
+
+    // Image effect settings (Paint.NET-like layer controls)
+    imageOpacity: 100, // 0-100%
+    imageBlur: 0, // 0-20px
+    imageGrayscale: false, // true/false
 
     // Current mode
     currentMode: 'chat', // 'chat' or 'overlay'
@@ -100,6 +113,7 @@
       this.setupMouseHandlers();
       this.setupDimensionControls();
       this.setupQuickPositionButtons();
+      this.setupImageEffects();
 
       // Listen for image loaded event
       document.addEventListener('imageLoaded', (e) => {
@@ -408,6 +422,88 @@
     },
 
     /**
+     * Setup image effect controls (opacity, blur, grayscale)
+     */
+    setupImageEffects: function () {
+      const opacitySlider = document.getElementById('imageOpacity');
+      const opacityValue = document.getElementById('opacityValue');
+      const blurSlider = document.getElementById('imageBlur');
+      const blurValue = document.getElementById('blurValue');
+      const grayscaleCheckbox = document.getElementById('imageGrayscale');
+
+      // Opacity control
+      if (opacitySlider) {
+        opacitySlider.addEventListener('input', () => {
+          this.imageOpacity = parseInt(opacitySlider.value);
+          if (opacityValue) opacityValue.textContent = this.imageOpacity + '%';
+          this.applyImageEffects();
+        });
+      }
+
+      // Blur control
+      if (blurSlider) {
+        blurSlider.addEventListener('input', () => {
+          this.imageBlur = parseInt(blurSlider.value);
+          if (blurValue) blurValue.textContent = this.imageBlur + 'px';
+          this.applyImageEffects();
+        });
+      }
+
+      // Grayscale control
+      if (grayscaleCheckbox) {
+        grayscaleCheckbox.addEventListener('change', () => {
+          this.imageGrayscale = grayscaleCheckbox.checked;
+          this.applyImageEffects();
+        });
+      }
+
+      // Export dimension preset buttons
+      document.querySelectorAll('.image-settings-panel .preset-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const width = parseInt(btn.dataset.width);
+          const height = parseInt(btn.dataset.height);
+
+          const widthInput = document.getElementById('exportWidth');
+          const heightInput = document.getElementById('exportHeight');
+
+          if (width === 0 && height === 0) {
+            // "Orijinal" preset - use image natural dimensions
+            if (widthInput) widthInput.value = this.naturalDimensions.width || 1920;
+            if (heightInput) heightInput.value = this.naturalDimensions.height || 1080;
+          } else {
+            if (widthInput) widthInput.value = width;
+            if (heightInput) heightInput.value = height;
+          }
+
+          // Update active state
+          document.querySelectorAll('.image-settings-panel .preset-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+    },
+
+    /**
+     * Apply image effects (opacity, blur, grayscale) to the overlay image
+     */
+    applyImageEffects: function () {
+      const img = document.getElementById('overlayImage');
+      if (!img) return;
+
+      const filters = [];
+
+      if (this.imageBlur > 0) {
+        filters.push(`blur(${this.imageBlur}px)`);
+      }
+
+      if (this.imageGrayscale) {
+        filters.push('grayscale(100%)');
+      }
+
+      img.style.opacity = this.imageOpacity / 100;
+      img.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
+    },
+
+    /**
      * Setup mouse handlers for dragging and zooming
      */
     setupMouseHandlers: function () {
@@ -431,8 +527,10 @@
         const lineWrapper = clickedElement.closest('.chat-line-wrapper');
 
         if (lineWrapper && this.isLineDraggingEnabled) {
-          // Clicked on a specific line - drag just that line
+          // Clicked on a specific line - select and drag
           e.preventDefault();
+          const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
+          this.selectElement(lineIndex, lineWrapper); // Select line for keyboard control
           this.startLinePan(e, lineWrapper);
           return;
         }
@@ -446,9 +544,11 @@
         if (isClickOnChat && this.isChatDraggingEnabled && !lineWrapper) {
           // Clicked on chat container (not on a line) - drag entire chat
           e.preventDefault();
+          this.selectElement('chat'); // Select chat for keyboard control
           this.startChatPan(e);
         } else if (this.isImageDraggingEnabled) {
-          // Clicked elsewhere - drag image
+          // Clicked elsewhere - drag image, deselect chat/line
+          this.selectElement(null);
           this.startImagePan(e);
         }
       });
@@ -565,6 +665,63 @@
           if (positionMap[e.key]) {
             e.preventDefault();
             this.setQuickPosition(positionMap[e.key]);
+          }
+
+          // Arrow keys for fine position adjustment
+          const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+          if (arrowKeys.includes(e.key) && this.selectedElement !== null) {
+            e.preventDefault();
+
+            // Shift key for 1px precision, otherwise 10px
+            const step = e.shiftKey ? 1 : 10;
+            let deltaX = 0, deltaY = 0;
+
+            switch (e.key) {
+              case 'ArrowUp':
+                deltaY = -step;
+                break;
+              case 'ArrowDown':
+                deltaY = step;
+                break;
+              case 'ArrowLeft':
+                deltaX = -step;
+                break;
+              case 'ArrowRight':
+                deltaX = step;
+                break;
+            }
+
+            // Move selected element
+            if (this.selectedElement === 'chat') {
+              // Move entire chat
+              this.chatTransform.x += deltaX;
+              this.chatTransform.y += deltaY;
+              this.updateChatTransform();
+              this.saveChatSettings();
+            } else if (typeof this.selectedElement === 'number') {
+              // Move specific line
+              const lineIndex = this.selectedElement;
+              if (!this.lineTransforms[lineIndex]) {
+                this.lineTransforms[lineIndex] = { x: 0, y: 0 };
+              }
+              this.lineTransforms[lineIndex].x += deltaX;
+              this.lineTransforms[lineIndex].y += deltaY;
+
+              // Update line position visually
+              if (this.selectedLineWrapper) {
+                this.selectedLineWrapper.style.left = this.lineTransforms[lineIndex].x + 'px';
+                this.selectedLineWrapper.style.top = this.lineTransforms[lineIndex].y + 'px';
+              }
+
+              // Check alignment with other lines
+              this.checkAndShowAlignmentGuides(
+                lineIndex,
+                this.lineTransforms[lineIndex].x,
+                this.lineTransforms[lineIndex].y
+              );
+
+              this.saveChatSettings();
+            }
           }
         }
       });
@@ -684,7 +841,37 @@
         this.saveChatSettings();
       }
 
+      // Hide alignment guides when done dragging
+      this.hideAlignmentGuides();
+
       this.updateCursor();
+    },
+
+    /**
+     * Select an element for keyboard control
+     * @param {string|number|null} element - 'chat', line index, or null to deselect
+     * @param {HTMLElement} lineWrapper - Optional line wrapper element reference
+     */
+    selectElement: function (element, lineWrapper = null) {
+      // Remove selection from previous element
+      const chatOverlay = document.querySelector('.chat-overlay-container');
+      if (chatOverlay) {
+        chatOverlay.classList.remove('selected');
+      }
+      if (this.selectedLineWrapper) {
+        this.selectedLineWrapper.classList.remove('selected');
+      }
+
+      // Set new selection
+      this.selectedElement = element;
+      this.selectedLineWrapper = lineWrapper;
+
+      // Add selection visual to new element
+      if (element === 'chat' && chatOverlay) {
+        chatOverlay.classList.add('selected');
+      } else if (typeof element === 'number' && lineWrapper) {
+        lineWrapper.classList.add('selected');
+      }
     },
 
     /**
@@ -730,6 +917,96 @@
       // Apply position to line wrapper (using left/top for absolute positioning)
       this.currentDragLine.style.left = newX + 'px';
       this.currentDragLine.style.top = newY + 'px';
+
+      // Check and show alignment guides
+      this.checkAndShowAlignmentGuides(lineIndex, newX, newY);
+    },
+
+    /**
+     * Check alignment with other lines and show guide lines
+     */
+    checkAndShowAlignmentGuides: function (currentLineIndex, currentX, currentY) {
+      const dropzone = document.getElementById('imageDropzone');
+      if (!dropzone) return;
+
+      let horizontalAlign = null;
+      let verticalAlign = null;
+
+      // Get all line wrappers
+      const allLines = dropzone.querySelectorAll('.chat-line-wrapper');
+
+      allLines.forEach((line, idx) => {
+        if (idx === currentLineIndex) return; // Skip self
+
+        const lineTransform = this.lineTransforms[idx] || { x: 0, y: 0 };
+        const lineX = lineTransform.x;
+        const lineY = lineTransform.y;
+
+        // Check horizontal alignment (same Y position = horizontal line)
+        if (Math.abs(currentY - lineY) <= this.alignmentThreshold) {
+          horizontalAlign = { y: lineY, alignedWith: idx };
+        }
+
+        // Check vertical alignment (same X position = vertical line)
+        if (Math.abs(currentX - lineX) <= this.alignmentThreshold) {
+          verticalAlign = { x: lineX, alignedWith: idx };
+        }
+      });
+
+      // Show or hide alignment guide elements
+      this.updateAlignmentGuides(horizontalAlign, verticalAlign, dropzone);
+    },
+
+    /**
+     * Update alignment guide visual elements
+     */
+    updateAlignmentGuides: function (horizontalAlign, verticalAlign, dropzone) {
+      // Create guide elements if they don't exist
+      if (!this.alignmentGuideElements.horizontal) {
+        const hGuide = document.createElement('div');
+        hGuide.className = 'alignment-guide alignment-guide-horizontal';
+        dropzone.appendChild(hGuide);
+        this.alignmentGuideElements.horizontal = hGuide;
+      }
+      if (!this.alignmentGuideElements.vertical) {
+        const vGuide = document.createElement('div');
+        vGuide.className = 'alignment-guide alignment-guide-vertical';
+        dropzone.appendChild(vGuide);
+        this.alignmentGuideElements.vertical = vGuide;
+      }
+
+      const hGuide = this.alignmentGuideElements.horizontal;
+      const vGuide = this.alignmentGuideElements.vertical;
+
+      // Show/hide horizontal guide
+      if (horizontalAlign) {
+        hGuide.style.display = 'block';
+        hGuide.style.top = horizontalAlign.y + 'px';
+        hGuide.dataset.alignedWith = horizontalAlign.alignedWith;
+      } else {
+        hGuide.style.display = 'none';
+      }
+
+      // Show/hide vertical guide
+      if (verticalAlign) {
+        vGuide.style.display = 'block';
+        vGuide.style.left = verticalAlign.x + 'px';
+        vGuide.dataset.alignedWith = verticalAlign.alignedWith;
+      } else {
+        vGuide.style.display = 'none';
+      }
+    },
+
+    /**
+     * Hide all alignment guides
+     */
+    hideAlignmentGuides: function () {
+      if (this.alignmentGuideElements.horizontal) {
+        this.alignmentGuideElements.horizontal.style.display = 'none';
+      }
+      if (this.alignmentGuideElements.vertical) {
+        this.alignmentGuideElements.vertical.style.display = 'none';
+      }
     },
 
     /**
