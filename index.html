@@ -190,130 +190,114 @@
             <input type="file" id="imageFileInput" accept="image/*" style="display: none;"
               aria-label="Upload screenshot">
 
-            <div id="imageDropzone" class="image-dropzone">
-              <div class="dropzone-instructions">
-                <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-                <p>Ekran görüntünüzü buraya bırakın</p>
-                <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için çift tıklayın • <strong>Ctrl+V</strong>
-                  ile yapıştırın</p>
-              </div>
-            </div>
-
-            <!-- Quick Position & Controls -->
-            <div class="overlay-quick-controls">
-              <!-- Position Grid -->
-              <div class="position-grid-container">
-                <span class="control-label">Sohbet Pozisyonu:</span>
-                <div class="position-grid">
-                  <button type="button" class="position-btn" data-quick-position="top-left"
-                    title="Sol Üst (7)">↖</button>
-                  <button type="button" class="position-btn" data-quick-position="top-center"
-                    title="Orta Üst (8)">↑</button>
-                  <button type="button" class="position-btn" data-quick-position="top-right"
-                    title="Sağ Üst (9)">↗</button>
-                  <button type="button" class="position-btn" data-quick-position="middle-left"
-                    title="Sol (4)">←</button>
-                  <button type="button" class="position-btn" data-quick-position="middle-center"
-                    title="Orta (5)">⊕</button>
-                  <button type="button" class="position-btn" data-quick-position="middle-right"
-                    title="Sağ (6)">→</button>
-                  <button type="button" class="position-btn" data-quick-position="bottom-left"
-                    title="Sol Alt (1)">↙</button>
-                  <button type="button" class="position-btn" data-quick-position="bottom-center"
-                    title="Orta Alt (2)">↓</button>
-                  <button type="button" class="position-btn" data-quick-position="bottom-right"
-                    title="Sağ Alt (3)">↘</button>
-                </div>
-              </div>
-
-              <!-- Scale Slider -->
-              <div class="scale-slider-container">
-                <span class="control-label">Sohbet Boyutu:</span>
-                <div class="scale-slider-wrapper">
-                  <input type="range" id="chatScaleSlider" min="50" max="200" value="100" step="5" class="scale-slider">
-                  <span id="chatScaleValue" class="scale-value">100%</span>
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="quick-action-buttons">
-                <button type="button" id="autoPositionBtn" class="button small secondary"
-                  title="Sohbeti sol alta yerleştir">
-                  <i class="fas fa-magic" aria-hidden="true"></i> Otomatik
-                </button>
-                <button type="button" id="resetChatPositionBtn" class="button small secondary"
-                  title="Sohbet konumunu sıfırla (R)">
-                  <i class="fas fa-undo" aria-hidden="true"></i> Sıfırla
-                </button>
-                <button type="button" id="showHelpBtn" class="button small info" title="Nasıl kullanılır?">
-                  <i class="fas fa-question-circle" aria-hidden="true"></i> Yardım
-                </button>
-              </div>
-            </div>
-
-            <!-- Image Settings Panel -->
-            <div class="image-settings-panel">
-              <div class="settings-header">
-                <span class="control-label"><i class="fas fa-sliders-h"></i> Görüntü Ayarları</span>
-              </div>
-              <div class="settings-grid">
-                <!-- Export Dimensions -->
-                <div class="setting-item">
-                  <label class="setting-label">Çıktı Boyutu:</label>
-                  <div class="dimension-controls">
-                    <input type="number" id="exportWidth" min="100" max="7680" value="1920" step="1"
-                      title="Genişlik (px)">
-                    <span class="dimension-separator">×</span>
-                    <input type="number" id="exportHeight" min="100" max="4320" value="1080" step="1"
-                      title="Yükseklik (px)">
-                    <span class="dimension-unit">px</span>
+            <!-- Flex container for dropzone and sidebar -->
+            <div class="overlay-workspace">
+              <!-- Main Dropzone Area -->
+              <div class="overlay-main">
+                <div id="imageDropzone" class="image-dropzone">
+                  <div class="dropzone-instructions">
+                    <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                    <p>Ekran görüntünüzü buraya bırakın</p>
+                    <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için çift tıklayın •
+                      <strong>Ctrl+V</strong>
+                      ile yapıştırın
+                    </p>
                   </div>
-                  <div class="preset-buttons compact">
-                    <button type="button" class="preset-btn active" data-width="1920" data-height="1080">1080p</button>
-                    <button type="button" class="preset-btn" data-width="1280" data-height="720">720p</button>
-                    <button type="button" class="preset-btn" data-width="0" data-height="0">Orijinal</button>
+                </div>
+              </div>
+
+              <!-- Image Settings Sidebar (Paint.NET style) -->
+              <div class="image-settings-sidebar">
+                <div class="sidebar-header">
+                  <span class="sidebar-title"><i class="fas fa-layer-group"></i> Katmanlar</span>
+                </div>
+
+                <!-- Layers Section -->
+                <div class="sidebar-section layers-section">
+                  <div class="section-header">
+                    <span class="section-title">Katman Listesi</span>
+                    <button type="button" id="addLayerBtn" class="add-layer-btn" title="Yeni katman ekle">
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
+                  <div class="section-content layer-list-container">
+                    <div id="layerList" class="layer-list">
+                      <!-- Layers populated by JS -->
+                      <div class="layer-empty-state">
+                        <i class="fas fa-image"></i>
+                        <p>Katman yok</p>
+                        <p class="hint">Görsel yükleyin veya + butonuna tıklayın</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Opacity -->
-                <div class="setting-item">
-                  <label class="setting-label">Görüntü Opaklığı:</label>
-                  <div class="slider-control">
-                    <input type="range" id="imageOpacity" min="0" max="100" value="100" step="1" class="effect-slider">
-                    <span id="opacityValue" class="slider-value">100%</span>
+                <!-- Selected Layer Effects Section -->
+                <div class="sidebar-section layer-effects-section" id="layerEffectsSection">
+                  <div class="section-header">
+                    <span class="section-title">Katman Efektleri</span>
+                    <span id="selectedLayerName" class="selected-layer-badge">-</span>
+                  </div>
+                  <div class="section-content">
+                    <!-- Opacity -->
+                    <div class="effect-row">
+                      <label>Opaklık:</label>
+                      <input type="range" id="imageOpacity" min="0" max="100" value="100" step="1"
+                        class="effect-slider">
+                      <span id="opacityValue" class="effect-value">100%</span>
+                    </div>
+
+                    <!-- Blur -->
+                    <div class="effect-row">
+                      <label>Bulanıklık:</label>
+                      <input type="range" id="imageBlur" min="0" max="20" value="0" step="1" class="effect-slider">
+                      <span id="blurValue" class="effect-value">0px</span>
+                    </div>
+
+                    <!-- Grayscale -->
+                    <div class="effect-row checkbox-row">
+                      <label class="checkbox-label">
+                        <input type="checkbox" id="imageGrayscale">
+                        <span>Siyah Beyaz</span>
+                      </label>
+                    </div>
                   </div>
                 </div>
 
-                <!-- Blur -->
-                <div class="setting-item">
-                  <label class="setting-label">Görüntü Bulanıklığı:</label>
-                  <div class="slider-control">
-                    <input type="range" id="imageBlur" min="0" max="20" value="0" step="1" class="effect-slider">
-                    <span id="blurValue" class="slider-value">0px</span>
+                <!-- Export Dimensions Section -->
+                <div class="sidebar-section">
+                  <div class="section-header">
+                    <span class="section-title">Çıktı Boyutu</span>
                   </div>
-                </div>
-
-                <!-- Grayscale -->
-                <div class="setting-item checkbox-item">
-                  <label class="checkbox-label">
-                    <input type="checkbox" id="imageGrayscale">
-                    <span class="checkbox-text">Siyah Beyaz</span>
-                  </label>
+                  <div class="section-content">
+                    <div class="dimension-row">
+                      <label>Genişlik:</label>
+                      <input type="number" id="exportWidth" min="100" max="7680" value="1920" step="1">
+                      <span class="unit">px</span>
+                    </div>
+                    <div class="dimension-row">
+                      <label>Yükseklik:</label>
+                      <input type="number" id="exportHeight" min="100" max="4320" value="1080" step="1">
+                      <span class="unit">px</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Simplified Info -->
-            <div class="overlay-help-hint">
-              <p>
-                <i class="fas fa-lightbulb" aria-hidden="true"></i>
-                <strong>Hızlı başlangıç:</strong> Görsel yapıştır (Ctrl+V) → Sohbeti konumlandır → İndir
-                <button type="button" id="showHelpBtn2" class="help-link">Detaylı yardım →</button>
-              </p>
             </div>
+          </div>
+
+          <!-- Simplified Info -->
+          <div class="overlay-help-hint">
+            <p>
+              <i class="fas fa-lightbulb" aria-hidden="true"></i>
+              <strong>Hızlı başlangıç:</strong> Görsel yapıştır (Ctrl+V) → Sohbeti konumlandır → İndir
+              <button type="button" id="showHelpBtn2" class="help-link">Detaylı yardım →</button>
+            </p>
           </div>
         </div>
       </div>
+    </div>
     </div>
   </main>
 
@@ -332,6 +316,8 @@
     crossorigin="anonymous" defer onerror="console.warn('FileSaver.js failed to load from CDN')"></script>
 
   <!-- Application scripts -->
+  <script src="js/layer-manager.js?v=1.1.0" defer></script>
+  <script src="js/layer-ui.js?v=1.1.0" defer></script>
   <script src="js/image-dropzone.js?v=1.1.0" defer></script>
   <script src="js/image-overlay.js?v=1.1.0" defer></script>
   <script src="js/image-renderer.js?v=1.1.0" defer></script>
@@ -488,11 +474,15 @@
             </div>
             <div class="shortcut-item">
               <kbd>R</kbd>
-              <span>Sohbeti sıfırla</span>
+              <span>Konumu sıfırla</span>
             </div>
             <div class="shortcut-item">
-              <kbd>Shift</kbd>
-              <span>Kenar yapışmayı kapat</span>
+              <kbd>Ok Tuşları</kbd>
+              <span>Hızlı pozisyon (10px)</span>
+            </div>
+            <div class="shortcut-item">
+              <kbd>Shift + Ok</kbd>
+              <span>Hassas pozisyon (1px)</span>
             </div>
           </div>
         </div>
@@ -501,10 +491,11 @@
         <div class="help-section">
           <h3><i class="fas fa-lightbulb"></i> İpuçları</h3>
           <ul class="help-tips">
-            <li>Sohbet kenarlara yaklaştığında otomatik olarak yapışır</li>
-            <li>Ayarlarınız otomatik kaydedilir, sayfa yenilendiğinde korunur</li>
-            <li>"Otomatik" butonu sohbeti sol alt köşeye yerleştirir</li>
-            <li>Çıktı boyutunu değiştirmek için preset butonlarını kullanın</li>
+            <li>Sohbet satırlarını tek tek sürükleyip istediğiniz yere koyabilirsiniz.</li>
+            <li>Ok tuşları ile seçili satırı taşıyabilirsiniz.</li>
+            <li><strong>Shift</strong> tuşuna basılı tutarak ok tuşlarını kullanırsanız daha hassas hareket eder.</li>
+            <li>"Görüntü Ayarları" panelinden bulanıklık, opaklık ve siyah-beyaz efektlerini kullanabilirsiniz.</li>
+            <li>Çıktı boyutunu değiştirmek için preset butonlarını kullanın.</li>
           </ul>
         </div>
       </div>

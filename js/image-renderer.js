@@ -367,7 +367,7 @@
      * @param {number} canvasHeight - Canvas height in pixels
      * @param {number} scaleRatioX - Scale ratio for width (export/display)
      * @param {number} scaleRatioY - Scale ratio for height (export/display)
-     * @param {Object} effects - Optional image effects {opacity, blur, grayscale}
+     * @param {Object} effects - Optional image effects {opacity, blur, grayscale} (for fallback mode)
      */
     drawImageWithTransforms: async function (
       ctx,
@@ -377,6 +377,14 @@
       scaleRatioY = 1.0,
       effects = {}
     ) {
+      // Check if LayerManager is available and has layers
+      if (window.LayerManager && window.LayerManager.layers.length > 0) {
+        // Multi-layer rendering
+        await this.drawAllLayers(ctx, canvasWidth, canvasHeight, scaleRatioX, scaleRatioY);
+        return;
+      }
+
+      // Fallback to single-image rendering
       const state = window.ImageOverlayState;
       const imgSrc = window.ImageDropZone?.state?.droppedImageSrc;
 
@@ -416,6 +424,65 @@
         }
         return;
       }
+
+      // Draw single image with effects (pass state transform and scale ratios)
+      const stateTransform = state.imageTransform || { x: 0, y: 0, scale: 1 };
+      await this.drawSingleImage(ctx, img, canvasWidth, canvasHeight, effects, stateTransform, scaleRatioX, scaleRatioY);
+    },
+
+    /**
+     * Draw all layers from LayerManager
+     */
+    drawAllLayers: async function (ctx, canvasWidth, canvasHeight, scaleRatioX, scaleRatioY) {
+      const layers = window.LayerManager.getVisibleLayersSorted();
+      const selectedId = window.LayerManager.selectedLayerId;
+
+      for (const layer of layers) {
+        if (layer.type === 'image' && layer.imageSrc) {
+          // Load layer image
+          const img = new Image();
+          img.src = layer.imageSrc;
+
+          try {
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = () => reject(new Error('Failed to load layer image'));
+              setTimeout(() => reject(new Error('Layer image load timeout')), IMAGE_LOAD_TIMEOUT_MS);
+            });
+
+            // Draw layer with its effects and transform
+            // If this is the selected layer, prioritize ImageOverlayState's real-time transform
+            let layerTransform = layer.transform || { x: 0, y: 0, scale: 1 };
+            if (layer.id === selectedId && window.ImageOverlayState) {
+              layerTransform = window.ImageOverlayState.imageTransform;
+            }
+
+            await this.drawSingleImage(ctx, img, canvasWidth, canvasHeight, {
+              opacity: layer.opacity,
+              blur: layer.blur,
+              grayscale: layer.grayscale
+            }, layerTransform, scaleRatioX, scaleRatioY);
+
+            console.log(`[Renderer] Drew layer: ${layer.name}`);
+          } catch (error) {
+            console.warn(`[Renderer] Failed to draw layer ${layer.name}:`, error);
+          }
+        }
+      }
+    },
+
+    /**
+     * Draw a single image with effects
+     * @param {CanvasRenderingContext2D} ctx - Canvas context
+     * @param {Image} img - The image to draw
+     * @param {number} canvasWidth - Canvas width
+     * @param {number} canvasHeight - Canvas height
+     * @param {Object} effects - Effects to apply {opacity, blur, grayscale}
+     * @param {Object} transform - Transform to apply {x, y, scale}, optional
+     * @param {number} scaleRatioX - Scale ratio for X transforms
+     * @param {number} scaleRatioY - Scale ratio for Y transforms
+     */
+    drawSingleImage: async function (ctx, img, canvasWidth, canvasHeight, effects = {}, transform = null, scaleRatioX = 1, scaleRatioY = 1) {
 
       // Calculate object-fit: contain dimensions
       const imageAspect = img.naturalWidth / img.naturalHeight;
@@ -459,9 +526,12 @@
         ctx.filter = filters.join(' ');
       }
 
+      // Use provided transform or default to identity
+      const imageTransform = transform || { x: 0, y: 0, scale: 1 };
+
       // Scale the user's transforms by the ratio between export and display
-      const scaledTransformX = state.imageTransform.x * scaleRatioX;
-      const scaledTransformY = state.imageTransform.y * scaleRatioY;
+      const scaledTransformX = imageTransform.x * scaleRatioX;
+      const scaledTransformY = imageTransform.y * scaleRatioY;
 
       // Calculate where the image center ends up after base positioning and translation
       const centerX = offsetX + drawWidth / 2 + scaledTransformX;
@@ -471,7 +541,7 @@
       ctx.translate(centerX, centerY);
 
       // Apply scaling (scale value stays the same regardless of export/display ratio)
-      ctx.scale(state.imageTransform.scale, state.imageTransform.scale);
+      ctx.scale(imageTransform.scale, imageTransform.scale);
 
       // Draw image centered on the current point
       ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
@@ -496,6 +566,7 @@
       scaleRatioY = 1.0
     ) {
       const state = window.ImageOverlayState;
+      if (!state) return;
 
       // Get chat lines from output
       const output = document.getElementById('output');
@@ -509,32 +580,41 @@
 
       // Get font size from input field
       const fontSizeInput = document.getElementById('font-label');
-      const fontSize = fontSizeInput
+      const baseFontSize = fontSizeInput
         ? parseInt(fontSizeInput.value) || TEXT_FONT_SIZE
         : TEXT_FONT_SIZE;
 
-      // Setup text rendering
-      ctx.font = `${TEXT_FONT_WEIGHT} ${fontSize}px ${getTextFontFamily()}`;
+      // Save context for global scaling
+      ctx.save();
+
+      // 1. First, apply the global scaleRatio to scale from "display pixels" to "export pixels"
+      // This ensures that the font size and all coordinates are correctly upscaled/downscaled.
+      ctx.scale(scaleRatioX, scaleRatioY);
+
+      // 2. Apply the chat container's transform (relative to display pixels)
+      const chatX = state.chatTransform?.x || 0;
+      const chatY = state.chatTransform?.y || 0;
+      const chatScale = state.chatTransform?.scale || 1;
+
+      ctx.translate(chatX, chatY);
+      ctx.scale(chatScale, chatScale);
+
+      // 3. Setup text rendering (using base pixel size because we scaled the context)
+      ctx.font = `${TEXT_FONT_WEIGHT} ${baseFontSize}px ${getTextFontFamily()}`;
       ctx.textBaseline = TEXT_BASELINE;
 
-      // Calculate line height
-      const LINE_HEIGHT = fontSize * 1.3;
+      // Calculate line height (matching app.js CONFIG.LINE_HEIGHT_DEFAULT)
+      const LINE_HEIGHT = baseFontSize * 1.45;
 
       // Process each generated line element
       generatedLines.forEach((line, lineIndex) => {
-        // Get the per-line position from state
-        const lineTransform = state?.lineTransforms?.[lineIndex] || { x: 10, y: 10 + (lineIndex * LINE_HEIGHT * 2) };
-
-        // Scale positions for export  
-        const scaledLineX = lineTransform.x * scaleRatioX;
-        const scaledLineY = lineTransform.y * scaleRatioY;
+        // Get the per-line position relative to the chat container
+        const lineTransform = state.lineTransforms?.[lineIndex] || { x: 10, y: 10 + (lineIndex * LINE_HEIGHT * 1.5) };
 
         ctx.save();
 
-        // Apply chat scale if set
-        const chatScale = state?.chatTransform?.scale || 1;
-        ctx.translate(scaledLineX, scaledLineY);
-        ctx.scale(chatScale, chatScale);
+        // Translate to line position (scale is already applied to the context)
+        ctx.translate(lineTransform.x, lineTransform.y);
 
         // Parse the line to get visual lines (handles <br> tags for line wrapping)
         const visualLines = this.parseHTMLToVisualLines(line);
@@ -560,7 +640,16 @@
 
           // Draw each text segment in this visual line
           visualLine.forEach(segment => {
-            this.drawTextWithOutline(ctx, segment.text, currentX, visualLineY + TEXT_OFFSET_Y, segment.color);
+            // Handle blur mode for censored content
+            if (segment.isCensored && segment.isBlurMode) {
+              ctx.save();
+              ctx.filter = 'blur(5px)';
+              this.drawTextWithOutline(ctx, segment.text, currentX, visualLineY + TEXT_OFFSET_Y, segment.color);
+              ctx.filter = 'none';
+              ctx.restore();
+            } else {
+              this.drawTextWithOutline(ctx, segment.text, currentX, visualLineY + TEXT_OFFSET_Y, segment.color);
+            }
             currentX += ctx.measureText(segment.text).width;
           });
 
@@ -569,6 +658,8 @@
 
         ctx.restore();
       });
+
+      ctx.restore(); // Restore from scale(scaleRatioX, scaleRatioY)
     },
 
     /**
@@ -740,7 +831,7 @@
      * Parse HTML structure to extract visual lines (separated by <br> tags)
      * This reuses the existing line break logic from chatlog-parser.js
      * @param {HTMLElement} element - The .generated element with HTML and <br> tags
-     * @returns {Array} Array of visual lines, each containing {text, color} segments
+     * @returns {Array} Array of visual lines, each containing {text, color, isCensored, isBlurMode} segments
      */
     parseHTMLToVisualLines: function (element) {
       const visualLines = [];
@@ -752,6 +843,24 @@
         return style.color || '#f1f1f1';
       };
 
+      // Check if an element is censored content
+      const isCensoredContent = (el) => {
+        if (!el || !el.classList) return false;
+        return el.classList.contains('censored-content');
+      };
+
+      // Check if censored content is in blur mode (vs remove mode)
+      const isBlurMode = (el) => {
+        if (!el || !el.classList) return false;
+        return el.classList.contains('blur-mode');
+      };
+
+      // Check if element is hidden (remove mode for censorship)
+      const isHidden = (el) => {
+        if (!el || !el.classList) return false;
+        return el.classList.contains('hidden') && !el.classList.contains('blur-mode');
+      };
+
       // Recursively process nodes
       const processNode = (node) => {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -761,7 +870,23 @@
             const parentSpan = node.parentElement;
             const color =
               parentSpan && parentSpan.tagName === 'SPAN' ? getColor(parentSpan) : '#f1f1f1';
-            currentLine.push({ text, color });
+
+            // Check if parent is censored content
+            const censored = parentSpan ? isCensoredContent(parentSpan) : false;
+            const blurMode = parentSpan ? isBlurMode(parentSpan) : false;
+            const hidden = parentSpan ? isHidden(parentSpan) : false;
+
+            // Skip hidden censored content (remove mode)
+            if (censored && hidden) {
+              return; // Don't add to output - this text should not be rendered
+            }
+
+            currentLine.push({
+              text,
+              color,
+              isCensored: censored,
+              isBlurMode: blurMode
+            });
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
           if (node.tagName === 'BR') {
@@ -771,6 +896,15 @@
               currentLine = [];
             }
           } else if (node.tagName === 'SPAN') {
+            // Check if this span contains censored content in remove mode
+            const censored = isCensoredContent(node);
+            const hidden = isHidden(node);
+
+            // Skip entire span if it's hidden censored content
+            if (censored && hidden) {
+              return;
+            }
+
             // Process children of span
             node.childNodes.forEach(processNode);
           } else {

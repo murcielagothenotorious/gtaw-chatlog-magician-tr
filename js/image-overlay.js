@@ -122,6 +122,9 @@
           return;
         }
 
+        // Reset image effects to defaults when loading a new image
+        this.resetImageEffects();
+
         this.imageElement = e.detail.image;
         this.naturalDimensions = {
           width: e.detail.image.naturalWidth || 0,
@@ -176,6 +179,46 @@
         });
         classObserver.observe(output, { attributes: true, attributeFilter: ['class'] });
       }
+    },
+
+    /**
+     * Reset image effects to defaults (called when loading a new image)
+     */
+    resetImageEffects: function () {
+      // Reset state to defaults
+      this.imageOpacity = 100;
+      this.imageBlur = 0;
+      this.imageGrayscale = false;
+
+      // Reset UI elements
+      const opacitySlider = document.getElementById('imageOpacity');
+      const blurSlider = document.getElementById('imageBlur');
+      const grayscaleCheckbox = document.getElementById('imageGrayscale');
+
+      if (opacitySlider) {
+        opacitySlider.value = 100;
+      }
+      if (blurSlider) {
+        blurSlider.value = 0;
+      }
+      if (grayscaleCheckbox) {
+        grayscaleCheckbox.checked = false;
+      }
+
+      // Update value displays
+      const opacityValue = document.getElementById('opacityValue');
+      const blurValue = document.getElementById('blurValue');
+      if (opacityValue) {
+        opacityValue.textContent = '100%';
+      }
+      if (blurValue) {
+        blurValue.textContent = '0px';
+      }
+
+      // Also reset line transforms for per-line dragging
+      this.lineTransforms = {};
+
+      console.log('[ImageOverlay] Image effects reset to defaults');
     },
 
     /**
@@ -237,7 +280,8 @@
       // Get font size for line height calculation
       const fontSizeInput = document.getElementById('font-label');
       const fontSize = fontSizeInput ? (parseInt(fontSizeInput.value) || 12) : 12;
-      const lineHeight = fontSize * 1.4; // Approximate line height
+      const lineHeight = fontSize * 1.45; // Slightly increased for better spacing
+      let currentY = 20; // Start with some top padding
 
       // Each line is now completely independent and can be positioned anywhere
       generatedLines.forEach((line, index) => {
@@ -248,17 +292,24 @@
 
         // Set default position (stacked like original) or saved position
         const savedTransform = this.lineTransforms[index];
-        const defaultY = 10 + (index * lineHeight); // Stack lines vertically
-        const defaultX = 10;
+        // Ensure defaultX is relative to the container, not dropzone edge
+        const defaultX = 20;
 
         if (savedTransform) {
           lineWrapper.style.left = savedTransform.x + 'px';
           lineWrapper.style.top = savedTransform.y + 'px';
+          // If we have saved transforms, we don't care about stacking currentY
+          // But consecutive lines without transforms might need it? 
+          // Actually, if we are loading positions, we use them.
+          // If we reset positions (F5), savedTransform is undefined.
         } else {
           lineWrapper.style.left = defaultX + 'px';
-          lineWrapper.style.top = defaultY + 'px';
+          lineWrapper.style.top = currentY + 'px';
           // Store default position
-          this.lineTransforms[index] = { x: defaultX, y: defaultY };
+          this.lineTransforms[index] = { x: defaultX, y: currentY };
+
+          // Increment Y for next line
+          currentY += lineHeight;
         }
 
         const clone = line.cloneNode(true);
@@ -267,15 +318,17 @@
         clone.classList.add('chat-overlay-line');
 
         // Apply font styling to each line
+        const fontFamily = (window.ChatlogParser && window.ChatlogParser.currentFontFamily) || 'Arial, sans-serif';
         lineWrapper.style.fontSize = fontSize + 'px';
+        lineWrapper.style.fontFamily = fontFamily;
 
         lineWrapper.appendChild(clone);
 
-        // Add directly to dropzone (not to container)
-        dropzone.appendChild(lineWrapper);
+        // Add to chat overlay container (so it respects container transforms like scale/translate)
+        chatOverlay.appendChild(lineWrapper);
       });
 
-      // Container still needed for reference but not for containing lines
+      // Add container to dropzone
       dropzone.appendChild(chatOverlay);
 
       this.chatElement = chatOverlay;
@@ -283,6 +336,8 @@
       // Apply font size from input (reuse fontSizeInput from above)
       if (fontSizeInput) {
         chatOverlay.style.fontSize = fontSize + 'px';
+        const fontFamily = (window.ChatlogParser && window.ChatlogParser.currentFontFamily) || 'Arial, sans-serif';
+        chatOverlay.style.fontFamily = fontFamily;
 
         // Apply size-aware classes (same as #output)
         chatOverlay.classList.toggle('is-small', fontSize <= 12);
@@ -320,10 +375,13 @@
 
       // Ensure initial state matches current mode (chat mode by default)
       // Overlay controls should only be visible when NOT in chat mode
+      const helpHint = document.querySelector('.overlay-help-hint');
+
       if (this.currentMode === 'chat') {
         overlayControls.forEach((control) => control.classList.add('button-hidden'));
         if (overlaySection) overlaySection.style.display = 'none';
         if (outputDiv) outputDiv.style.display = 'block';
+        if (helpHint) helpHint.style.display = 'none';
       }
 
       toggleButton?.addEventListener('click', () => {
@@ -336,14 +394,21 @@
           if (modeText) modeText.textContent = 'Fotoğraf';
           if (overlaySection) overlaySection.style.display = 'block';
           if (outputDiv) outputDiv.style.display = 'none';
+          if (helpHint) helpHint.style.display = 'block';
           // Show all overlay controls
           overlayControls.forEach((control) => control.classList.remove('button-hidden'));
+
+          // Trigger dropzone resize now that it's visible
+          if (window.LayerUI && typeof window.LayerUI.updateDropzoneSize === 'function') {
+            window.LayerUI.updateDropzoneSize();
+          }
         } else {
           toggleButton.classList.add('active');
           const modeText = toggleButton.querySelector('.mode-text');
           if (modeText) modeText.textContent = 'Sohbet';
           if (overlaySection) overlaySection.style.display = 'none';
           if (outputDiv) outputDiv.style.display = 'block';
+          if (helpHint) helpHint.style.display = 'none';
           // Hide all overlay controls
           overlayControls.forEach((control) => control.classList.add('button-hidden'));
         }
@@ -578,6 +643,13 @@
 
         const isChatControl = e.ctrlKey || e.metaKey;
         e.preventDefault();
+
+        // Check if we are allowed to scroll this image (selected layer check)
+        if (window.LayerManager && window.LayerManager.selectedLayerId && !isChatControl) {
+          if (img.dataset.layerId !== window.LayerManager.selectedLayerId) {
+            return; // Ignore scroll on non-selected layers (unless it's chat control)
+          }
+        }
 
         if (isChatControl && this.isChatDraggingEnabled) {
           // Ctrl/Cmd + scroll scales chat
@@ -1109,6 +1181,15 @@
         this.imageTransform.x = constrainedX;
         this.imageTransform.y = constrainedY;
 
+        // Sync back to LayerManager if available
+        if (window.LayerManager && img.dataset.layerId) {
+          window.LayerManager.updateLayerTransform(img.dataset.layerId, {
+            x: this.imageTransform.x,
+            y: this.imageTransform.y,
+            scale: this.imageTransform.scale
+          }, false); // Pass false to suppress 'layersChanged' event and avoid re-render loop
+        }
+
         // The image element is positioned at basePosition (offsetX, offsetY)
         // We want to scale from its center, so set transform-origin to the center point
         // relative to the element's top-left corner
@@ -1306,6 +1387,12 @@
      * Update dropzone dimensions based on export settings
      */
     updateDropzoneDimensions: function () {
+      // If LayerUI is available, let it handle the complex visual sizing
+      if (window.LayerUI && typeof window.LayerUI.updateDropzoneSize === 'function') {
+        window.LayerUI.updateDropzoneSize();
+        return;
+      }
+
       const dropzone = this._domCache.dropzone || document.getElementById('imageDropzone');
       if (!dropzone) {
         console.warn('[ImageOverlay] Cannot update dimensions - dropzone not found');
@@ -1538,29 +1625,29 @@
     },
 
     /**
-     * Load chat settings from localStorage
-     */
+    * Load chat settings from localStorage
+    */
     loadChatSettings: function () {
       try {
         const saved = localStorage.getItem('overlayChatSettings');
         if (saved) {
           const settings = JSON.parse(saved);
-          if (settings.chatTransform) {
-            this.chatTransform = settings.chatTransform;
-          }
+          // We do NOT load chatTransform or lineTransforms anymore to ensure fresh start on F5
+          // if (settings.chatTransform) {
+          //   this.chatTransform = settings.chatTransform;
+          // }
           if (typeof settings.snapEnabled === 'boolean') {
             this.snapEnabled = settings.snapEnabled;
           }
-          if (settings.lineTransforms) {
-            this.lineTransforms = settings.lineTransforms;
-          }
-          console.log('[ImageOverlay] Loaded chat settings from localStorage');
+          // if (settings.lineTransforms) {
+          //   this.lineTransforms = settings.lineTransforms;
+          // }
+          console.log('[ImageOverlay] Loaded chat settings (positions skipped)');
         }
       } catch (e) {
         console.warn('[ImageOverlay] Could not load chat settings:', e);
       }
     },
-
     /**
      * Set chat scale
      * @param {number} scale - Scale value (0.5 to 2.0)

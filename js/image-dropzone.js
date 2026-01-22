@@ -347,7 +347,40 @@
       const img = new Image();
       img.onload = () => {
         this.state.droppedImageElement = img;
-        this.renderImage(img);
+        this.state.droppedImageSrc = src;
+
+        // If LayerManager is active, add layer and let LayerUI handle rendering
+        if (window.LayerManager) {
+          const layerName = file?.name ? file.name.replace(/\.[^/.]+$/, '') : 'Görüntü';
+          window.LayerManager.addImageLayer(src, img, layerName);
+
+          // If this is the first image, set export dimensions to match image natural size
+          // DISABLED: User wants fixed canvas size
+          /*
+          if (window.LayerManager.layers.filter(l => l.type === 'image').length === 1) {
+            const exportWidthInput = document.getElementById('exportWidth');
+            const exportHeightInput = document.getElementById('exportHeight');
+            if (exportWidthInput) exportWidthInput.value = img.naturalWidth;
+            if (exportHeightInput) exportHeightInput.value = img.naturalHeight;
+
+            console.log(`[ImageDropZone] First image loaded, setting export size to ${img.naturalWidth}x${img.naturalHeight}`);
+
+            // Trigger dropzone resize if LayerUI is available
+            if (window.LayerUI && typeof window.LayerUI.updateDropzoneSize === 'function') {
+              window.LayerUI.updateDropzoneSize();
+            }
+          }
+          */
+
+          // Still ensure dropzone is sized correctly according to existing inputs
+          if (window.LayerUI && typeof window.LayerUI.updateDropzoneSize === 'function') {
+            window.LayerUI.updateDropzoneSize();
+          }
+        } else {
+          // Fallback: render directly if no LayerManager
+          this.renderImage(img);
+        }
+
         this.state.isProcessing = false;
         this.hideLoading();
         this.hideInstructions();
