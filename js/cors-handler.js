@@ -68,6 +68,8 @@
         // Use high quality without forcing background or transforms
         quality: 1.0,
         cacheBust: false,
+        // Skip font embedding entirely to prevent CORS/blob errors
+        skipFonts: true,
         filter: function (node) {
           // Skip problematic external resources
           if (node.tagName === 'LINK' && node.href) {

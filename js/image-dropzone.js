@@ -107,6 +107,9 @@
      * Handle drag over
      */
     handleDragOver: function (event) {
+      // Don't show drag-over style if an image is already loaded (user is moving image, not uploading)
+      if (this.state.droppedImageSrc) return;
+
       const dropzone = event.currentTarget;
       if (dropzone) {
         dropzone.classList.add(CSS_CLASSES.dragOver);
@@ -117,6 +120,9 @@
      * Handle drag leave
      */
     handleDragLeave: function (event) {
+      // If image is loaded, we're not tracking drag state anyway
+      if (this.state.droppedImageSrc) return;
+
       const dropzone = event.currentTarget;
       if (dropzone) {
         dropzone.classList.remove(CSS_CLASSES.dragOver);
@@ -135,12 +141,8 @@
       const file = event.dataTransfer?.files?.[0];
       if (file) {
         this.processFile(file);
-      } else if (!this.state.droppedImageSrc) {
-        // Only show error if no image is loaded and no file was dropped
-        console.warn('[ImageDropZone] No file found in drop event');
-        this.showError('No file detected. Please try again.');
       }
-      // If image is already loaded and no file in drop, this was likely a drag operation - ignore silently
+      // If no file in drop event (e.g., user was dragging existing image), silently ignore
     },
 
     /**

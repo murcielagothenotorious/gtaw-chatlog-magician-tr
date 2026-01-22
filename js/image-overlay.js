@@ -53,6 +53,7 @@
 
     // Per-line dragging state
     lineTransforms: {}, // { lineIndex: { x: 0, y: 0 } }
+    lineOpacities: {}, // { lineIndex: opacity (0-100) } - per-line opacity tracking
     isLineDraggingEnabled: true, // Per-line mode active
     isLinePanning: false,
     currentDragLine: null, // Currently dragged line element
@@ -61,7 +62,8 @@
 
     // Selection state for keyboard control
     selectedElement: null, // 'chat' or line index number
-    selectedLineWrapper: null, // Reference to selected line element
+    selectedLineWrapper: null, // Reference to selected line element (single)
+    selectedLineWrappers: [], // Array of selected line elements (multi-select)
 
     // Snap-to-edge settings
     snapEnabled: true,
@@ -228,6 +230,20 @@
       const dropzone = document.getElementById('imageDropzone');
       if (!dropzone) return;
 
+      // Check if an image exists - don't render chat without an image
+      const overlayImage = document.getElementById('overlayImage');
+      const hasImageLayers = window.LayerManager &&
+        window.LayerManager.layers.some(l => l.type === 'image');
+
+      if (!overlayImage && !hasImageLayers) {
+        // No image present, clear any existing chat overlay and return
+        const existing = dropzone.querySelector('.chat-overlay-container');
+        if (existing) existing.remove();
+        const existingLines = dropzone.querySelectorAll('.chat-line-wrapper.independent-line');
+        existingLines.forEach(line => line.remove());
+        return;
+      }
+
       // Get output HTML from existing parser
       const output = document.getElementById('output');
       if (!output) return;
@@ -261,56 +277,62 @@
       const dropzoneWidth = dropzone.offsetWidth;
       const dropzoneHeight = dropzone.offsetHeight;
 
-      // Create chat overlay container
-      const chatOverlay = document.createElement('div');
-      chatOverlay.className = 'chat-overlay-container';
-
-      // Add data attribute if background is active (use global state from chatlog-parser)
-      if (ChatlogParser.backgroundActive) {
-        chatOverlay.setAttribute('data-background', 'active');
-      }
-
-      // Limit chat width to dropzone - with padding for better appearance
+      // Calculate max width for text wrapping
       const maxChatWidth = Math.min(outputWidth, dropzoneWidth - 40); // 20px padding each side
-      chatOverlay.style.width = 'auto';
-      chatOverlay.style.maxWidth = maxChatWidth + 'px';
-      chatOverlay.style.wordWrap = 'break-word';
-      chatOverlay.style.overflowWrap = 'break-word';
 
       // Get font size for line height calculation
       const fontSizeInput = document.getElementById('font-label');
       const fontSize = fontSizeInput ? (parseInt(fontSizeInput.value) || 12) : 12;
-      const lineHeight = fontSize * 1.45; // Slightly increased for better spacing
+      // Use a more generous line height multiplier to prevent overlap
+      const lineHeight = fontSize * 1.6;
+      const startX = 20; // Left padding
       let currentY = 20; // Start with some top padding
 
-      // Each line is now completely independent and can be positioned anywhere
+      // DON'T clear lineTransforms - preserve user-dragged positions across re-renders
+      // Only clear when explicitly reset via resetChatPosition()
+
+      // Each line is now completely independent from the start
       generatedLines.forEach((line, index) => {
-        // Create a wrapper for each line - positioned absolutely on dropzone
+        // Create a wrapper for each line
         const lineWrapper = document.createElement('div');
+        // Each line starts as independent-line with absolute positioning
         lineWrapper.className = 'chat-line-wrapper independent-line';
         lineWrapper.dataset.lineIndex = index;
 
-        // Set default position (stacked like original) or saved position
+        // Check if we have a saved transform for this line (from previous manual drag)
         const savedTransform = this.lineTransforms[index];
-        // Ensure defaultX is relative to the container, not dropzone edge
-        const defaultX = 20;
 
         if (savedTransform) {
+          // Use saved position from previous drag
           lineWrapper.style.left = savedTransform.x + 'px';
           lineWrapper.style.top = savedTransform.y + 'px';
-          // If we have saved transforms, we don't care about stacking currentY
-          // But consecutive lines without transforms might need it? 
-          // Actually, if we are loading positions, we use them.
-          // If we reset positions (F5), savedTransform is undefined.
+          // Restore max-width if saved (for wrapping)
+          if (savedTransform.maxWidth) {
+            lineWrapper.style.maxWidth = savedTransform.maxWidth + 'px';
+          } else {
+            lineWrapper.style.maxWidth = maxChatWidth + 'px';
+          }
         } else {
-          lineWrapper.style.left = defaultX + 'px';
-          lineWrapper.style.top = currentY + 'px';
-          // Store default position
-          this.lineTransforms[index] = { x: defaultX, y: currentY };
+          // Calculate default position for this line (stacked vertically)
+          const defaultX = startX;
+          const defaultY = currentY;
 
-          // Increment Y for next line
-          currentY += lineHeight;
+          lineWrapper.style.left = defaultX + 'px';
+          lineWrapper.style.top = defaultY + 'px';
+          lineWrapper.style.maxWidth = maxChatWidth + 'px';
+
+          // Store default position so it persists
+          this.lineTransforms[index] = {
+            x: defaultX,
+            y: defaultY,
+            maxWidth: maxChatWidth
+          };
         }
+
+        // Apply word wrapping styles
+        lineWrapper.style.wordWrap = 'break-word';
+        lineWrapper.style.overflowWrap = 'break-word';
+        lineWrapper.style.whiteSpace = 'pre-wrap';
 
         const clone = line.cloneNode(true);
         // Preserve all classes from original - they include color classes
@@ -324,41 +346,20 @@
 
         lineWrapper.appendChild(clone);
 
-        // Add to chat overlay container (so it respects container transforms like scale/translate)
-        chatOverlay.appendChild(lineWrapper);
+        // Add directly to dropzone (not to container) for true independence
+        dropzone.appendChild(lineWrapper);
+
+        // Calculate next Y position based on actual rendered height
+        // Use estimated height for initial stacking
+        const estimatedLineHeight = lineHeight * 1.2;
+        currentY += estimatedLineHeight;
       });
 
-      // Add container to dropzone
-      dropzone.appendChild(chatOverlay);
+      // chatOverlay container is no longer needed since lines are independent
+      // But we keep it for potential future use with chatTransform
+      // Don't add empty container to DOM
 
-      this.chatElement = chatOverlay;
-
-      // Apply font size from input (reuse fontSizeInput from above)
-      if (fontSizeInput) {
-        chatOverlay.style.fontSize = fontSize + 'px';
-        const fontFamily = (window.ChatlogParser && window.ChatlogParser.currentFontFamily) || 'Arial, sans-serif';
-        chatOverlay.style.fontFamily = fontFamily;
-
-        // Apply size-aware classes (same as #output)
-        chatOverlay.classList.toggle('is-small', fontSize <= 12);
-        chatOverlay.classList.toggle('is-large', fontSize >= 18);
-
-        // Apply font smoothing for smaller sizes
-        if (fontSize <= 13) {
-          chatOverlay.classList.add('font-smoothed');
-        } else {
-          chatOverlay.classList.remove('font-smoothed');
-        }
-      }
-
-      // Apply text padding from inputs
-      const textPaddingHorizontal = document.getElementById('textPaddingHorizontal');
-      const textPaddingVertical = document.getElementById('textPaddingVertical');
-      if (textPaddingHorizontal && textPaddingVertical) {
-        const paddingH = parseInt(textPaddingHorizontal.value) || 0;
-        const paddingV = parseInt(textPaddingVertical.value) || 0;
-        chatOverlay.style.padding = `${paddingV}px ${paddingH}px`;
-      }
+      this.chatElement = dropzone; // Reference for compatibility
 
       this.updateChatTransform();
     },
@@ -595,8 +596,12 @@
           // Clicked on a specific line - select and drag
           e.preventDefault();
           const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
-          this.selectElement(lineIndex, lineWrapper); // Select line for keyboard control
-          this.startLinePan(e, lineWrapper);
+          const addToSelection = e.shiftKey || e.ctrlKey || e.metaKey;
+          this.selectElement(lineIndex, lineWrapper, addToSelection);
+          // Only start drag if not adding to selection (to allow clicking without dragging)
+          if (!addToSelection) {
+            this.startLinePan(e, lineWrapper);
+          }
           return;
         }
 
@@ -877,6 +882,23 @@
       this.chatTransform.x = newX;
       this.chatTransform.y = newY;
 
+      // Dynamic wrapping: Adjust max-width based on new X position
+      // scaling is handled by transform, so we calculate raw available space
+      const dropzone = document.getElementById('imageDropzone');
+      if (dropzone) {
+        const dropzoneWidth = dropzone.offsetWidth;
+        // Calculate available width from current X to right edge
+        // We assume padding of ~20px
+        const availableWidth = dropzoneWidth - newX - 20;
+
+        // Only apply if it constrains the chat (don't make it 2000px if it's small)
+        // But we need to allow it to grow if it was previously constrained
+        const chatOverlay = document.querySelector('.chat-overlay-container');
+        if (chatOverlay && availableWidth > 50) { // Minimum width check
+          chatOverlay.style.maxWidth = availableWidth + 'px';
+        }
+      }
+
       this.updateChatTransform();
       this.updateCoordinateDisplay();
     },
@@ -923,26 +945,67 @@
      * Select an element for keyboard control
      * @param {string|number|null} element - 'chat', line index, or null to deselect
      * @param {HTMLElement} lineWrapper - Optional line wrapper element reference
+     * @param {boolean} addToSelection - If true, add to existing selection (Shift/Ctrl)
      */
-    selectElement: function (element, lineWrapper = null) {
-      // Remove selection from previous element
+    selectElement: function (element, lineWrapper = null, addToSelection = false) {
       const chatOverlay = document.querySelector('.chat-overlay-container');
-      if (chatOverlay) {
-        chatOverlay.classList.remove('selected');
-      }
-      if (this.selectedLineWrapper) {
-        this.selectedLineWrapper.classList.remove('selected');
-      }
 
-      // Set new selection
-      this.selectedElement = element;
-      this.selectedLineWrapper = lineWrapper;
+      if (addToSelection && typeof element === 'number' && lineWrapper) {
+        // Multi-select mode: toggle selection on this line
+        const idx = this.selectedLineWrappers.indexOf(lineWrapper);
+        if (idx > -1) {
+          // Already selected, deselect it
+          this.selectedLineWrappers.splice(idx, 1);
+          lineWrapper.classList.remove('selected');
+        } else {
+          // Add to selection
+          this.selectedLineWrappers.push(lineWrapper);
+          lineWrapper.classList.add('selected');
+        }
+        // Update primary selection to last selected
+        if (this.selectedLineWrappers.length > 0) {
+          this.selectedElement = parseInt(this.selectedLineWrappers[this.selectedLineWrappers.length - 1].dataset.lineIndex);
+          this.selectedLineWrapper = this.selectedLineWrappers[this.selectedLineWrappers.length - 1];
+        } else {
+          this.selectedElement = null;
+          this.selectedLineWrapper = null;
+        }
+      } else {
+        // Single select mode: clear all previous selections
+        if (chatOverlay) {
+          chatOverlay.classList.remove('selected');
+        }
+        if (this.selectedLineWrapper) {
+          this.selectedLineWrapper.classList.remove('selected');
+        }
+        // Clear multi-selection
+        this.selectedLineWrappers.forEach(wrapper => {
+          wrapper.classList.remove('selected');
+        });
+        this.selectedLineWrappers = [];
 
-      // Add selection visual to new element
-      if (element === 'chat' && chatOverlay) {
-        chatOverlay.classList.add('selected');
-      } else if (typeof element === 'number' && lineWrapper) {
-        lineWrapper.classList.add('selected');
+        // Set new selection
+        this.selectedElement = element;
+        this.selectedLineWrapper = lineWrapper;
+
+        if (element === 'chat' && chatOverlay) {
+          chatOverlay.classList.add('selected');
+        } else if (typeof element === 'number' && lineWrapper) {
+          lineWrapper.classList.add('selected');
+          this.selectedLineWrappers = [lineWrapper];
+
+          // Update opacity slider to match this line's saved opacity
+          const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
+          const savedOpacity = this.lineOpacities[lineIndex] ?? 100;
+          const opacitySlider = document.getElementById('chatOpacity');
+          const opacityValue = document.getElementById('chatOpacityValue');
+          if (opacitySlider) {
+            opacitySlider.value = savedOpacity;
+          }
+          if (opacityValue) {
+            opacityValue.textContent = savedOpacity + '%';
+          }
+        }
       }
     },
 
@@ -954,10 +1017,32 @@
       this.currentDragLine = lineWrapper;
 
       const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
+      const dropzone = document.getElementById('imageDropzone');
 
-      // Initialize transform for this line if not exists
+      // If line is not yet independent (static), we need to "detach" it
+      // calculating its current position and making it absolute
       if (!this.lineTransforms[lineIndex]) {
-        this.lineTransforms[lineIndex] = { x: 0, y: 0 };
+        // Get current position relative to dropzone
+        const rect = lineWrapper.getBoundingClientRect();
+        const dropzoneRect = dropzone.getBoundingClientRect();
+
+        // Calculate relative coordinates
+        // We use the current visual position as the starting point
+        const currentX = rect.left - dropzoneRect.left;
+        const currentY = rect.top - dropzoneRect.top;
+
+        this.lineTransforms[lineIndex] = { x: currentX, y: currentY };
+
+        // Apply absolute positioning immediately to prevent jumping
+        lineWrapper.style.position = 'absolute';
+        lineWrapper.style.left = currentX + 'px';
+        lineWrapper.style.top = currentY + 'px';
+        lineWrapper.style.margin = '0'; // Remove any margins that might affect position
+        lineWrapper.classList.add('independent-line');
+
+        // Match width to current width to prevent shape change initially
+        // straight afterwards, updateLinePan will handle dynamic resizing
+        lineWrapper.style.width = rect.width + 'px';
       }
 
       this.linePanStart.x = e.clientX;
@@ -989,6 +1074,20 @@
       // Apply position to line wrapper (using left/top for absolute positioning)
       this.currentDragLine.style.left = newX + 'px';
       this.currentDragLine.style.top = newY + 'px';
+
+      // Line-wrap feature: calculate max-width based on distance to right edge
+      const dropzone = document.getElementById('imageDropzone');
+      if (dropzone) {
+        const dropzoneWidth = dropzone.offsetWidth;
+        const padding = 10; // Right padding
+        const availableWidth = Math.max(100, dropzoneWidth - newX - padding);
+
+        // Apply word-wrap styles to enable text wrapping
+        this.currentDragLine.style.maxWidth = availableWidth + 'px';
+        this.currentDragLine.style.wordWrap = 'break-word';
+        this.currentDragLine.style.whiteSpace = 'normal';
+        this.currentDragLine.style.overflowWrap = 'break-word';
+      }
 
       // Check and show alignment guides
       this.checkAndShowAlignmentGuides(lineIndex, newX, newY);
@@ -1206,29 +1305,27 @@
     },
 
     /**
-     * Update chat transform
+     * Update chat transform - applies scale to all independent lines
      */
     updateChatTransform: function () {
-      const chatOverlay = document.querySelector('.chat-overlay-container');
-      if (!chatOverlay) return;
+      const dropzone = document.getElementById('imageDropzone');
+      if (!dropzone) return;
+
+      // Get all independent line wrappers
+      const lineWrappers = dropzone.querySelectorAll('.chat-line-wrapper.independent-line');
+      if (lineWrappers.length === 0) return;
 
       requestAnimationFrame(() => {
-        // Get dropzone dimensions for dynamic bounds
-        const dropzone = document.getElementById('imageDropzone');
-        const dropzoneWidth = dropzone ? dropzone.offsetWidth : this.dropZoneWidth;
-        const dropzoneHeight = dropzone ? dropzone.offsetHeight : this.dropZoneHeight;
+        // Apply scale transform to each line
+        // Note: chatTransform.x and chatTransform.y are now added to individual line positions
+        // Here we only apply the scale
+        const scale = this.chatTransform.scale || 1;
 
-        // Constrain chat to dropzone bounds (with some padding)
-        const maxX = Math.max(0, dropzoneWidth - 50);
-        const maxY = Math.max(0, dropzoneHeight - 50);
-        const constrainedX = Math.max(-maxX, Math.min(maxX, this.chatTransform.x));
-        const constrainedY = Math.max(-maxY, Math.min(maxY, this.chatTransform.y));
-
-        // Update stored values if constrained
-        if (constrainedX !== this.chatTransform.x) this.chatTransform.x = constrainedX;
-        if (constrainedY !== this.chatTransform.y) this.chatTransform.y = constrainedY;
-
-        chatOverlay.style.transform = `translate(${constrainedX}px, ${constrainedY}px) scale(${this.chatTransform.scale})`;
+        lineWrappers.forEach((wrapper) => {
+          // Apply scale via transform, preserving any existing transforms
+          wrapper.style.transform = `scale(${scale})`;
+          wrapper.style.transformOrigin = 'top left';
+        });
       });
     },
 

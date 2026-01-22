@@ -33,6 +33,8 @@
             });
 
             document.addEventListener('layerSelectionChanged', (e) => {
+                // Re-render to update which element gets the #overlayImage ID
+                this.renderAllLayersToDropzone();
                 this.onSelectionChanged(e.detail.layer);
             });
 
@@ -130,6 +132,48 @@
                     }
                 });
             }
+
+            // Chat Settings Controls
+            const chatOpacitySlider = document.getElementById('chatOpacity');
+
+            if (chatOpacitySlider) {
+                chatOpacitySlider.addEventListener('input', () => {
+                    const value = parseInt(chatOpacitySlider.value);
+                    document.getElementById('chatOpacityValue').textContent = value + '%';
+
+                    // Check if there are selected lines (multi-select supported)
+                    const selectedWrappers = window.ImageOverlayState?.selectedLineWrappers || [];
+
+                    if (selectedWrappers.length > 0) {
+                        // Apply to all selected lines and save their opacity
+                        selectedWrappers.forEach(wrapper => {
+                            wrapper.style.opacity = value / 100;
+                            const lineIndex = parseInt(wrapper.dataset.lineIndex);
+                            if (window.ImageOverlayState) {
+                                window.ImageOverlayState.lineOpacities[lineIndex] = value;
+                            }
+                        });
+                    } else {
+                        // No line selected - apply to all (fallback behavior)
+                        const chatOverlay = document.querySelector('.chat-overlay-container');
+                        if (chatOverlay) {
+                            chatOverlay.style.opacity = value / 100;
+                        }
+                        const lines = document.querySelectorAll('.chat-line-wrapper.independent-line');
+                        lines.forEach(line => {
+                            line.style.opacity = value / 100;
+                        });
+                    }
+
+                    if (window.ImageOverlayState) {
+                        window.ImageOverlayState.chatOpacity = value;
+                    }
+                });
+            }
+
+            // Note: chatScaleSlider removed per user request - system handles text sizing
+
+            // Note: chatBackgroundToggle removed per user request
         },
 
         /**
@@ -148,10 +192,10 @@
             // Get available space (parent container)
             const container = dropzone.parentElement;
             // Fallback to a reasonable default if container is hidden/0 width
-            const maxWidth = (container && container.offsetWidth > 0) ? container.offsetWidth - 40 : Math.min(window.innerWidth - 300, 1200);
+            const maxWidth = (container && container.offsetWidth > 0) ? container.offsetWidth - 40 : Math.min(window.innerWidth - 60, 1400);
 
-            // Dynamic max height based on viewport
-            const maxHeight = Math.min(window.innerHeight - 250, 700);
+            // Dynamic max height based on viewport - more flexible now that sidebar is below
+            const maxHeight = Math.max(400, window.innerHeight - 350);
 
             let newWidth, newHeight;
 
@@ -245,13 +289,8 @@
                 imgEl.style.zIndex = index + 1;
                 imgEl.style.position = 'absolute';
 
-                // Apply transform from layer (or ImageOverlayState for selected)
-                if (isSelected && window.ImageOverlayState) {
-                    const state = window.ImageOverlayState;
-                    imgEl.style.transform = `translate(${state.imageTransform.x}px, ${state.imageTransform.y}px) scale(${state.imageTransform.scale})`;
-                } else {
-                    imgEl.style.transform = `translate(${layer.transform.x}px, ${layer.transform.y}px) scale(${layer.transform.scale})`;
-                }
+                // Apply transform from layer data (always use layer.transform for consistency)
+                imgEl.style.transform = `translate(${layer.transform.x}px, ${layer.transform.y}px) scale(${layer.transform.scale})`;
 
                 // Calculate dimensions on load
                 imgEl.onload = function () {

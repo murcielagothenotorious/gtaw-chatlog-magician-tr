@@ -236,6 +236,11 @@ $(document).ready(function () {
     $output.attr('data-font-family', fontFamily);
     // Store for other modules
     ChatlogParser.currentFontFamily = fontFamily;
+
+    // Update overlay in real-time if in overlay mode
+    if (window.ImageOverlayState && window.ImageOverlayState.currentMode === 'overlay') {
+      window.ImageOverlayState.renderChatOverlay();
+    }
   }
 
   // Toggle contrast style: off -> low -> medium -> high -> off

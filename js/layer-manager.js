@@ -120,12 +120,6 @@
             const index = this.layers.findIndex(l => l.id === id);
             if (index === -1) return;
 
-            // Don't allow removing the last layer
-            if (this.layers.length <= 1) {
-                console.warn('[LayerManager] Cannot remove the last layer');
-                return;
-            }
-
             this.layers.splice(index, 1);
 
             // Update zIndex for remaining layers

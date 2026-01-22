@@ -610,25 +610,29 @@
       generatedLines.forEach((line, lineIndex) => {
         // Get the per-line position relative to the chat container
         const lineTransform = state.lineTransforms?.[lineIndex] || { x: 10, y: 10 + (lineIndex * LINE_HEIGHT * 1.5) };
+        const maxWidth = lineTransform.maxWidth || 800; // Default max width if not set
 
         ctx.save();
 
         // Translate to line position (scale is already applied to the context)
         ctx.translate(lineTransform.x, lineTransform.y);
 
-        // Parse the line to get visual lines (handles <br> tags for line wrapping)
-        const visualLines = this.parseHTMLToVisualLines(line);
+        // Parse the line to get segments then apply word wrapping
+        const segments = this.parseLineToSegments(line);
+
+        // Apply word wrapping to segments based on maxWidth
+        const wrappedLines = this.wrapTextSegments(ctx, segments, maxWidth);
 
         let visualLineY = 0;
 
-        // Draw each visual line (wrapped lines)
-        visualLines.forEach((visualLine) => {
+        // Draw each wrapped line
+        wrappedLines.forEach((wrappedLine) => {
           let currentX = 0;
 
           // If background is active, draw black bar first
           if (hasBackground) {
             let totalWidth = 0;
-            visualLine.forEach(seg => {
+            wrappedLine.forEach(seg => {
               totalWidth += ctx.measureText(seg.text).width;
             });
 
@@ -639,7 +643,7 @@
           }
 
           // Draw each text segment in this visual line
-          visualLine.forEach(segment => {
+          wrappedLine.forEach(segment => {
             // Handle blur mode for censored content
             if (segment.isCensored && segment.isBlurMode) {
               ctx.save();
@@ -663,12 +667,77 @@
     },
 
     /**
+     * Wrap text segments to fit within maxWidth
+     * @param {CanvasRenderingContext2D} ctx - Canvas context for measuring text
+     * @param {Array} segments - Array of {text, color, isCensored, isBlurMode} segments
+     * @param {number} maxWidth - Maximum width in pixels
+     * @returns {Array} Array of lines, each containing segments that fit within maxWidth
+     */
+    wrapTextSegments: function (ctx, segments, maxWidth) {
+      const lines = [];
+      let currentLine = [];
+      let currentLineWidth = 0;
+
+      segments.forEach(segment => {
+        const words = segment.text.split(/(\s+)/); // Split by whitespace, keep whitespace
+
+        words.forEach(word => {
+          if (word === '') return;
+
+          const wordWidth = ctx.measureText(word).width;
+
+          // If adding this word would exceed maxWidth, start a new line
+          if (currentLineWidth + wordWidth > maxWidth && currentLine.length > 0 && word.trim() !== '') {
+            lines.push(currentLine);
+            currentLine = [];
+            currentLineWidth = 0;
+          }
+
+          // Add word to current line
+          if (word.trim() !== '' || currentLine.length > 0) {
+            currentLine.push({
+              text: word,
+              color: segment.color,
+              isCensored: segment.isCensored,
+              isBlurMode: segment.isBlurMode
+            });
+            currentLineWidth += wordWidth;
+          }
+        });
+      });
+
+      // Add the last line if it has content
+      if (currentLine.length > 0) {
+        lines.push(currentLine);
+      }
+
+      return lines.length > 0 ? lines : [[]];
+    },
+
+
+    /**
      * Parse a line element to extract text segments with their colors
      * @param {HTMLElement} lineElement - The .generated element
-     * @returns {Array} Array of {text, color} segments
+     * @returns {Array} Array of {text, color, isCensored, isBlurMode} segments
      */
     parseLineToSegments: function (lineElement) {
       const segments = [];
+
+      // Helper functions for censorship detection
+      const isCensoredContent = (el) => {
+        if (!el || !el.classList) return false;
+        return el.classList.contains('censored-content');
+      };
+
+      const isBlurMode = (el) => {
+        if (!el || !el.classList) return false;
+        return el.classList.contains('blur-mode');
+      };
+
+      const isHidden = (el) => {
+        if (!el || !el.classList) return false;
+        return el.classList.contains('hidden') && !el.classList.contains('blur-mode');
+      };
 
       const processNode = (node) => {
         if (node.nodeType === Node.TEXT_NODE) {
@@ -676,15 +745,29 @@
           if (text) {
             const parentSpan = node.parentElement;
             let color = '#f1f1f1';
+            let censored = false;
+            let blur = false;
+
             if (parentSpan && parentSpan.tagName === 'SPAN') {
+              // Check if parent is hidden censored content - skip it
+              if (isCensoredContent(parentSpan) && isHidden(parentSpan)) {
+                return; // Don't add hidden censored text
+              }
+
               const style = window.getComputedStyle(parentSpan);
               color = style.color || '#f1f1f1';
+              censored = isCensoredContent(parentSpan);
+              blur = isBlurMode(parentSpan);
             }
-            segments.push({ text, color });
+            segments.push({ text, color, isCensored: censored, isBlurMode: blur });
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
           if (node.tagName === 'BR') {
             // Skip line breaks - we handle one line at a time
+            return;
+          }
+          // Skip hidden censored spans entirely
+          if (node.tagName === 'SPAN' && isCensoredContent(node) && isHidden(node)) {
             return;
           }
           node.childNodes.forEach(processNode);
