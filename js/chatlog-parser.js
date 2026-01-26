@@ -1240,16 +1240,16 @@ $(document).ready(function () {
 
     if (line.includes('[STREET]')) {
       if (line.includes(' / ')) {
-        const parts = line.match(/\[STREET\] Street name: (.+?) \/ (.+?) \| Zone: ([^.]+)(\.)/);
+        const parts = line.match(/\[STREET\] Sokak ismi: (.+?) \/ (.+?) \| Zone: ([^.]+)(\.)/);
         if (parts) {
           const [_, street1, street2, zone, dot] = parts;
-          return `${wrapSpan('blue', '[STREET]')} Street name: ${wrapSpan('orange', street1)} / ${wrapSpan('orange', street2)} | Zone: ${wrapSpan('orange', zone)}${dot}`;
+          return `${wrapSpan('blue', '[STREET]')} Sokak ismi: ${wrapSpan('orange', street1)} / ${wrapSpan('orange', street2)} | Zone: ${wrapSpan('orange', zone)}${dot}`;
         }
       } else {
-        const parts = line.match(/\[STREET\] Street name: (.+?) \| Zone: ([^.]+)(\.)/);
+        const parts = line.match(/\[STREET\] Sokak ismi: (.+?) \| Zone: ([^.]+)(\.)/);
         if (parts) {
           const [_, street, zone, dot] = parts;
-          return `${wrapSpan('blue', '[STREET]')} Street name: ${wrapSpan('orange', street)} | Zone: ${wrapSpan('orange', zone)}${dot}`;
+          return `${wrapSpan('blue', '[STREET]')} Sokak ismi: ${wrapSpan('orange', street)} | Zone: ${wrapSpan('orange', zone)}${dot}`;
         }
       }
     }
