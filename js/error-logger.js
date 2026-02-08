@@ -49,33 +49,56 @@
   /**
    * Adds an entry to the log
    */
+
+  let isLoggingError = false;
   function addLogEntry(type, message, details = {}) {
-    const entry = {
-      timestamp: timestamp(),
-      type: type,
-      message: String(message),
-      details: details,
-      url: window.location.href,
-      stack: details.stack || new Error().stack,
-    };
-
-    // Add to appropriate array
-    if (!errorLog[type]) {
-      errorLog[type] = [];
+    if (isLoggingError) {
+      console.warn('[ErrorLogger] Recursive error detected, skipping log');
+      return null;
     }
-    errorLog[type].push(entry);
+    
+    try {
+      isLoggingError = true;
+      
+      const entry = {
+        timestamp: timestamp(),
+        type: type,
+        message: String(message || 'Unknown error'), // null/undefined koruması
+        details: details || {},
+        url: window.location.href,
+        stack: (details && details.stack) || new Error().stack,
+      };
 
-    // Limit array size
-    if (errorLog[type].length > CONFIG.MAX_ENTRIES) {
-      errorLog[type].shift();
+      // Add to appropriate array
+      if (!errorLog[type]) {
+        errorLog[type] = [];
+      }
+      errorLog[type].push(entry);
+
+      // Limit array size
+      if (errorLog[type].length > CONFIG.MAX_ENTRIES) {
+        errorLog[type].shift();
+      }
+
+      // Auto-save to localStorage (but catch errors)
+      if (CONFIG.AUTO_SAVE) {
+        try {
+          saveToStorage();
+        } catch (storageError) {
+          // Don't let storage errors create infinite loop
+          console.error('[ErrorLogger] Failed to save:', storageError);
+        }
+      }
+
+      return entry;
+      
+    } catch (e) {
+      // Error logger'da hata olursa sadece console'a yaz
+      console.error('[ErrorLogger] Failed to log error:', e);
+      return null;
+    } finally {
+      isLoggingError = false;
     }
-
-    // Auto-save to localStorage
-    if (CONFIG.AUTO_SAVE) {
-      saveToStorage();
-    }
-
-    return entry;
   }
 
   /**
@@ -277,11 +300,14 @@
    * Captures uncaught errors
    */
   window.addEventListener('error', function (event) {
+    if (isLoggingError) return;
+    
     // Filter out noise from extensions and third-party scripts
     if (shouldIgnoreError(event.message, event.filename, event.error?.stack)) {
       return;
     }
 
+  try {
     const entry = addLogEntry('errors', event.message, {
       filename: event.filename,
       lineno: event.lineno,
@@ -290,8 +316,11 @@
       errorType: event.error?.name,
     });
 
-    if (CONFIG.SHOW_CONSOLE) {
-      console.error('🔴 [Logged Error]', entry);
+    if (CONFIG.SHOW_CONSOLE && entry) {
+        console.error('🔴 [Logged Error]', entry);
+      }
+    } catch (e) {
+      console.error('[ErrorLogger] Failed to handle error event:', e);
     }
   });
 

@@ -1057,6 +1057,7 @@ $(document).ready(function () {
 
     if (
       lowerLine.includes(':') &&
+      !line.startsWith('(Araç İçi)') &&
       !lowerLine.includes('(kısık ses)') &&
       !lowerLine.includes('(alçak ses)') &&
       !lowerLine.includes('fısıldar') &&
@@ -1169,11 +1170,11 @@ $(document).ready(function () {
     }
 
     const youBeenShotPattern =
-      /You've been shot in the (.+?) with a (.+?) for (\d+) damage\. \(\(Health : (\d+)\)\)/;
+      /(.+?) bölgesinden (.+?) tarafından (.+?) silahıyla (\d+) hasar aldın\. \(\(Can: (\d+)\)\)/;
     const youBeenShotMatch = line.match(youBeenShotPattern);
     if (youBeenShotMatch) {
-      const [_, text, text2, numbers, numbers2] = youBeenShotMatch;
-      return `<span class="death">You've been shot</span> <span class="white"> in the </span> <span class="death">${escapeHTML(text)}</span> <span class="white"> with a </span> <span class="death">${escapeHTML(text2)}</span> <span class="white"> for </span> <span class="death">${escapeHTML(numbers)}</span> <span class="white"> damage. ((Health : </span> <span class="death">${escapeHTML(numbers2)}</span> <span class="white">))</span>`;
+      const [_, bolge, oyuncu, silah, hasar, can] = youBeenShotMatch;
+      return `<span class="death">${escapeHTML(bolge)}</span> <span class="white">bölgesinden</span> <span class="death">${escapeHTML(oyuncu)}</span> <span class="white">tarafından</span> <span class="death">${escapeHTML(silah)}</span> <span class="white">silahıyla</span> <span class="death">${escapeHTML(hasar)}</span> <span class="white">hasar aldın. ((Can:</span> <span class="death">${escapeHTML(can)}</span><span class="white">))</span>`;
     }
 
     if (line === '********** ACİL ÇAĞRI **********') {
@@ -1232,9 +1233,9 @@ $(document).ready(function () {
 
     if (/\[[^\]]+ -> [^\]]+\]/.test(line)) return wrapSpan('depColor', line);
 
-    if (lowerLine.includes('[megaphone]:')) return wrapSpan('yellow', line);
+    if (lowerLine.includes('[megafon]:')) return wrapSpan('yellow', line);
 
-    if (line.includes('[Microphone]:')) {
+    if (line.includes('[Mikrofon]:')) {
       return wrapSpan('yellow', line);
     }
 
