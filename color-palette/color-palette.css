@@ -142,6 +142,13 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+/* Coloring mode: make censored content interactive for coloring */
+.coloring-mode .censored-content {
+    user-select: auto !important;
+    pointer-events: auto !important;
+    cursor: pointer;
+}
+
 .selected-for-coloring {
     background-color: rgba(255, 255, 255, 0.2) !important;
     outline: 2px solid #007bff;

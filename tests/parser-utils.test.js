@@ -11,10 +11,22 @@ describe('parser-utils', () => {
     expect(utils.replaceCurlyApostrophes("It’s fine")).toBe("It's fine");
   });
 
-  it('wrapSpan wraps visible text and hides censored segments', () => {
+  it('wrapSpan outputs invisible censored-remove span in remove mode (default)', () => {
     const html = utils.wrapSpan('white', "Hello ÷secret÷ world");
     expect(html).toContain('<span class="white colorable">Hello</span>');
     expect(html).toContain('censored-content');
+    expect(html).toContain('censored-remove');
+    expect(html).toContain('data-original="secret"');
+    expect(html).toContain('<span class="white colorable">world</span>');
+  });
+
+  it('wrapSpan shows colorable blurred censored text with color class in blur mode', () => {
+    const html = utils.wrapSpan('white', "Hello ÷secret÷ world", 'blur');
+    expect(html).toContain('<span class="white colorable">Hello</span>');
+    expect(html).toContain('censored-content');
+    expect(html).toContain('blur-mode');
+    expect(html).toContain('colorable');
+    expect(html).toContain('class="white censored-content blur-mode colorable"');
     expect(html).toContain('data-original="secret"');
     expect(html).toContain('<span class="white colorable">world</span>');
   });

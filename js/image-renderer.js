@@ -644,17 +644,21 @@
 
           // Draw each text segment in this visual line
           wrappedLine.forEach(segment => {
-            // Handle blur mode for censored content
-            if (segment.isCensored && segment.isBlurMode) {
+            if (segment.isRemoveMode) {
+              // Remove mode: advance cursor without drawing (preserves space)
+              currentX += ctx.measureText(segment.text).width;
+            } else if (segment.isCensored && segment.isBlurMode) {
+              // Blur mode: draw with blur filter
               ctx.save();
               ctx.filter = 'blur(5px)';
               this.drawTextWithOutline(ctx, segment.text, currentX, visualLineY + TEXT_OFFSET_Y, segment.color);
               ctx.filter = 'none';
               ctx.restore();
+              currentX += ctx.measureText(segment.text).width;
             } else {
               this.drawTextWithOutline(ctx, segment.text, currentX, visualLineY + TEXT_OFFSET_Y, segment.color);
+              currentX += ctx.measureText(segment.text).width;
             }
-            currentX += ctx.measureText(segment.text).width;
           });
 
           visualLineY += LINE_HEIGHT;
@@ -699,7 +703,8 @@
               text: word,
               color: segment.color,
               isCensored: segment.isCensored,
-              isBlurMode: segment.isBlurMode
+              isBlurMode: segment.isBlurMode,
+              isRemoveMode: segment.isRemoveMode
             });
             currentLineWidth += wordWidth;
           }
@@ -734,9 +739,9 @@
         return el.classList.contains('blur-mode');
       };
 
-      const isHidden = (el) => {
+      const isRemoveMode = (el) => {
         if (!el || !el.classList) return false;
-        return el.classList.contains('hidden') && !el.classList.contains('blur-mode');
+        return el.classList.contains('censored-remove');
       };
 
       const processNode = (node) => {
@@ -747,27 +752,19 @@
             let color = '#f1f1f1';
             let censored = false;
             let blur = false;
+            let remove = false;
 
             if (parentSpan && parentSpan.tagName === 'SPAN') {
-              // Check if parent is hidden censored content - skip it
-              if (isCensoredContent(parentSpan) && isHidden(parentSpan)) {
-                return; // Don't add hidden censored text
-              }
-
               const style = window.getComputedStyle(parentSpan);
               color = style.color || '#f1f1f1';
               censored = isCensoredContent(parentSpan);
               blur = isBlurMode(parentSpan);
+              remove = isRemoveMode(parentSpan);
             }
-            segments.push({ text, color, isCensored: censored, isBlurMode: blur });
+            segments.push({ text, color, isCensored: censored, isBlurMode: blur, isRemoveMode: remove });
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
           if (node.tagName === 'BR') {
-            // Skip line breaks - we handle one line at a time
-            return;
-          }
-          // Skip hidden censored spans entirely
-          if (node.tagName === 'SPAN' && isCensoredContent(node) && isHidden(node)) {
             return;
           }
           node.childNodes.forEach(processNode);
@@ -899,8 +896,21 @@
 
           // Draw each text segment in this visual line
           visualLine.forEach((segment) => {
-            this.drawTextWithOutline(ctx, segment.text, currentX, currentY, segment.color);
-            currentX += ctx.measureText(segment.text).width;
+            if (segment.isRemoveMode) {
+              // Remove mode: advance cursor without drawing (preserves space)
+              currentX += ctx.measureText(segment.text).width;
+            } else if (segment.isCensored && segment.isBlurMode) {
+              // Blur mode: draw with blur filter
+              ctx.save();
+              ctx.filter = 'blur(5px)';
+              this.drawTextWithOutline(ctx, segment.text, currentX, currentY, segment.color);
+              ctx.filter = 'none';
+              ctx.restore();
+              currentX += ctx.measureText(segment.text).width;
+            } else {
+              this.drawTextWithOutline(ctx, segment.text, currentX, currentY, segment.color);
+              currentX += ctx.measureText(segment.text).width;
+            }
           });
 
           currentY += LINE_HEIGHT;
@@ -938,10 +948,10 @@
         return el.classList.contains('blur-mode');
       };
 
-      // Check if element is hidden (remove mode for censorship)
-      const isHidden = (el) => {
+      // Check if element is in remove mode (visibility: hidden)
+      const isRemoveMode = (el) => {
         if (!el || !el.classList) return false;
-        return el.classList.contains('hidden') && !el.classList.contains('blur-mode');
+        return el.classList.contains('censored-remove');
       };
 
       // Recursively process nodes
@@ -957,18 +967,14 @@
             // Check if parent is censored content
             const censored = parentSpan ? isCensoredContent(parentSpan) : false;
             const blurMode = parentSpan ? isBlurMode(parentSpan) : false;
-            const hidden = parentSpan ? isHidden(parentSpan) : false;
-
-            // Skip hidden censored content (remove mode)
-            if (censored && hidden) {
-              return; // Don't add to output - this text should not be rendered
-            }
+            const removeMode = parentSpan ? isRemoveMode(parentSpan) : false;
 
             currentLine.push({
               text,
               color,
               isCensored: censored,
-              isBlurMode: blurMode
+              isBlurMode: blurMode,
+              isRemoveMode: removeMode
             });
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
@@ -978,20 +984,8 @@
               visualLines.push(currentLine);
               currentLine = [];
             }
-          } else if (node.tagName === 'SPAN') {
-            // Check if this span contains censored content in remove mode
-            const censored = isCensoredContent(node);
-            const hidden = isHidden(node);
-
-            // Skip entire span if it's hidden censored content
-            if (censored && hidden) {
-              return;
-            }
-
-            // Process children of span
-            node.childNodes.forEach(processNode);
           } else {
-            // Process other elements recursively
+            // Process children of any element
             node.childNodes.forEach(processNode);
           }
         }

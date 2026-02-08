@@ -558,12 +558,16 @@ $(document).ready(function () {
       } else {
         let formattedLine = formatLineWithFilter(line);
 
+        // Check for formatting spans BEFORE censorship to avoid false positives
+        const hasFormattingSpans = formattedLine.includes('<span') || formattedLine.includes('<div');
+
         // Apply censorship after formatting to catch plain lines
         formattedLine = applyUserCensorship(formattedLine);
         div.innerHTML = addLineBreaksAndHandleSpans(formattedLine);
 
-        // If the formatted line contains HTML (like [!] lines), mark it to skip makeTextColorable
-        if (formattedLine.includes('<span') || formattedLine.includes('<div')) {
+        // Only mark as no-colorable if the formatter produced HTML spans
+        // (not if only censorship added spans)
+        if (hasFormattingSpans) {
           div.classList.add('no-colorable');
         }
       }
@@ -692,6 +696,12 @@ $(document).ready(function () {
         generatedDiv.find('span').each(function () {
           const span = $(this);
           const text = span.text();
+
+          // For censored content, just add colorable class without splitting into words
+          if (span.hasClass('censored-content')) {
+            span.addClass('colorable');
+            return;
+          }
 
           // CORREÇÃO: Pula spans que já foram processados para evitar duplicação.
           if (
@@ -822,9 +832,12 @@ $(document).ready(function () {
       return line.replace(/÷(.*?)÷/g, (match, p1) => {
         // Ensure we're not duplicating content
         if (p1 && p1.trim()) {
-          // Apply class based on censor style setting
-          const blurClass = censorStyle === 'blur' ? ' blur-mode' : '';
-          return `<span class="hidden censored-content${blurClass}" data-original="${p1.replace(/"/g, '&quot;')}">${p1}</span>`;
+          if (censorStyle === 'blur') {
+            // Blur mode: colorable blurred text
+            return `<span class="censored-content blur-mode colorable" data-original="${p1.replace(/"/g, '&quot;')}">${p1}</span>`;
+          }
+          // Remove mode: invisible but preserves space (no text shift)
+          return `<span class="censored-content censored-remove" data-original="${p1.replace(/"/g, '&quot;')}">${p1}</span>`;
         }
         return match; // Return original if no content to censor
       });
@@ -1473,10 +1486,13 @@ $(document).ready(function () {
 
     const flushCensor = () => {
       if (censorBuffer.length > 0) {
-        // Apply class based on censor style setting
-        const blurClass = censorStyle === 'blur' ? ' blur-mode' : '';
-        // Wrap in color class to ensure color inheritance works with blur-mode
-        html += `<span class="${className}"><span class="hidden censored-content${blurClass}" data-original="${censorBuffer}">${censorBuffer}</span></span>`;
+        if (censorStyle === 'blur') {
+          // Blur mode: colorable blurred text inheriting the line's color class
+          html += `<span class="${className} censored-content blur-mode colorable" data-original="${censorBuffer}">${censorBuffer}</span>`;
+        } else {
+          // Remove mode: invisible but preserves space (no text shift)
+          html += `<span class="${className} censored-content censored-remove" data-original="${censorBuffer}">${censorBuffer}</span>`;
+        }
         censorBuffer = '';
       }
     };

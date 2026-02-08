@@ -30,8 +30,13 @@ export function wrapSpan(className, content, censorStyle = 'remove') {
 
   const flushCensor = () => {
     if (censorBuffer.length > 0) {
-      const blurClass = censorStyle === 'blur' ? ' blur-mode' : '';
-      html += `<span class="hidden censored-content${blurClass}" data-original="${censorBuffer}">${censorBuffer}</span>`;
+      if (censorStyle === 'blur') {
+        // Blur mode: colorable blurred text inheriting the line's color class
+        html += `<span class="${className} censored-content blur-mode colorable" data-original="${censorBuffer}">${censorBuffer}</span>`;
+      } else {
+        // Remove mode: invisible but preserves space (no text shift)
+        html += `<span class="${className} censored-content censored-remove" data-original="${censorBuffer}">${censorBuffer}</span>`;
+      }
       censorBuffer = '';
     }
   };

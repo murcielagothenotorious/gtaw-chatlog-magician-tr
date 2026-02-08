@@ -396,17 +396,17 @@ html::-webkit-scrollbar {
 }
 
 .censored-content {
-  background-color: #333;
-  color: #333;
   user-select: none;
   padding: 0 2px;
   border-radius: 2px;
 }
 
+.censored-content.censored-remove {
+  visibility: hidden;
+}
+
 .censored-content.blur-mode {
   background-color: transparent;
-  color: inherit !important;
-  /* Inherit color from parent span */
   filter: blur(5px);
   pointer-events: none;
 }

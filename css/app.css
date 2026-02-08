@@ -1085,9 +1085,13 @@ label {
 		opacity: 0;
 	}
 
+	/* Censored content - remove mode: invisible but preserves space */
+	.censored-content.censored-remove {
+		visibility: hidden;
+	}
+
 	/* Censored content - blur mode */
 	.censored-content.blur-mode {
-		opacity: 1 !important;
 		filter: blur(4px);
 		-webkit-filter: blur(4px);
 		user-select: none;
