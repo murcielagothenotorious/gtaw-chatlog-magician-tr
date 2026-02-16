@@ -60,12 +60,12 @@ $(document).ready(function () {
   const $lineLengthInput = $('#lineLengthInput');
   const $characterNameInput = $('#characterNameInput');
 
-  $toggleBackgroundBtn.click(toggleBackground);
-  $toggleCharacterNameColoringBtn.click(toggleCharacterNameColoring);
-  $censorCharButton.click(copyCensorChar);
-  $toggleCensorStyleBtn.click(toggleCensorStyle);
-  $toggleFontBtn.click(toggleFontStyle);
-  $toggleContrastBtn.click(toggleContrastStyle);
+  $toggleBackgroundBtn.on('click', toggleBackground);
+  $toggleCharacterNameColoringBtn.on('click', toggleCharacterNameColoring);
+  $censorCharButton.on('click', copyCensorChar);
+  $toggleCensorStyleBtn.on('click', toggleCensorStyle);
+  $toggleFontBtn.on('click', toggleFontStyle);
+  $toggleContrastBtn.on('click', toggleContrastStyle);
   $lineLengthInput.on('input', processOutput);
   $characterNameInput.on('input', applyFilter);
   // Use CONFIG if available, fallback to 200ms
@@ -79,6 +79,97 @@ $(document).ready(function () {
   updateContrastStyleUI();
   applyContrastStyle();
   updateBackgroundUI();
+
+  // ===== TXT File Upload =====
+  const $txtUploadArea = $('#txtUploadArea');
+  const $chatlogFileInput = $('#chatlogFileInput');
+  const $txtUploadContent = $txtUploadArea.find('.txt-upload-content');
+  const $txtFileInfo = $('#txtFileInfo');
+  const $txtFileName = $('#txtFileName');
+  const $txtFileSize = $('#txtFileSize');
+  const $txtFileClear = $('#txtFileClear');
+
+  // Click to open file dialog
+  $txtUploadArea.on('click', function (e) {
+    if ($(e.target).closest('.txt-file-clear').length) return;
+    $chatlogFileInput[0].click();
+  });
+
+  // Keyboard accessibility
+  $txtUploadArea.on('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      $chatlogFileInput[0].click();
+    }
+  });
+
+  // File selected via input
+  $chatlogFileInput.on('change', function () {
+    const file = this.files[0];
+    if (file) loadTxtFile(file);
+  });
+
+  // Drag & drop
+  $txtUploadArea.on('dragover', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $txtUploadArea.addClass('dragover');
+  });
+
+  $txtUploadArea.on('dragleave drop', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    $txtUploadArea.removeClass('dragover');
+  });
+
+  $txtUploadArea.on('drop', function (e) {
+    const files = e.originalEvent.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      if (file.name.match(/\.(txt|log)$/i)) {
+        loadTxtFile(file);
+      }
+    }
+  });
+
+  // Clear button
+  $txtFileClear.on('click', function (e) {
+    e.stopPropagation();
+    clearTxtFile();
+  });
+
+  function loadTxtFile(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      $textarea.val(e.target.result);
+      processOutput();
+      showFileInfo(file);
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function showFileInfo(file) {
+    $txtUploadContent.hide();
+    $txtFileName.text(file.name);
+    $txtFileSize.text(formatFileSize(file.size));
+    $txtFileInfo.css('display', 'flex');
+    $txtUploadArea.addClass('has-file');
+  }
+
+  function clearTxtFile() {
+    $textarea.val('');
+    $chatlogFileInput.val('');
+    $txtFileInfo.hide();
+    $txtUploadContent.show();
+    $txtUploadArea.removeClass('has-file');
+    processOutput();
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
 
   function updateBackgroundUI() {
     // Apply background class to output

@@ -110,9 +110,29 @@
             </div>
           </div>
           <label for="chatlogInput">Sohbet Kaydı:</label>
+
+          <!-- TXT Dosya Yükleme Alanı -->
+          <input type="file" id="chatlogFileInput" accept=".txt,.log" style="display: none;"
+            aria-label="Chatlog dosyası seç">
+          <div id="txtUploadArea" class="txt-upload-area" role="button" tabindex="0" aria-label="Chatlog dosyası yükle">
+            <div class="txt-upload-content">
+              <i class="fas fa-file-alt txt-upload-icon" aria-hidden="true"></i>
+              <span class="txt-upload-text">TXT dosya yükle</span>
+              <span class="txt-upload-hint">veya sürükle-bırak</span>
+            </div>
+            <div id="txtFileInfo" class="txt-file-info" style="display: none;">
+              <i class="fas fa-file-check" aria-hidden="true"></i>
+              <span id="txtFileName" class="txt-file-name"></span>
+              <span id="txtFileSize" class="txt-file-size"></span>
+              <button type="button" id="txtFileClear" class="txt-file-clear" title="Dosyayı temizle"
+                aria-label="Dosyayı temizle">&times;</button>
+            </div>
+          </div>
+
           <div class="textarea-container">
             <textarea id="chatlogInput" class="form-control textarea-input" rows="15"
-              placeholder="Enter your chat log here..." aria-label="Chat log input"></textarea>
+              placeholder="Chatlog'unuzu buraya yapıştırın veya yukarıdan TXT dosya yükleyin..."
+              aria-label="Chat log input"></textarea>
           </div>
           <div class="grid-x grid-margin-x align-middle">
             <div class="cell auto">
@@ -160,7 +180,7 @@
                 </button>
 
                 <!-- Donate (Gray = Neutral/External) -->
-                <button id="donateBtn" class="button" aria-label="Donate">Bağış</button>
+                <!-- <button id="donateBtn" class="button" aria-label="Donate">Bağış</button> -->
 
                 <!-- Discord (Discord Brand Color) -->
                 <!-- <a href="https://discord.gg/V8jQJrDXxF" target="_blank" rel="noopener noreferrer" class="button" aria-label="Join Discord" style="background-color: #5865F2; color: #ffffff; text-decoration: none;">Discord</a> -->

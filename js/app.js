@@ -858,7 +858,7 @@ document.addEventListener('click', (e) => {
  * @returns {void}
  */
 window.clearHistory = function () {
-  if (confirm('Are you sure you want to clear all chat history?')) {
+  if (confirm('Tüm sohbet geçmişini silmek istediğinizden emin misiniz?')) {
     localStorage.removeItem('chatlogHistory');
     refreshHistoryPanel();
   }
@@ -1153,7 +1153,7 @@ $(document).ready(function () {
       downloadOutputImage();
     }
   });
-  $('#toggleBackground').click(toggleBackground);
+  // toggleBackground binding removed - handled by chatlog-parser.js
 
   // Auto-send error reports on console errors (automatic bug reporting)
   window.addEventListener('error', function (_event) {
