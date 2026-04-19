@@ -134,6 +134,7 @@
               placeholder="Chatlog'unuzu buraya yapıştırın veya yukarıdan TXT dosya yükleyin..."
               aria-label="Chat log input"></textarea>
           </div>
+
           <div class="grid-x grid-margin-x align-middle">
             <div class="cell auto">
               <div class="button-group">
@@ -179,11 +180,15 @@
                   <span class="contrast-text">Kontrast: Kapalı</span>
                 </button>
 
-                <!-- Donate (Gray = Neutral/External) -->
-                <!-- <button id="donateBtn" class="button" aria-label="Donate">Bağış</button> -->
 
-                <!-- Discord (Discord Brand Color) -->
-                <!-- <a href="https://discord.gg/V8jQJrDXxF" target="_blank" rel="noopener noreferrer" class="button" aria-label="Join Discord" style="background-color: #5865F2; color: #ffffff; text-decoration: none;">Discord</a> -->
+
+                <!-- Feedback/Bug Report Button -->
+                <button id="openFeedbackBtn" class="button info" aria-label="İstek ve Hata Bildir"
+                  style="background-color: #7289da;">Bize Ulaşın</button>
+
+                <!-- Features/Tips Button -->
+                <button id="openFeaturesBtn" class="button" aria-label="Özellikler"
+                  style="background-color: #3498db; color: white;">İpuçları</button>
 
                 <!-- Clear image (Red = Alert/Remove) - Only visible in overlay mode -->
                 <button id="clearImageBtn" class="button alert overlay-control button-hidden" type="button"
@@ -212,6 +217,19 @@
 
             <!-- Flex container for dropzone and sidebar -->
             <div class="overlay-workspace">
+              <!-- Left Toolbar (Photopea style) -->
+              <div class="overlay-toolbar">
+                <button type="button" class="tool-btn active" data-tool="move" title="Taşıma ve Seçim Aracı (V)">
+                  <i class="fas fa-mouse-pointer"></i>
+                </button>
+                <button type="button" class="tool-btn" data-tool="color" title="Renk Değiştirme Aracı (T)">
+                  <i class="fas fa-fill-drip"></i>
+                </button>
+                <button type="button" class="tool-btn" data-tool="pan" title="Kaydırma Aracı (H)">
+                  <i class="fas fa-hand-paper"></i>
+                </button>
+              </div>
+
               <!-- Main Dropzone Area -->
               <div class="overlay-main">
                 <div id="imageDropzone" class="image-dropzone">
@@ -222,6 +240,20 @@
                       <strong>Ctrl+V</strong>
                       ile yapıştırın
                     </p>
+                    <div
+                      style="margin-top: 20px; text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; font-size: 13px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                      <h4 style="font-size: 14px; margin-bottom: 10px; color: #3498db; margin-top: 0;"><i
+                          class="fas fa-magic"></i> Çalışma Alanı İpuçları</h4>
+                      <ul style="margin: 0; padding-left: 15px; opacity: 0.8; line-height: 1.6;">
+                        <li>Sohbeti metin kutusuna yazdıktan sonra farenizle tutup <strong>sürükleyebilirsiniz.</strong>
+                        </li>
+                        <li>Sohbet satırlarını birbirlerinden <strong>ayırıp farklı yerlere</strong> koyabilirsiniz.
+                        </li>
+                        <li>Sağ panelden görüntünün/sohbetin <strong>solukluğunu ve rengini</strong> ayarlayabilirsiniz.
+                        </li>
+                        <li>Araç çubuklarının üzerine gelip beklediğinizde ne işe yaradıklarını görebilirsiniz.</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -294,24 +326,41 @@
                   </div>
                 </div>
 
-                <!-- Chat Settings Section -->
-                <div class="sidebar-section chat-settings-section">
+                <!-- Properties Section -->
+                <div class="sidebar-section properties-section" id="propertiesSection">
                   <div class="section-header">
-                    <span class="section-title">Sohbet Ayarları</span>
-                    <i class="fas fa-comment-dots section-icon"></i>
+                    <span class="section-title">Özellikler</span>
+                    <i class="fas fa-sliders-h section-icon"></i>
                   </div>
                   <div class="section-content">
-                    <!-- Chat Opacity -->
-                    <div class="effect-row" title="Sohbet metinlerinin görünürlük seviyesi">
-                      <div class="effect-label">
-                        <i class="fas fa-font"></i>
-                        <span>Metin Opaklığı</span>
-                      </div>
-                      <input type="range" id="chatOpacity" min="0" max="100" value="100" step="1" class="effect-slider">
-                      <span id="chatOpacityValue" class="effect-value">100%</span>
+                    <div id="noSelectionMsg" class="hint-text"
+                      style="text-align: center; opacity: 0.6; font-size: 12px; padding: 10px 0;">
+                      Özellikleri görmek için bir katman veya sohbet satırı seçin.
                     </div>
 
-                    <!-- Chat Scale and Background controls removed per user request -->
+                    <!-- Chat Properties (Visible when chat lines selected) -->
+                    <div id="chatProperties" style="display: none;">
+                      <div class="property-group" style="margin-bottom: 15px;">
+                        <label
+                          style="font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 8px; display: block;">Renk
+                          Paleti <span id="selectedChatCount"
+                            style="float: right; color: rgba(52, 152, 219, 1);"></span></label>
+                        <div class="quick-color-grid" id="quickColorGrid"
+                          style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                          <!-- Filled dynamically by JS -->
+                        </div>
+                      </div>
+
+                      <div class="effect-row" title="Seçili metinlerin görünürlük seviyesi">
+                        <div class="effect-label">
+                          <i class="fas fa-eye"></i>
+                          <span>Opaklık</span>
+                        </div>
+                        <input type="range" id="chatOpacity" min="0" max="100" value="100" step="1"
+                          class="effect-slider">
+                        <span id="chatOpacityValue" class="effect-value">100%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -557,15 +606,92 @@
     </div>
   </div>
 
+  <!-- Feedback Modal - İstek ve Hata Bildir -->
+  <div id="feedbackModal" class="help-modal" style="display: none; z-index: 10000;">
+    <div class="help-modal-backdrop" id="feedbackBackdrop"></div>
+    <div class="help-modal-content" style="max-width: 500px;">
+      <div class="help-modal-header">
+        <h2><i class="fas fa-bug"></i> İstek ve Hata Bildir</h2>
+        <button type="button" id="closeFeedbackModal" class="help-modal-close" aria-label="Kapat">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="help-modal-body">
+        <form id="feedbackForm">
+          <div style="margin-bottom: 15px;">
+            <label for="feedbackType" style="display: block; margin-bottom: 5px; color:#ffffff">Tür Seçin:</label>
+            <select id="feedbackType" class="form-control" style="width: 100%; border-radius: 4px; padding: 8px;"
+              required>
+              <option value="Bug">Hata (Bug)</option>
+              <option value="Feature Request">Yeni İstek</option>
+              <option value="Other">Diğer</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 15px;">
+            <label for="feedbackMessage" style="display: block; margin-bottom: 5px; color:#ffffff">Mesajınız:</label>
+            <textarea id="feedbackMessage" class="form-control" rows="5"
+              style="width: 100%; resize: vertical; border-radius: 4px; padding: 8px;"
+              placeholder="Lütfen karşılaştığınız sorunu veya isteğinizi buraya detaylıca yazın..." required></textarea>
+          </div>
+        </form>
+        <div id="feedbackStatus"
+          style="display: none; padding: 10px; border-radius: 4px; margin-top: 10px; text-align: center;"></div>
+      </div>
+
+      <div class="help-modal-footer" style="justify-content: flex-end; display: flex; gap: 10px;">
+        <button type="button" id="closeFeedbackBtn" class="button secondary">İptal</button>
+        <button type="button" id="submitFeedbackBtn" class="button primary success">Gönder</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features/Tips Modal -->
+  <div id="featuresModal" class="help-modal" style="display: none; z-index: 10000;">
+    <div class="help-modal-backdrop" id="featuresBackdrop"></div>
+    <div class="help-modal-content" style="max-width: 600px;">
+      <div class="help-modal-header">
+        <h2><i class="fas fa-lightbulb"></i> Tüm Özellikler ve İpuçları</h2>
+        <button type="button" id="closeFeaturesModal" class="help-modal-close" aria-label="Kapat">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="help-modal-body" style="max-height: 400px; overflow-y: auto;">
+        <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+          <li><strong>Chatlog Renklendirme:</strong> Sohbet modunda hatalı renklendirilen veya renklendirmek istediğiniz
+            bir kelimeye tıklayarak kendiniz manuel olarak rengini değiştirebilirsiniz! (Çoklu seçim için CTRL+Tık veya
+            sürükleme)</li>
+          <li><strong>Karakter İsmi Vurgulama:</strong> Karakter adınızı metin kutusundaki ilgili alana girerek [!] gibi
+            direkt size yönelik mesajların <em>toyou (parlak beyaz)</em> şekilde parlamasını sağlayabilirsiniz.</li>
+          <li><strong>İsimler Aç/Kapa:</strong> İsimler butonu kapalıyken oyundaki karakter adları ("Karakter Adı:")
+            algılanmaz ve direkt beyaz standart mesaj olarak gizlenir; temiz bir chat deneyimi sağlanır.</li>
+          <li><strong>Opaklık Ayarı:</strong> Fotoğraf modunda, katmanlar bölümünden arka plan fotoğrafının opaklığını
+            kısıp (örneğin %50) sohbetin daha kolay okunmasını sağlayabilirsiniz.</li>
+          <li><strong>Siyah-Beyaz Modu:</strong> Siyah-Beyaz butonu ile oyun içi görüntünüzü tek tıkla renksiz hale
+            getirip dramatik bir etki yaratabilirsiniz.</li>
+          <li><strong>Satırları Sürükleme:</strong> Fotoğraf modunda, metin satırları blok halinde gelse de fareyle
+            dilediğiniz satırı tutup ekranın başka bir köşesine sürükleyebilirsiniz!</li>
+          <li><strong>Renk Paleti:</strong> Fotoğraf modunda sağ sekmedeki "Özellikler" bölümünden hem sohbetin kendi
+            rengini, hem seçili satırları değiştirebilirsiniz.</li>
+        </ul>
+      </div>
+
+      <div class="help-modal-footer">
+        <button type="button" id="closeFeaturesBtn" class="button primary">Anladım!</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Donate modal handler
-    document.getElementById('donateBtn').addEventListener('click', function () {
+    document.getElementById('donateBtn')?.addEventListener('click', function () {
       document.getElementById('donateModal').style.display = 'flex';
     });
-    document.getElementById('closeDonateModal').addEventListener('click', function () {
+    document.getElementById('closeDonateModal')?.addEventListener('click', function () {
       document.getElementById('donateModal').style.display = 'none';
     });
-    document.getElementById('donateModal').addEventListener('click', function (e) {
+    document.getElementById('donateModal')?.addEventListener('click', function (e) {
       if (e.target === this) {
         this.style.display = 'none';
       }
@@ -585,7 +711,108 @@
     document.getElementById('closeHelpModalBtn')?.addEventListener('click', hideHelpModal);
     document.querySelector('.help-modal-backdrop')?.addEventListener('click', hideHelpModal);
 
+    // Features modal handler
+    const featuresModal = document.getElementById('featuresModal');
+    const openFeaturesBtn = document.getElementById('openFeaturesBtn');
+    const closeFeaturesModal = document.getElementById('closeFeaturesModal');
+    const closeFeaturesBtn = document.getElementById('closeFeaturesBtn');
+    const featuresBackdrop = document.getElementById('featuresBackdrop');
 
+    function showFeaturesModal() {
+      if (featuresModal) featuresModal.style.display = 'flex';
+    }
+
+    function hideFeaturesModal() {
+      if (featuresModal) featuresModal.style.display = 'none';
+    }
+
+    if (openFeaturesBtn) openFeaturesBtn.addEventListener('click', showFeaturesModal);
+    if (closeFeaturesModal) closeFeaturesModal.addEventListener('click', hideFeaturesModal);
+    if (closeFeaturesBtn) closeFeaturesBtn.addEventListener('click', hideFeaturesModal);
+    if (featuresBackdrop) featuresBackdrop.addEventListener('click', hideFeaturesModal);
+
+    // Feedback modal handler
+    const feedbackModal = document.getElementById('feedbackModal');
+    const openFeedbackBtn = document.getElementById('openFeedbackBtn');
+    const closeFeedbackModal = document.getElementById('closeFeedbackModal');
+    const closeFeedbackBtn = document.getElementById('closeFeedbackBtn');
+    const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+    const feedbackBackdrop = document.getElementById('feedbackBackdrop');
+    const feedbackStatus = document.getElementById('feedbackStatus');
+
+    function showFeedbackModal() {
+      if (feedbackModal) feedbackModal.style.display = 'flex';
+      if (feedbackStatus) {
+        feedbackStatus.style.display = 'none';
+        feedbackStatus.className = '';
+        feedbackStatus.textContent = '';
+      }
+    }
+
+    function hideFeedbackModal() {
+      if (feedbackModal) feedbackModal.style.display = 'none';
+    }
+
+    if (openFeedbackBtn) openFeedbackBtn.addEventListener('click', showFeedbackModal);
+    if (closeFeedbackModal) closeFeedbackModal.addEventListener('click', hideFeedbackModal);
+    if (closeFeedbackBtn) closeFeedbackBtn.addEventListener('click', hideFeedbackModal);
+    if (feedbackBackdrop) feedbackBackdrop.addEventListener('click', hideFeedbackModal);
+
+    if (submitFeedbackBtn) {
+      submitFeedbackBtn.addEventListener('click', async function () {
+        const typeSelect = document.getElementById('feedbackType');
+        const msgArea = document.getElementById('feedbackMessage');
+
+        if (!typeSelect || !msgArea || !msgArea.value.trim()) {
+          if (feedbackStatus) {
+            feedbackStatus.style.display = 'block';
+            feedbackStatus.className = 'alert';
+            feedbackStatus.textContent = 'Lütfen bir mesaj girin.';
+            feedbackStatus.style.backgroundColor = '#ff5252';
+            feedbackStatus.style.color = 'white';
+          }
+          return;
+        }
+
+        submitFeedbackBtn.disabled = true;
+        submitFeedbackBtn.textContent = 'Gönderiliyor...';
+
+        try {
+          const response = await fetch('/api/report-bug', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId: Date.now().toString(36) + Math.random().toString(36).substr(2),
+              userAgent: navigator.userAgent,
+              platform: navigator.platform,
+              errorCount: 0,
+              warningCount: 0,
+              errors: [],
+              fullReport: `[${typeSelect.value}] ${msgArea.value}`
+            })
+          });
+
+          if (response.ok) {
+            feedbackStatus.style.display = 'block';
+            feedbackStatus.style.backgroundColor = '#4caf50';
+            feedbackStatus.style.color = 'white';
+            feedbackStatus.textContent = 'Geri bildiriminiz başarıyla gönderildi. Teşekkürler!';
+            msgArea.value = '';
+            setTimeout(hideFeedbackModal, 3000);
+          } else {
+            throw new Error('Sunucu hatası');
+          }
+        } catch (error) {
+          feedbackStatus.style.display = 'block';
+          feedbackStatus.style.backgroundColor = '#ff5252';
+          feedbackStatus.style.color = 'white';
+          feedbackStatus.textContent = 'Bir hata oluştu, lütfen daha sonra tekrar deneyin.';
+        } finally {
+          submitFeedbackBtn.disabled = false;
+          submitFeedbackBtn.textContent = 'Gönder';
+        }
+      });
+    }
   </script>
 
   <script src="js/init.js?v=1.1.0" defer></script>

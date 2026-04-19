@@ -497,7 +497,19 @@
                 }
 
                 if (this.effectsSection) {
+                    this.effectsSection.style.display = 'block';
                     this.effectsSection.classList.remove('disabled');
+                }
+
+                // Hide chat properties when a layer is selected
+                const chatProps = document.getElementById('chatProperties');
+                const noSelMsg = document.getElementById('noSelectionMsg');
+                if (chatProps) chatProps.style.display = 'none';
+                if (noSelMsg) noSelMsg.style.display = 'none';
+
+                // Clear any chat selections
+                if (window.ImageOverlayState && window.ImageOverlayState.selectedLineWrappers?.length > 0) {
+                    window.ImageOverlayState.selectElement(null);
                 }
 
                 // Sync with ImageOverlayState
@@ -521,7 +533,20 @@
                     this.selectedLayerBadge.textContent = '-';
                 }
                 if (this.effectsSection) {
+                    this.effectsSection.style.display = 'none';
                     this.effectsSection.classList.add('disabled');
+                }
+
+                // If nothing is selected, show the default empty state message 
+                // ONLY if chat features aren't selected either
+                const chatProps = document.getElementById('chatProperties');
+                const noSelMsg = document.getElementById('noSelectionMsg');
+                const isChatSelected = window.ImageOverlayState &&
+                    (window.ImageOverlayState.selectedLineWrappers?.length > 0 ||
+                        window.ImageOverlayState.selectedElement === 'chat');
+
+                if (noSelMsg && !isChatSelected) {
+                    noSelMsg.style.display = 'block';
                 }
             }
 

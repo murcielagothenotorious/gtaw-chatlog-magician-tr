@@ -358,7 +358,7 @@
     if (!coloringMode || selectedElements.length === 0) return;
 
     selectedElements.forEach((element) => {
-      $(element).removeClass(COLOR_CLASSES.join(' ')).addClass('colorable').addClass(colorClass);
+      $(element).removeClass(COLOR_CLASSES.join(' ')).addClass('colorable').addClass(colorClass).addClass('user-colored');
     });
 
     // Show brief feedback

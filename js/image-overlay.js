@@ -55,10 +55,13 @@
     lineTransforms: {}, // { lineIndex: { x: 0, y: 0 } }
     lineOpacities: {}, // { lineIndex: opacity (0-100) } - per-line opacity tracking
     isLineDraggingEnabled: true, // Per-line mode active
+    isGroupDragEnabled: false, // Group drag toggle
     isLinePanning: false,
-    currentDragLine: null, // Currently dragged line element
+    currentDragLine: null, // Currently dragged line element (primary)
+    linesToDrag: [], // Array of line indexes being dragged in group mode
+    linePanStartPositions: {}, // { lineIndex: { x: 0, y: 0 } }
     linePanStart: { x: 0, y: 0 },
-    linePanStartPos: { x: 0, y: 0 },
+    linePanStartPos: { x: 0, y: 0 }, // Primary dragged line's start pos
 
     // Selection state for keyboard control
     selectedElement: null, // 'chat' or line index number
@@ -84,6 +87,14 @@
 
     // Current mode
     currentMode: 'chat', // 'chat' or 'overlay'
+
+    // Active tool ('move', 'color', 'pan')
+    activeTool: 'move',
+
+    // Marquee state
+    isMarqueeSelecting: false,
+    marqueeStart: { x: 0, y: 0 },
+    marqueeElement: null,
 
     // Cached DOM references (initialized in init())
     _domCache: {
@@ -116,6 +127,8 @@
       this.setupDimensionControls();
       this.setupQuickPositionButtons();
       this.setupImageEffects();
+      this.setupToolbar();
+      this.setupColorGrid();
 
       // Listen for image loaded event
       document.addEventListener('imageLoaded', (e) => {
@@ -350,9 +363,9 @@
         dropzone.appendChild(lineWrapper);
 
         // Calculate next Y position based on actual rendered height
-        // Use estimated height for initial stacking
-        const estimatedLineHeight = lineHeight * 1.2;
-        currentY += estimatedLineHeight;
+        // Fallback to estimated height only if offsetHeight is unavailable
+        const actualHeight = lineWrapper.offsetHeight > 0 ? lineWrapper.offsetHeight : (lineHeight * 1.2);
+        currentY += actualHeight + 2; // 2px gap between chats
       });
 
       // chatOverlay container is no longer needed since lines are independent
@@ -523,6 +536,15 @@
         });
       }
 
+      // Group Drag control
+      const chatGroupDragCheckbox = document.getElementById('chatGroupDrag');
+      if (chatGroupDragCheckbox) {
+        chatGroupDragCheckbox.addEventListener('change', () => {
+          this.isGroupDragEnabled = chatGroupDragCheckbox.checked;
+          this.saveSettings();
+        });
+      }
+
       // Export dimension preset buttons
       document.querySelectorAll('.image-settings-panel .preset-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -570,6 +592,80 @@
     },
 
     /**
+     * Setup toolbar for Move, Color, Pan tools
+     */
+    setupToolbar: function () {
+      const toolBtns = document.querySelectorAll('.overlay-toolbar .tool-btn');
+
+      toolBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Remove active class from all
+          toolBtns.forEach(b => b.classList.remove('active'));
+          // Add to clicked
+          btn.classList.add('active');
+
+          this.activeTool = btn.dataset.tool;
+
+          // Change cursor based on tool
+          const dropzone = document.getElementById('imageDropzone');
+          if (dropzone) {
+            dropzone.style.cursor = this.activeTool === 'pan' ? 'grab' :
+              this.activeTool === 'color' ? 'crosshair' : 'default';
+          }
+
+          console.log('[ImageOverlay] Active tool:', this.activeTool);
+        });
+      });
+    },
+
+    /**
+     * Setup quick color grid for the properties panel
+     */
+    setupColorGrid: function () {
+      const grid = document.getElementById('quickColorGrid');
+      if (!grid) return;
+
+      const colors = ['me', 'ame', 'darkgrey', 'grey', 'yellow', 'green', 'white', 'radioColor', 'radioColor2'];
+
+      colors.forEach(color => {
+        const dot = document.createElement('div');
+        dot.className = 'color-dot';
+        dot.dataset.color = color;
+        dot.title = color;
+
+        dot.addEventListener('click', () => {
+          this.applyColorToSelection(color);
+
+          // Update active state
+          grid.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+          dot.classList.add('active');
+        });
+
+        grid.appendChild(dot);
+      });
+    },
+
+    /**
+     * Apply a specific color class to selected lines
+     */
+    applyColorToSelection: function (colorClass) {
+      if (!this.selectedLineWrappers || this.selectedLineWrappers.length === 0) return;
+
+      const possibleColors = ['me', 'ame', 'darkgrey', 'grey', 'lightgrey', 'death', 'yellow', 'green', 'orange', 'blue', 'white', 'radioColor', 'radioColor2', 'depColor', 'vesseltraffic', 'toyou'];
+
+      this.selectedLineWrappers.forEach(wrapper => {
+        // Find the inner line span which has the color classes
+        const innerLine = wrapper.querySelector('.chatLine') || wrapper.querySelector('span');
+        if (innerLine) {
+          // Remove all existing color classes
+          possibleColors.forEach(c => innerLine.classList.remove(c));
+          // Add new color class
+          innerLine.classList.add(colorClass);
+        }
+      });
+    },
+
+    /**
      * Setup mouse handlers for dragging and zooming
      */
     setupMouseHandlers: function () {
@@ -581,23 +677,55 @@
       dropzone.addEventListener('mousedown', (e) => {
         // Check if image exists
         const img = document.getElementById('overlayImage');
-        if (!img) {
+        if (!img) return;
+
+        // Tool based handling
+        if (this.activeTool === 'pan') {
+          e.preventDefault();
+          this.selectElement(null);
+          this.startImagePan(e);
           return;
         }
 
-        // Intelligent target detection: check what was clicked
         const clickedElement = e.target;
         const chatOverlay = document.querySelector('.chat-overlay-container');
-
-        // Check if click is on a specific chat line (for per-line dragging)
         const lineWrapper = clickedElement.closest('.chat-line-wrapper');
 
+        if (this.activeTool === 'color') {
+          if (lineWrapper) {
+            e.preventDefault();
+            const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
+            const addToSelection = e.shiftKey || e.ctrlKey || e.metaKey;
+            this.selectElement(lineIndex, lineWrapper, addToSelection);
+
+            // Highlight the current color in the quick grid
+            const innerLine = lineWrapper.querySelector('.chatLine') || lineWrapper.querySelector('span');
+            if (innerLine) {
+              const grid = document.getElementById('quickColorGrid');
+              if (grid) {
+                grid.querySelectorAll('.color-dot').forEach(d => {
+                  if (innerLine.classList.contains(d.dataset.color)) {
+                    d.classList.add('active');
+                  } else {
+                    d.classList.remove('active');
+                  }
+                });
+              }
+            }
+          } else {
+            this.selectElement(null);
+          }
+          return;
+        }
+
+        // Default 'move' tool behavior
         if (lineWrapper && this.isLineDraggingEnabled) {
           // Clicked on a specific line - select and drag
           e.preventDefault();
           const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
           const addToSelection = e.shiftKey || e.ctrlKey || e.metaKey;
           this.selectElement(lineIndex, lineWrapper, addToSelection);
+
           // Only start drag if not adding to selection (to allow clicking without dragging)
           if (!addToSelection) {
             this.startLinePan(e, lineWrapper);
@@ -617,9 +745,9 @@
           this.selectElement('chat'); // Select chat for keyboard control
           this.startChatPan(e);
         } else if (this.isImageDraggingEnabled) {
-          // Clicked elsewhere - drag image, deselect chat/line
+          // Clicked elsewhere - start marquee selection
           this.selectElement(null);
-          this.startImagePan(e);
+          this.startMarqueeSelection(e);
         }
       });
 
@@ -630,12 +758,16 @@
           this.updateChatPan(e);
         } else if (this.isLinePanning) {
           this.updateLinePan(e);
+        } else if (this.isMarqueeSelecting) {
+          this.updateMarqueeSelection(e);
         }
       });
 
       document.addEventListener('mouseup', () => {
         if (this.isPanning || this.isChatPanning || this.isLinePanning) {
           this.stopPan();
+        } else if (this.isMarqueeSelecting) {
+          this.stopMarqueeSelection();
         }
       });
 
@@ -776,26 +908,42 @@
               this.updateChatTransform();
               this.saveChatSettings();
             } else if (typeof this.selectedElement === 'number') {
-              // Move specific line
-              const lineIndex = this.selectedElement;
-              if (!this.lineTransforms[lineIndex]) {
-                this.lineTransforms[lineIndex] = { x: 0, y: 0 };
-              }
-              this.lineTransforms[lineIndex].x += deltaX;
-              this.lineTransforms[lineIndex].y += deltaY;
+              if (this.isGroupDragEnabled) {
+                // Move ALL lines
+                const dropzone = document.getElementById('imageDropzone');
+                if (dropzone) {
+                  const allLines = dropzone.querySelectorAll('.chat-line-wrapper.independent-line');
+                  allLines.forEach(l => {
+                    const idx = parseInt(l.dataset.lineIndex);
+                    if (!this.lineTransforms[idx]) this.lineTransforms[idx] = { x: 0, y: 0 };
+                    this.lineTransforms[idx].x += deltaX;
+                    this.lineTransforms[idx].y += deltaY;
+                    l.style.left = this.lineTransforms[idx].x + 'px';
+                    l.style.top = this.lineTransforms[idx].y + 'px';
+                  });
+                }
+              } else {
+                // Move specific line
+                const lineIndex = this.selectedElement;
+                if (!this.lineTransforms[lineIndex]) {
+                  this.lineTransforms[lineIndex] = { x: 0, y: 0 };
+                }
+                this.lineTransforms[lineIndex].x += deltaX;
+                this.lineTransforms[lineIndex].y += deltaY;
 
-              // Update line position visually
-              if (this.selectedLineWrapper) {
-                this.selectedLineWrapper.style.left = this.lineTransforms[lineIndex].x + 'px';
-                this.selectedLineWrapper.style.top = this.lineTransforms[lineIndex].y + 'px';
-              }
+                // Update line position visually
+                if (this.selectedLineWrapper) {
+                  this.selectedLineWrapper.style.left = this.lineTransforms[lineIndex].x + 'px';
+                  this.selectedLineWrapper.style.top = this.lineTransforms[lineIndex].y + 'px';
+                }
 
-              // Check alignment with other lines
-              this.checkAndShowAlignmentGuides(
-                lineIndex,
-                this.lineTransforms[lineIndex].x,
-                this.lineTransforms[lineIndex].y
-              );
+                // Check alignment with other lines
+                this.checkAndShowAlignmentGuides(
+                  lineIndex,
+                  this.lineTransforms[lineIndex].x,
+                  this.lineTransforms[lineIndex].y
+                );
+              }
 
               this.saveChatSettings();
             }
@@ -930,6 +1078,19 @@
         this.currentDragLine = null;
       }
 
+      // Remove from grouped lines too
+      if (this.linesToDrag && this.linesToDrag.length > 0) {
+        const dropzone = document.getElementById('imageDropzone');
+        if (dropzone) {
+          this.linesToDrag.forEach(idx => {
+            const wrapper = dropzone.querySelector(`.chat-line-wrapper[data-line-index="${idx}"]`);
+            if (wrapper) wrapper.classList.remove('line-dragging');
+          });
+        }
+        this.linesToDrag = [];
+        this.linePanStartPositions = {};
+      }
+
       // Save chat settings if we were panning chat or line
       if (wasChatPanning || wasLinePanning) {
         this.saveChatSettings();
@@ -1007,6 +1168,51 @@
           }
         }
       }
+
+      this.updatePropertiesPanel();
+    },
+
+    /**
+     * Updates the right sidebar Properties panel based on current selection
+     */
+    updatePropertiesPanel: function () {
+      const msg = document.getElementById('noSelectionMsg');
+      const chatProps = document.getElementById('chatProperties');
+      const selectedCountSpan = document.getElementById('selectedChatCount');
+
+      if (!msg || !chatProps) return;
+
+      if (this.selectedLineWrappers && this.selectedLineWrappers.length > 0) {
+        // Chat lines selected
+        msg.style.display = 'none';
+        chatProps.style.display = 'block';
+
+        if (selectedCountSpan) {
+          selectedCountSpan.textContent = this.selectedLineWrappers.length > 1 ?
+            `(${this.selectedLineWrappers.length} seçili)` : '';
+        }
+
+        // Clear layer selection
+        if (window.LayerManager && window.LayerManager.selectedLayerId !== null) {
+          window.LayerManager.selectLayer(null);
+        }
+
+      } else if (this.selectedElement === 'chat') {
+        // Chat container selected
+        msg.style.display = 'none';
+        chatProps.style.display = 'block';
+        if (selectedCountSpan) selectedCountSpan.textContent = '(Tümü)';
+
+        // Clear layer selection
+        if (window.LayerManager && window.LayerManager.selectedLayerId !== null) {
+          window.LayerManager.selectLayer(null);
+        }
+      } else {
+        // Nothing or background selected
+        msg.style.display = 'block';
+        chatProps.style.display = 'none';
+        if (selectedCountSpan) selectedCountSpan.textContent = '';
+      }
     },
 
     /**
@@ -1019,30 +1225,73 @@
       const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
       const dropzone = document.getElementById('imageDropzone');
 
-      // If line is not yet independent (static), we need to "detach" it
-      // calculating its current position and making it absolute
-      if (!this.lineTransforms[lineIndex]) {
-        // Get current position relative to dropzone
-        const rect = lineWrapper.getBoundingClientRect();
-        const dropzoneRect = dropzone.getBoundingClientRect();
+      this.linesToDrag = [];
+      this.linePanStartPositions = {};
 
-        // Calculate relative coordinates
-        // We use the current visual position as the starting point
-        const currentX = rect.left - dropzoneRect.left;
-        const currentY = rect.top - dropzoneRect.top;
+      if (this.isGroupDragEnabled) {
+        // Collect all independent lines
+        const allLines = dropzone.querySelectorAll('.chat-line-wrapper.independent-line');
+        allLines.forEach(l => {
+          const idx = parseInt(l.dataset.lineIndex);
+          this.linesToDrag.push(idx);
 
-        this.lineTransforms[lineIndex] = { x: currentX, y: currentY };
+          // Ensure detached
+          if (!this.lineTransforms[idx]) {
+            const rect = l.getBoundingClientRect();
+            const dropzoneRect = dropzone.getBoundingClientRect();
+            const currentX = rect.left - dropzoneRect.left;
+            const currentY = rect.top - dropzoneRect.top;
+            this.lineTransforms[idx] = { x: currentX, y: currentY };
+            l.style.position = 'absolute';
+            l.style.left = currentX + 'px';
+            l.style.top = currentY + 'px';
+            l.style.margin = '0';
+            l.style.width = rect.width + 'px';
+            l.classList.add('independent-line');
+          }
 
-        // Apply absolute positioning immediately to prevent jumping
-        lineWrapper.style.position = 'absolute';
-        lineWrapper.style.left = currentX + 'px';
-        lineWrapper.style.top = currentY + 'px';
-        lineWrapper.style.margin = '0'; // Remove any margins that might affect position
-        lineWrapper.classList.add('independent-line');
+          this.linePanStartPositions[idx] = {
+            x: this.lineTransforms[idx].x,
+            y: this.lineTransforms[idx].y
+          };
+          l.classList.add('line-dragging');
+        });
+      } else {
+        // Just the clicked line
+        this.linesToDrag.push(lineIndex);
 
-        // Match width to current width to prevent shape change initially
-        // straight afterwards, updateLinePan will handle dynamic resizing
-        lineWrapper.style.width = rect.width + 'px';
+        // If line is not yet independent (static), we need to "detach" it
+        // calculating its current position and making it absolute
+        if (!this.lineTransforms[lineIndex]) {
+          // Get current position relative to dropzone
+          const rect = lineWrapper.getBoundingClientRect();
+          const dropzoneRect = dropzone.getBoundingClientRect();
+
+          // Calculate relative coordinates
+          // We use the current visual position as the starting point
+          const currentX = rect.left - dropzoneRect.left;
+          const currentY = rect.top - dropzoneRect.top;
+
+          this.lineTransforms[lineIndex] = { x: currentX, y: currentY };
+
+          // Apply absolute positioning immediately to prevent jumping
+          lineWrapper.style.position = 'absolute';
+          lineWrapper.style.left = currentX + 'px';
+          lineWrapper.style.top = currentY + 'px';
+          lineWrapper.style.margin = '0'; // Remove any margins that might affect position
+          lineWrapper.classList.add('independent-line');
+
+          // Match width to current width to prevent shape change initially
+          // straight afterwards, updateLinePan will handle dynamic resizing
+          lineWrapper.style.width = rect.width + 'px';
+        }
+
+        this.linePanStartPositions[lineIndex] = {
+          x: this.lineTransforms[lineIndex].x,
+          y: this.lineTransforms[lineIndex].y
+        };
+
+        lineWrapper.classList.add('line-dragging');
       }
 
       this.linePanStart.x = e.clientX;
@@ -1050,7 +1299,6 @@
       this.linePanStartPos.x = this.lineTransforms[lineIndex].x;
       this.linePanStartPos.y = this.lineTransforms[lineIndex].y;
 
-      lineWrapper.classList.add('line-dragging');
       this.updateCursor();
     },
 
@@ -1060,37 +1308,43 @@
     updateLinePan: function (e) {
       if (!this.currentDragLine) return;
 
-      const lineIndex = parseInt(this.currentDragLine.dataset.lineIndex);
-
       const deltaX = e.clientX - this.linePanStart.x;
       const deltaY = e.clientY - this.linePanStart.y;
 
-      const newX = this.linePanStartPos.x + deltaX;
-      const newY = this.linePanStartPos.y + deltaY;
-
-      // Update line position
-      this.lineTransforms[lineIndex] = { x: newX, y: newY };
-
-      // Apply position to line wrapper (using left/top for absolute positioning)
-      this.currentDragLine.style.left = newX + 'px';
-      this.currentDragLine.style.top = newY + 'px';
-
-      // Line-wrap feature: calculate max-width based on distance to right edge
       const dropzone = document.getElementById('imageDropzone');
-      if (dropzone) {
-        const dropzoneWidth = dropzone.offsetWidth;
-        const padding = 10; // Right padding
-        const availableWidth = Math.max(100, dropzoneWidth - newX - padding);
+      let dropzoneWidth = dropzone ? dropzone.offsetWidth : 800;
 
-        // Apply word-wrap styles to enable text wrapping
-        this.currentDragLine.style.maxWidth = availableWidth + 'px';
-        this.currentDragLine.style.wordWrap = 'break-word';
-        this.currentDragLine.style.whiteSpace = 'normal';
-        this.currentDragLine.style.overflowWrap = 'break-word';
+      this.linesToDrag.forEach(idx => {
+        const startPos = this.linePanStartPositions[idx];
+        if (!startPos) return;
+
+        const newX = startPos.x + deltaX;
+        const newY = startPos.y + deltaY;
+
+        this.lineTransforms[idx] = { x: newX, y: newY };
+
+        const wrapper = dropzone ? dropzone.querySelector(`.chat-line-wrapper[data-line-index="${idx}"]`) : null;
+        if (wrapper) {
+          wrapper.style.left = newX + 'px';
+          wrapper.style.top = newY + 'px';
+
+          const padding = 10;
+          const availableWidth = Math.max(100, dropzoneWidth - newX - padding);
+
+          wrapper.style.maxWidth = availableWidth + 'px';
+          wrapper.style.wordWrap = 'break-word';
+          wrapper.style.whiteSpace = 'normal';
+          wrapper.style.overflowWrap = 'break-word';
+        }
+      });
+
+      // Check and show alignment guides for the primary dragged line
+      if (!this.isGroupDragEnabled) {
+        const primaryIdx = parseInt(this.currentDragLine.dataset.lineIndex);
+        const newX = this.linePanStartPos.x + deltaX;
+        const newY = this.linePanStartPos.y + deltaY;
+        this.checkAndShowAlignmentGuides(primaryIdx, newX, newY);
       }
-
-      // Check and show alignment guides
-      this.checkAndShowAlignmentGuides(lineIndex, newX, newY);
     },
 
     /**
@@ -1438,18 +1692,25 @@
         const exportPPI = localStorage.getItem('overlayExportPPI');
         const paddingH = localStorage.getItem('overlayPaddingHorizontal');
         const paddingV = localStorage.getItem('overlayPaddingVertical');
+        const groupDrag = localStorage.getItem('overlayGroupDrag');
 
         const exportWidthInput = document.getElementById('exportWidth');
         const exportHeightInput = document.getElementById('exportHeight');
         const exportPPIInput = document.getElementById('exportPPI');
         const textPaddingHorizontal = document.getElementById('textPaddingHorizontal');
         const textPaddingVertical = document.getElementById('textPaddingVertical');
+        const chatGroupDragCheckbox = document.getElementById('chatGroupDrag');
 
         if (exportWidth && exportWidthInput) exportWidthInput.value = exportWidth;
         if (exportHeight && exportHeightInput) exportHeightInput.value = exportHeight;
         if (exportPPI && exportPPIInput) exportPPIInput.value = exportPPI;
         if (paddingH && textPaddingHorizontal) textPaddingHorizontal.value = paddingH;
         if (paddingV && textPaddingVertical) textPaddingVertical.value = paddingV;
+
+        if (groupDrag !== null) {
+          this.isGroupDragEnabled = groupDrag === 'true';
+          if (chatGroupDragCheckbox) chatGroupDragCheckbox.checked = this.isGroupDragEnabled;
+        }
 
         console.log('[ImageOverlay] Loaded settings from localStorage');
       } catch (e) {
@@ -1475,6 +1736,8 @@
           localStorage.setItem('overlayPaddingHorizontal', textPaddingHorizontal.value);
         if (textPaddingVertical)
           localStorage.setItem('overlayPaddingVertical', textPaddingVertical.value);
+
+        localStorage.setItem('overlayGroupDrag', this.isGroupDragEnabled);
       } catch (e) {
         console.warn('[ImageOverlay] Could not save settings to localStorage:', e);
       }
@@ -1761,6 +2024,106 @@
         scaleDisplay.textContent = Math.round(newScale * 100) + '%';
       }
     },
+
+    /**
+     * Start marquee selection
+     */
+    startMarqueeSelection: function (e) {
+      const dropzone = document.getElementById('imageDropzone');
+      if (!dropzone) return;
+
+      this.isMarqueeSelecting = true;
+      const rect = dropzone.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      this.marqueeStart = { x, y };
+
+      // Create or reuse marquee element
+      if (!this.marqueeElement) {
+        this.marqueeElement = document.createElement('div');
+        this.marqueeElement.className = 'selection-marquee';
+        dropzone.appendChild(this.marqueeElement);
+      }
+
+      this.marqueeElement.style.left = x + 'px';
+      this.marqueeElement.style.top = y + 'px';
+      this.marqueeElement.style.width = '0px';
+      this.marqueeElement.style.height = '0px';
+      this.marqueeElement.style.display = 'block';
+    },
+
+    /**
+     * Update marquee selection
+     */
+    updateMarqueeSelection: function (e) {
+      if (!this.isMarqueeSelecting || !this.marqueeElement) return;
+
+      const dropzone = document.getElementById('imageDropzone');
+      if (!dropzone) return;
+
+      const rect = dropzone.getBoundingClientRect();
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
+
+      const left = Math.min(this.marqueeStart.x, currentX);
+      const top = Math.min(this.marqueeStart.y, currentY);
+      const width = Math.abs(currentX - this.marqueeStart.x);
+      const height = Math.abs(currentY - this.marqueeStart.y);
+
+      this.marqueeElement.style.left = left + 'px';
+      this.marqueeElement.style.top = top + 'px';
+      this.marqueeElement.style.width = width + 'px';
+      this.marqueeElement.style.height = height + 'px';
+    },
+
+    /**
+     * Stop marquee selection and select enclosed items
+     */
+    stopMarqueeSelection: function () {
+      if (!this.isMarqueeSelecting || !this.marqueeElement) return;
+
+      this.isMarqueeSelecting = false;
+      this.marqueeElement.style.display = 'none';
+
+      // Calculate final marquee rect
+      const rect = this.marqueeElement.getBoundingClientRect();
+
+      // Avoid tiny selections (accidental clicks)
+      if (rect.width < 5 && rect.height < 5) return;
+
+      // Find all intersecting chat lines
+      const dropzone = document.getElementById('imageDropzone');
+      if (!dropzone) return;
+
+      const lines = dropzone.querySelectorAll('.chat-line-wrapper.independent-line');
+      let firstSelected = null;
+      let selectionCount = 0;
+
+      // Precompute bounds for lines
+      lines.forEach(line => {
+        const lineRect = line.getBoundingClientRect();
+
+        // Check intersection
+        const isIntersecting = !(
+          lineRect.right < rect.left ||
+          lineRect.left > rect.right ||
+          lineRect.bottom < rect.top ||
+          lineRect.top > rect.bottom
+        );
+
+        if (isIntersecting) {
+          const lineIndex = parseInt(line.dataset.lineIndex);
+          // Add to selection (true simulates Shift+Click/multiple selection)
+          this.selectElement(lineIndex, line, true);
+
+          if (!firstSelected) firstSelected = line;
+          selectionCount++;
+        }
+      });
+
+      console.log(`[ImageOverlay] Marquee selected ${selectionCount} items`);
+    }
   };
 
   // Initialize on DOM ready

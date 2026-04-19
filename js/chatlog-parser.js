@@ -608,7 +608,9 @@ $(document).ready(function () {
 
         // Determine the color for the main content
         let mainColor;
-        if (hasToSection) {
+        if (disableCharacterNameColoring) {
+          mainColor = 'white';
+        } else if (hasToSection) {
           // Extract the target name from (to CharacterName)
           const toSectionMatch = lineWithoutExclamation.match(toSectionPattern);
           const targetName = toSectionMatch
@@ -702,18 +704,19 @@ $(document).ready(function () {
         const wordContent = $el.text().trim();
         if (!wordContent) return;
 
-        // Get color class (exclude 'colorable' and 'unrecognized')
-        const classes = $el.attr('class') || '';
-        const colorClass = classes.split(/\s+/).find(cls =>
-          cls !== 'colorable' && cls !== 'unrecognized' && cls !== 'selected-for-coloring' &&
-          ['me', 'ame', 'darkgrey', 'grey', 'lightgrey', 'death', 'yellow', 'green', 'orange', 'blue', 'white', 'radioColor', 'radioColor2', 'depColor', 'vesseltraffic', 'toyou'].includes(cls)
-        );
+        if ($el.hasClass('user-colored')) {
+          const classes = $el.attr('class') || '';
+          const colorClass = classes.split(/\s+/).find(cls =>
+            cls !== 'colorable' && cls !== 'unrecognized' && cls !== 'selected-for-coloring' && cls !== 'user-colored' &&
+            ['me', 'ame', 'darkgrey', 'grey', 'lightgrey', 'death', 'yellow', 'green', 'orange', 'blue', 'white', 'radioColor', 'radioColor2', 'depColor', 'vesseltraffic', 'toyou'].includes(cls)
+          );
 
-        if (colorClass) {
-          // Create a stable key based on: sourceLine|wordContent|position
-          // sourceLine is the original textarea line, so it won't change when other lines change
-          const stableKey = `${sourceLine}|${wordContent}|${wordPositionInLine}`;
-          colorOverrides.set(stableKey, colorClass);
+          if (colorClass) {
+            // Create a stable key based on: sourceLine|wordContent|position
+            // sourceLine is the original textarea line, so it won't change when other lines change
+            const stableKey = `${sourceLine}|${wordContent}|${wordPositionInLine}`;
+            colorOverrides.set(stableKey, colorClass);
+          }
         }
 
         wordPositionInLine++;
@@ -755,7 +758,7 @@ $(document).ready(function () {
       if ($el && $el.length) {
         // Remove default color classes and apply user override
         $el.removeClass('me ame darkgrey grey lightgrey death yellow green orange blue white radioColor radioColor2 depColor vesseltraffic toyou');
-        $el.addClass(colorClass);
+        $el.addClass(colorClass).addClass('user-colored');
       }
     });
   }
@@ -969,7 +972,9 @@ $(document).ready(function () {
 
       // Determine the color based on speaker and target
       let mainColor;
-      if (hasToSection) {
+      if (disableCharacterNameColoring) {
+        mainColor = 'white';
+      } else if (hasToSection) {
         // Extract the target name from (to CharacterName)
         const toSectionMatch = lineWithoutExclamation.match(toSectionPattern);
         const targetName = toSectionMatch
