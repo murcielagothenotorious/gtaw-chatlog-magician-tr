@@ -70,12 +70,12 @@
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NFRMGR33" height="0" width="0"
       style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
-  <a class="skip-link" href="#main">Skip to main content</a>
+  <a class="skip-link" href="#main">Ana içeriğe geç</a>
   <header role="banner">
     <h1 class="visually-hidden">Chatlog Magician</h1>
     <nav aria-label="Primary" class="visually-hidden">
-      <a href="#output">Output</a>
-      <a href="#historyPanel">History</a>
+      <a href="#output">Çıktı</a>
+      <a href="#historyPanel">Geçmiş</a>
     </nav>
   </header>
   <main id="main" role="main">
@@ -179,8 +179,6 @@
                 <button id="toggleContrast" class="button secondary" aria-label="Toggle text contrast">
                   <span class="contrast-text">Kontrast: Kapalı</span>
                 </button>
-
-
 
                 <!-- Feedback/Bug Report Button -->
                 <button id="openFeedbackBtn" class="button info" aria-label="İstek ve Hata Bildir"
@@ -386,17 +384,9 @@
 
             </div>
           </div>
-
-          <!-- Simplified Info -->
-          <div class="overlay-help-hint">
-            <p>
-              <i class="fas fa-lightbulb" aria-hidden="true"></i>
-              <strong>Hızlı başlangıç:</strong> Görsel yapıştır (Ctrl+V) → Sohbeti konumlandır → İndir
-              <button type="button" id="showHelpBtn2" class="help-link">Detaylı yardım →</button>
-            </p>
-          </div>
         </div>
       </div>
+    </div>
     </div>
     </div>
   </main>
@@ -455,22 +445,27 @@
       <div class="selection-counter">0 seçildi</div>
     </div>
     <div class="color-palette-items">
-      <div class="color-item me" data-color="me" data-tooltip="Me/Ame Actions"></div>
-      <div class="color-item ame" data-color="ame" data-tooltip="Me/Ame Actions"></div>
-      <div class="color-item darkgrey" data-color="darkgrey" data-tooltip="Lower Voice"></div>
-      <div class="color-item grey" data-color="grey" data-tooltip="Low Voice"></div>
-      <div class="color-item lightgrey" data-color="lightgrey" data-tooltip="Normal Text"></div>
-      <div class="color-item death" data-color="death" data-tooltip="Death/Failures"></div>
-      <div class="color-item yellow" data-color="yellow" data-tooltip="Important Info"></div>
-      <div class="color-item green" data-color="green" data-tooltip="Success"></div>
-      <div class="color-item orange" data-color="orange" data-tooltip="Warnings"></div>
-      <div class="color-item blue" data-color="blue" data-tooltip="Info"></div>
-      <div class="color-item white" data-color="white" data-tooltip="Normal Text"></div>
-      <div class="color-item radioColor" data-color="radioColor" data-tooltip="Radio (Your Channel)"></div>
-      <div class="color-item radioColor2" data-color="radioColor2" data-tooltip="Radio (Other Channel)"></div>
-      <div class="color-item depColor" data-color="depColor" data-tooltip="Department"></div>
-      <div class="color-item vesseltraffic" data-color="vesseltraffic" data-tooltip="Vessel Traffic"></div>
-      <div class="color-item toyou" data-color="toyou" data-tooltip="Directed at You [!]"></div>
+      <div class="color-item me" data-color="me" data-tooltip="Aksiyon (/me, /ame)"></div>
+      <div class="color-item ame" data-color="ame" data-tooltip="Aksiyon (/ame)"></div>
+      <div class="color-item darkgrey" data-color="darkgrey" data-tooltip="Alçak Ses (/low)"></div>
+      <div class="color-item grey" data-color="grey" data-tooltip="Kısık Ses"></div>
+      <div class="color-item lightgrey" data-color="lightgrey" data-tooltip="Normal Yazı"></div>
+      <div class="color-item death" data-color="death" data-tooltip="Ölüm/Başarısızlık"></div>
+      <div class="color-item yellow" data-color="yellow" data-tooltip="Önemli Bilgi"></div>
+      <div class="color-item green" data-color="green" data-tooltip="Başarılı"></div>
+      <div class="color-item orange" data-color="orange" data-tooltip="Uyarı"></div>
+      <div class="color-item blue" data-color="blue" data-tooltip="Bilgi"></div>
+      <div class="color-item white" data-color="white" data-tooltip="Normal Mesaj"></div>
+      <div class="color-item radioColor" data-color="radioColor" data-tooltip="Telsiz /r (Senin Kanalın)"></div>
+      <div class="color-item radioColor2" data-color="radioColor2" data-tooltip="Telsiz /rc (Diğer Kanal)"></div>
+      <div class="color-item depColor" data-color="depColor" data-tooltip="Departman"></div>
+      <div class="color-item vesseltraffic" data-color="vesseltraffic" data-tooltip="Deniz Trafiği"></div>
+      <div class="color-item toyou" data-color="toyou" data-tooltip="Sana Yönelik [!]"></div>
+    </div>
+    <div
+      style="font-size: 11px; color: rgba(255,255,255,0.45); text-align: center; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; line-height: 1.4;">
+      <i class="fas fa-mouse-pointer" style="margin-right: 4px; opacity: 0.6;"></i> Kelimeleri farenizle seçin,
+      <br>ardından yukarıdan renk atayın.
     </div>
   </div>
 
@@ -479,8 +474,8 @@
     style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
     <div
       style="background: #1a1d23; padding: 24px; border-radius: 0; max-width: 450px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin: auto;">
-      <h3 style="margin-top: 0; margin-bottom: 16px; color: #f1f1f1; font-size: 18px; font-weight: 600;">Support
-        Development</h3>
+      <h3 style="margin-top: 0; margin-bottom: 16px; color: #f1f1f1; font-size: 18px; font-weight: 600;">Geliştirmeye
+        Destek Ol</h3>
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <iframe id='kofiframe' src='https://ko-fi.com/kthedev/?hidefeed=true&widget=true&embed=true&preview=true'
           style='border:none;width:100%;padding:4px;background:#f9f9f9;' height='712' title='kthedev'></iframe>
@@ -660,7 +655,8 @@
       <div class="help-modal-body" style="max-height: 400px; overflow-y: auto;">
         <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
           <li><strong>Chatlog Renklendirme:</strong> Sohbet modunda hatalı renklendirilen veya renklendirmek istediğiniz
-            bir kelimeye tıklayarak kendiniz manuel olarak rengini değiştirebilirsiniz! (Çoklu seçim için CTRL+Tık veya
+            bir kelimeye tıklayarak kendiniz manuel olarak rengini değiştirebilirsiniz. (Çoklu seçim için CTRL+ Sol Fare
+            Tıklaması veya
             sürükleme)</li>
           <li><strong>Karakter İsmi Vurgulama:</strong> Karakter adınızı metin kutusundaki ilgili alana girerek [!] gibi
             direkt size yönelik mesajların <em>toyou (parlak beyaz)</em> şekilde parlamasını sağlayabilirsiniz.</li>
@@ -671,7 +667,7 @@
           <li><strong>Siyah-Beyaz Modu:</strong> Siyah-Beyaz butonu ile oyun içi görüntünüzü tek tıkla renksiz hale
             getirip dramatik bir etki yaratabilirsiniz.</li>
           <li><strong>Satırları Sürükleme:</strong> Fotoğraf modunda, metin satırları blok halinde gelse de fareyle
-            dilediğiniz satırı tutup ekranın başka bir köşesine sürükleyebilirsiniz!</li>
+            dilediğiniz satırı tutup ekranın başka bir köşesine sürükleyebilirsiniz.</li>
           <li><strong>Renk Paleti:</strong> Fotoğraf modunda sağ sekmedeki "Özellikler" bölümünden hem sohbetin kendi
             rengini, hem seçili satırları değiştirebilirsiniz.</li>
         </ul>
@@ -680,6 +676,39 @@
       <div class="help-modal-footer">
         <button type="button" id="closeFeaturesBtn" class="button primary">Anladım!</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Floating Changelog Tab -->
+  <div class="changelog-tab" id="openChangelogBtn" role="button" tabindex="0" aria-label="Yama Notları"
+    aria-expanded="false">
+    <i class="fas fa-bullhorn" aria-hidden="true"></i>
+  </div>
+
+  <!-- Changelog Drawer -->
+  <div id="changelogBackdrop" class="changelog-backdrop"></div>
+  <div id="changelogDrawer" class="changelog-drawer">
+    <div
+      style="padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="margin: 0; font-size: 16px; color: #f1f1f1; display: flex; align-items: center;">
+        <i class="fas fa-history" style="margin-right: 10px; color: #2ecc71;"></i>
+        Son Güncellemeler <span
+          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.1.0</span>
+      </h2>
+      <button type="button" id="closeChangelogModal"
+        style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 5px;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div style="padding: 25px; overflow-y: auto; flex: 1;">
+      <ul
+        style="margin: 0; padding-left: 18px; opacity: 0.85; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <li>Sohbeti yapıştırdıktan sonra karakterini girersen renkler artık anında değişiyor.</li>
+        <li>İsimleri kapatma butonu düzeltildi, artık direkt standart beyaza dönüyor.</li>
+        <li>Tüm özellik renkleri, butonlar ve yönlendiriciler Türkçeleştirildi.</li>
+        <li>Renk hafızası sıfırdan yazıldı, manuel ayarladığın renkler asla bozulmuyor.</li>
+      </ul>
     </div>
   </div>
 
@@ -730,6 +759,26 @@
     if (closeFeaturesModal) closeFeaturesModal.addEventListener('click', hideFeaturesModal);
     if (closeFeaturesBtn) closeFeaturesBtn.addEventListener('click', hideFeaturesModal);
     if (featuresBackdrop) featuresBackdrop.addEventListener('click', hideFeaturesModal);
+
+    // Changelog modal handler
+    const changelogDrawer = document.getElementById('changelogDrawer');
+    const openChangelogBtn = document.getElementById('openChangelogBtn');
+    const closeChangelogModal = document.getElementById('closeChangelogModal');
+    const changelogBackdrop = document.getElementById('changelogBackdrop');
+
+    function showChangelogModal() {
+      if (changelogDrawer) changelogDrawer.classList.add('open');
+      if (changelogBackdrop) changelogBackdrop.classList.add('open');
+    }
+
+    function hideChangelogModal() {
+      if (changelogDrawer) changelogDrawer.classList.remove('open');
+      if (changelogBackdrop) changelogBackdrop.classList.remove('open');
+    }
+
+    if (openChangelogBtn) openChangelogBtn.addEventListener('click', showChangelogModal);
+    if (closeChangelogModal) closeChangelogModal.addEventListener('click', hideChangelogModal);
+    if (changelogBackdrop) changelogBackdrop.addEventListener('click', hideChangelogModal);
 
     // Feedback modal handler
     const feedbackModal = document.getElementById('feedbackModal');
@@ -818,6 +867,110 @@
   <script src="js/init.js?v=1.1.0" defer></script>
 
   <!-- Speed Insights removed - migrated to Cloudflare Pages -->
+
+  <style>
+    /* Fix for bottom footer positioning */
+    html,
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #main {
+      flex: 1 0 auto;
+    }
+
+    .site-signature {
+      background: var(--background);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 20px 15px;
+      margin-top: 40px;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.3);
+      flex-shrink: 0;
+    }
+
+    .changelog-tab {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 88px;
+      background-color: #6c757d;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+      cursor: pointer;
+      z-index: 1001;
+      transition: background-color 0.25s ease-out;
+      border: none;
+    }
+
+    .changelog-tab:hover {
+      background-color: #868e96;
+    }
+
+    .changelog-tab i {
+      font-size: 20px;
+    }
+
+    .changelog-drawer {
+      position: fixed;
+      top: 0;
+      left: -400px;
+      width: 400px;
+      max-width: 85vw;
+      height: 100vh;
+      background: #1a1d23;
+      border-right: 1px solid rgba(255, 255, 255, 0.05);
+      z-index: 10001;
+      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .changelog-drawer.open {
+      left: 0;
+    }
+
+    .changelog-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      backdrop-filter: blur(2px);
+    }
+
+    .changelog-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+  </style>
+
+  <footer class="site-signature">
+    <p style="margin: 0; letter-spacing: 0.5px;">
+      <i class="fas fa-code" style="margin-right: 5px;"></i> Made by Blanco
+      <span style="margin: 0 10px; opacity: 0.5;">|</span>
+      GTA World Türkiye için <strong><a href="https://forum-tr.gta.world/index.php?/profile/8001-murcielago/"
+          target="_blank"
+          style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3); transition: color 0.2s, text-decoration-color 0.2s;"
+          onmouseover="this.style.color='#fff'; this.style.textDecorationColor='#fff'"
+          onmouseout="this.style.color='inherit'; this.style.textDecorationColor='rgba(255,255,255,0.3)'">murcielago</a></strong>
+      tarafından adapte edildi.
+    </p>
+  </footer>
 </body>
 
 </html>

@@ -117,10 +117,7 @@
       document.body.style.mozUserSelect = 'none';
       document.body.style.msUserSelect = 'none';
 
-      // Replace blocking alert with non-blocking toast
-      showToast(
-        'Renklendirme modu: Kelimelere tıklayarak seçin. Çoklu seçim için Ctrl+klik veya sürükleyin. Çıkmak için butona tekrar tıklayın.'
-      );
+      // Instruction text now visually added in index.html inside #colorPalette
 
       setTimeout(function () {
         makeTextColorable();
@@ -370,7 +367,7 @@
     $('.color-applied-feedback').remove();
 
     // Create feedback element
-    const feedback = $(`<div class="color-applied-feedback">Applied ${colorClass}</div>`);
+    const feedback = $(`<div class="color-applied-feedback">${colorClass} uygulandı.</div>`);
     $('body').append(feedback);
 
     // Remove after configured duration
