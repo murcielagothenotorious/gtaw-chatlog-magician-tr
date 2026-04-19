@@ -1574,20 +1574,22 @@ $(document).ready(function () {
     // Normalize apostrophes and escape HTML to prevent tag injection
     content = escapeHTML(content.replace(/['''']/g, "'"));
 
-    const tokens = content.split(/(\s+)/g);
+    // Split by !{#HEXCODE} - captures the hex code so it appears in the resulting array at odd indices.
+    const parts = content.split(/!\{#([0-9A-Fa-f]{6})\}/i);
+    
     let html = '';
     let censoring = false;
     let censorBuffer = '';
     let visibleBuffer = '';
+    let activeInlineColor = null;
 
     const flushCensor = () => {
       if (censorBuffer.length > 0) {
+        const styleAttr = activeInlineColor ? ` style="color: ${activeInlineColor};"` : '';
         if (censorStyle === 'blur') {
-          // Blur mode: colorable blurred text inheriting the line's color class
-          html += `<span class="${className} censored-content blur-mode colorable" data-original="${censorBuffer}">${censorBuffer}</span>`;
+          html += `<span class="${className} censored-content blur-mode colorable" data-original="${censorBuffer}"${styleAttr}>${censorBuffer}</span>`;
         } else {
-          // Remove mode: invisible but preserves space (no text shift)
-          html += `<span class="${className} censored-content censored-remove" data-original="${censorBuffer}">${censorBuffer}</span>`;
+          html += `<span class="${className} censored-content censored-remove" data-original="${censorBuffer}"${styleAttr}>${censorBuffer}</span>`;
         }
         censorBuffer = '';
       }
@@ -1595,47 +1597,63 @@ $(document).ready(function () {
 
     const flushVisible = () => {
       if (visibleBuffer.length > 0) {
-        html += `<span class="${className} colorable">${visibleBuffer}</span>`;
+        const styleAttr = activeInlineColor ? ` style="color: ${activeInlineColor};"` : '';
+        html += `<span class="${className} colorable"${styleAttr}>${visibleBuffer}</span>`;
         visibleBuffer = '';
       }
     };
 
-    tokens.forEach((token) => {
-      if (token === '') return;
-      if (/^\s+$/.test(token)) {
-        // On whitespace, flush any visible buffer and pass whitespace through
-        if (censoring) {
-          censorBuffer += token;
-        } else {
-          flushVisible();
-          html += token;
-        }
-        return;
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 1) {
+        // This is a hex code from the split regex capture group
+        flushCensor();
+        flushVisible();
+        activeInlineColor = '#' + parts[i];
+        continue;
       }
 
-      // Process non-whitespace token character-by-character to handle censorship toggles
-      for (const char of token) {
-        if (char === '÷') {
+      let textSegment = parts[i];
+      if (!textSegment) continue;
+
+      const tokens = textSegment.split(/(\s+)/g);
+      
+      tokens.forEach((token) => {
+        if (token === '') return;
+        if (/^\s+$/.test(token)) {
+          // On whitespace, flush any visible buffer and pass whitespace through
           if (censoring) {
-            // closing delimiter
-            flushCensor();
-            censoring = false;
+            censorBuffer += token;
           } else {
-            // opening delimiter
             flushVisible();
-            censoring = true;
+            html += token;
           }
-        } else if (censoring) {
-          censorBuffer += char;
-        } else {
-          visibleBuffer += char;
+          return;
         }
-      }
-      // At end of token (word), flush visible as a single word span
-      if (!censoring) {
-        flushVisible();
-      }
-    });
+
+        // Process non-whitespace token character-by-character to handle censorship toggles
+        for (const char of token) {
+          if (char === '÷') {
+            if (censoring) {
+              // closing delimiter
+              flushCensor();
+              censoring = false;
+            } else {
+              // opening delimiter
+              flushVisible();
+              censoring = true;
+            }
+          } else if (censoring) {
+            censorBuffer += char;
+          } else {
+            visibleBuffer += char;
+          }
+        }
+        // At end of token (word), flush visible as a single word span
+        if (!censoring) {
+          flushVisible();
+        }
+      });
+    }
 
     if (censoring) {
       // unmatched delimiter, append as plain text

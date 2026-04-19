@@ -221,6 +221,10 @@
         // Get image effect settings
         const imageOpacity = state?.imageOpacity ?? 100;
         const imageBlur = state?.imageBlur ?? 0;
+        const imageBrightness = state?.imageBrightness ?? 100;
+        const imageContrast = state?.imageContrast ?? 100;
+        const imageSaturation = state?.imageSaturation ?? 100;
+        const imageVignette = state?.imageVignette ?? 0;
         const imageGrayscale = state?.imageGrayscale ?? false;
 
         if (window.ErrorLogger) {
@@ -283,8 +287,67 @@
           exportHeight,
           scaleRatioX,
           scaleRatioY,
-          { opacity: imageOpacity, blur: imageBlur, grayscale: imageGrayscale }
+          { 
+            opacity: imageOpacity, 
+            blur: imageBlur, 
+            brightness: imageBrightness,
+            contrast: imageContrast,
+            saturation: imageSaturation,
+            grayscale: imageGrayscale 
+          }
         );
+        
+        // 2.5 Draw Vignette if active (before chat overlays)
+        if (imageVignette > 0) {
+           this.drawVignette(ctx, exportWidth, exportHeight, imageVignette);
+        }
+
+        // 2.6 Draw Blur boxes
+        const output = document.getElementById('output');
+        const blurBoxes = output ? output.querySelectorAll('.blur-box-element') : [];
+        if (blurBoxes.length > 0) {
+           ctx.save();
+           const chatX = state?.chatTransform?.x || 0;
+           const chatY = state?.chatTransform?.y || 0;
+           const chatScale = state?.chatTransform?.scale || 1;
+           
+           // Build clipping path matching the blur boxes
+           ctx.scale(scaleRatioX, scaleRatioY);
+           ctx.translate(chatX, chatY);
+           ctx.scale(chatScale, chatScale);
+           
+           ctx.beginPath();
+           blurBoxes.forEach(box => {
+              const left = parseFloat(box.style.left) || 0;
+              const top = parseFloat(box.style.top) || 0;
+              const w = parseFloat(box.style.width) || box.offsetWidth;
+              const h = parseFloat(box.style.height) || box.offsetHeight;
+              ctx.rect(left, top, w, h);
+           });
+           
+           // Restore transform to canvas global before setting clip to keep Redraw identical
+           ctx.restore();
+           ctx.save();
+           ctx.clip();
+           
+           // Redraw the background masked to blur boxes heavily blurred
+           await this.drawImageWithTransforms(
+             ctx,
+             exportWidth,
+             exportHeight,
+             scaleRatioX,
+             scaleRatioY,
+             { 
+               opacity: imageOpacity, 
+               blur: (imageBlur > 0 ? imageBlur : 0) + 15,
+               brightness: (imageBrightness !== 100 ? imageBrightness : 100) * 0.9,
+               contrast: imageContrast,
+               saturation: imageSaturation,
+               grayscale: imageGrayscale 
+             }
+           );
+           ctx.restore();
+        }
 
         // 3. Draw the chat overlay - use manual canvas drawing to properly capture per-line positions
         // This is more reliable than dom-to-image for independently positioned lines
@@ -510,6 +573,9 @@
       // Apply image effects
       const opacity = effects.opacity ?? 100;
       const blur = effects.blur ?? 0;
+      const brightness = effects.brightness ?? 100;
+      const contrast = effects.contrast ?? 100;
+      const saturation = effects.saturation ?? 100;
       const grayscale = effects.grayscale ?? false;
 
       ctx.globalAlpha = opacity / 100;
@@ -518,6 +584,15 @@
       const filters = [];
       if (blur > 0) {
         filters.push(`blur(${blur}px)`);
+      }
+      if (brightness !== 100) {
+        filters.push(`brightness(${brightness}%)`);
+      }
+      if (contrast !== 100) {
+        filters.push(`contrast(${contrast}%)`);
+      }
+      if (saturation !== 100) {
+        filters.push(`saturate(${saturation}%)`);
       }
       if (grayscale) {
         filters.push('grayscale(100%)');
@@ -547,6 +622,24 @@
       ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
 
       ctx.restore();
+    },
+    
+    /**
+     * Draw vignette effect over canvas
+     */
+    drawVignette: function(ctx, w, h, strength) {
+       ctx.save();
+       // Create radial gradient for vignette
+       // The 'strength' goes from 0-100. We map it to alpha
+       const maxAlpha = strength / 100.0;
+       
+       const gradient = ctx.createRadialGradient(w/2, h/2, Math.min(w,h) * 0.4, w/2, h/2, Math.max(w,h) * 0.7);
+       gradient.addColorStop(0, 'rgba(0,0,0,0)');
+       gradient.addColorStop(1, `rgba(0,0,0,${maxAlpha})`);
+       
+       ctx.fillStyle = gradient;
+       ctx.fillRect(0, 0, w, h);
+       ctx.restore();
     },
 
     /**

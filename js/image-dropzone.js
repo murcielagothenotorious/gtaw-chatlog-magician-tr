@@ -88,6 +88,9 @@
      * Handle double-click on drop zone
      */
     handleDoubleClick: function (event) {
+      // Don't open file picker if text tool is active — text tool uses dblclick
+      if (window.ImageOverlayState && window.ImageOverlayState.activeTool === 'text') return;
+
       // Only trigger file input if double-clicking on drop zone itself
       if (
         event.target.classList.contains('image-dropzone') ||

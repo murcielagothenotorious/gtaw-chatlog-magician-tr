@@ -1,0 +1,142 @@
+/* ---- Selection Handles ---- */
+.chat-line-wrapper.selected {
+  outline: 1px solid #4fc3f7;
+  outline-offset: 1px;
+}
+
+.chat-line-wrapper.selected .handle {
+  display: block;
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #fff;
+  border: 1px solid #4fc3f7;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.chat-line-wrapper .handle {
+  display: none;
+}
+
+.chat-line-wrapper .handle.w-resize {
+  top: 50%;
+  left: -5px;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
+
+.chat-line-wrapper .handle.e-resize {
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+
+/* ---- Crop Tool ---- */
+.crop-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+  display: none;
+}
+
+.crop-overlay.active {
+  display: block;
+}
+
+.crop-darkness {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.crop-darkness.top { top: 0; left: 0; right: 0; }
+.crop-darkness.bottom { bottom: 0; left: 0; right: 0; }
+.crop-darkness.left { top: 0; bottom: 0; left: 0; }
+.crop-darkness.right { top: 0; bottom: 0; right: 0; }
+
+.crop-area-box {
+  position: absolute;
+  border: 1px dashed rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+  cursor: move;
+}
+
+.crop-area-box::after {
+  content: '';
+  position: absolute;
+  inset: 33.33% 0;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  pointer-events: none;
+}
+
+.crop-area-box::before {
+  content: '';
+  position: absolute;
+  inset: 0 33.33%;
+  border-left: 1px solid rgba(255,255,255,0.2);
+  border-right: 1px solid rgba(255,255,255,0.2);
+  pointer-events: none;
+}
+
+.crop-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 1px solid #111;
+  pointer-events: auto;
+}
+
+.crop-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+.crop-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+.crop-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+.crop-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+.crop-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.crop-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.crop-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+.crop-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+
+.crop-actions {
+  position: absolute;
+  bottom: -36px;
+  right: 0;
+  display: flex;
+  gap: 4px;
+}
+
+.crop-btn {
+  background: #252526;
+  border: 1px solid #454545;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.crop-btn.confirm { background: #094771; }
+.crop-btn:hover { filter: brightness(1.2); }
+
+/* ---- Text Tool ---- */
+.text-tool-input {
+  position: absolute;
+  background: transparent;
+  border: 1px dashed #4fc3f7;
+  color: white;
+  min-width: 50px;
+  min-height: 20px;
+  outline: none;
+  z-index: 50;
+  padding: 2px;
+  cursor: text;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.text-tool-input:focus {
+  border: 1px solid #4fc3f7;
+  background: rgba(0,0,0,0.4);
+}

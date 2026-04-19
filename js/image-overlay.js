@@ -83,13 +83,22 @@
     // Image effect settings (Paint.NET-like layer controls)
     imageOpacity: 100, // 0-100%
     imageBlur: 0, // 0-20px
+    imageBrightness: 100, // 0-200%
+    imageContrast: 100, // 0-200%
+    imageSaturation: 100, // 0-200%
+    imageVignette: 0, // 0-100%
     imageGrayscale: false, // true/false
 
     // Current mode
     currentMode: 'chat', // 'chat' or 'overlay'
 
-    // Active tool ('move', 'color', 'pan')
+    // Active tool ('move', 'color', 'pan', 'text', 'crop', 'eraser')
     activeTool: 'move',
+
+    // Line resize state (handle dragging)
+    isLineResizing: false,
+    resizeHandle: null,
+    lineResizeStart: { x: 0, width: 0, left: 0 },
 
     // Marquee state
     isMarqueeSelecting: false,
@@ -129,6 +138,8 @@
       this.setupImageEffects();
       this.setupToolbar();
       this.setupColorGrid();
+      this.setupTopbar();
+      this.setupEditorIntegration();
 
       // Listen for image loaded event
       document.addEventListener('imageLoaded', (e) => {
@@ -203,32 +214,43 @@
       // Reset state to defaults
       this.imageOpacity = 100;
       this.imageBlur = 0;
+      this.imageBrightness = 100;
+      this.imageContrast = 100;
+      this.imageSaturation = 100;
+      this.imageVignette = 0;
       this.imageGrayscale = false;
 
       // Reset UI elements
       const opacitySlider = document.getElementById('imageOpacity');
       const blurSlider = document.getElementById('imageBlur');
+      const brightnessSlider = document.getElementById('imageBrightness');
+      const contrastSlider = document.getElementById('imageContrast');
+      const saturationSlider = document.getElementById('imageSaturation');
+      const vignetteSlider = document.getElementById('imageVignette');
       const grayscaleCheckbox = document.getElementById('imageGrayscale');
 
-      if (opacitySlider) {
-        opacitySlider.value = 100;
-      }
-      if (blurSlider) {
-        blurSlider.value = 0;
-      }
-      if (grayscaleCheckbox) {
-        grayscaleCheckbox.checked = false;
-      }
+      if (opacitySlider) opacitySlider.value = 100;
+      if (blurSlider) blurSlider.value = 0;
+      if (brightnessSlider) brightnessSlider.value = 100;
+      if (contrastSlider) contrastSlider.value = 100;
+      if (saturationSlider) saturationSlider.value = 100;
+      if (vignetteSlider) vignetteSlider.value = 0;
+      if (grayscaleCheckbox) grayscaleCheckbox.checked = false;
 
       // Update value displays
       const opacityValue = document.getElementById('opacityValue');
       const blurValue = document.getElementById('blurValue');
-      if (opacityValue) {
-        opacityValue.textContent = '100%';
-      }
-      if (blurValue) {
-        blurValue.textContent = '0px';
-      }
+      const bValue = document.getElementById('brightnessValue');
+      const cValue = document.getElementById('contrastValue');
+      const sValue = document.getElementById('saturationValue');
+      const vValue = document.getElementById('vignetteValue');
+
+      if (opacityValue) opacityValue.textContent = '100%';
+      if (blurValue) blurValue.textContent = '0px';
+      if (bValue) bValue.textContent = '100%';
+      if (cValue) cValue.textContent = '100%';
+      if (sValue) sValue.textContent = '100%';
+      if (vValue) vValue.textContent = '0%';
 
       // Also reset line transforms for per-line dragging
       this.lineTransforms = {};
@@ -508,6 +530,14 @@
       const opacityValue = document.getElementById('opacityValue');
       const blurSlider = document.getElementById('imageBlur');
       const blurValue = document.getElementById('blurValue');
+      const brightnessSlider = document.getElementById('imageBrightness');
+      const brightnessValue = document.getElementById('brightnessValue');
+      const contrastSlider = document.getElementById('imageContrast');
+      const contrastValue = document.getElementById('contrastValue');
+      const saturationSlider = document.getElementById('imageSaturation');
+      const saturationValue = document.getElementById('saturationValue');
+      const vignetteSlider = document.getElementById('imageVignette');
+      const vignetteValue = document.getElementById('vignetteValue');
       const grayscaleCheckbox = document.getElementById('imageGrayscale');
 
       // Opacity control
@@ -524,6 +554,42 @@
         blurSlider.addEventListener('input', () => {
           this.imageBlur = parseInt(blurSlider.value);
           if (blurValue) blurValue.textContent = this.imageBlur + 'px';
+          this.applyImageEffects();
+        });
+      }
+      
+      // Brightness control
+      if (brightnessSlider) {
+        brightnessSlider.addEventListener('input', () => {
+          this.imageBrightness = parseInt(brightnessSlider.value);
+          if (brightnessValue) brightnessValue.textContent = this.imageBrightness + '%';
+          this.applyImageEffects();
+        });
+      }
+      
+      // Contrast control
+      if (contrastSlider) {
+        contrastSlider.addEventListener('input', () => {
+          this.imageContrast = parseInt(contrastSlider.value);
+          if (contrastValue) contrastValue.textContent = this.imageContrast + '%';
+          this.applyImageEffects();
+        });
+      }
+      
+      // Saturation control
+      if (saturationSlider) {
+        saturationSlider.addEventListener('input', () => {
+          this.imageSaturation = parseInt(saturationSlider.value);
+          if (saturationValue) saturationValue.textContent = this.imageSaturation + '%';
+          this.applyImageEffects();
+        });
+      }
+      
+      // Vignette control
+      if (vignetteSlider) {
+        vignetteSlider.addEventListener('input', () => {
+          this.imageVignette = parseInt(vignetteSlider.value);
+          if (vignetteValue) vignetteValue.textContent = this.imageVignette + '%';
           this.applyImageEffects();
         });
       }
@@ -582,6 +648,18 @@
       if (this.imageBlur > 0) {
         filters.push(`blur(${this.imageBlur}px)`);
       }
+      
+      if (this.imageBrightness !== 100) {
+        filters.push(`brightness(${this.imageBrightness}%)`);
+      }
+      
+      if (this.imageContrast !== 100) {
+        filters.push(`contrast(${this.imageContrast}%)`);
+      }
+      
+      if (this.imageSaturation !== 100) {
+        filters.push(`saturate(${this.imageSaturation}%)`);
+      }
 
       if (this.imageGrayscale) {
         filters.push('grayscale(100%)');
@@ -589,6 +667,27 @@
 
       img.style.opacity = this.imageOpacity / 100;
       img.style.filter = filters.length > 0 ? filters.join(' ') : 'none';
+      
+      // Vignette effect over dropzone bounding box via pseudo element equivalent
+      const dropzone = document.getElementById('imageDropzone');
+      if (dropzone) {
+        let overlay = dropzone.querySelector('.vignette-overlay');
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.className = 'vignette-overlay';
+          overlay.style.position = 'absolute';
+          overlay.style.inset = '0';
+          overlay.style.pointerEvents = 'none';
+          overlay.style.zIndex = '5';
+          dropzone.appendChild(overlay);
+        }
+        
+        if (this.imageVignette > 0) {
+          overlay.style.boxShadow = `inset 0 0 ${this.imageVignette * 1.5}px rgba(0,0,0, ${this.imageVignette / 100})`;
+        } else {
+          overlay.style.boxShadow = 'none';
+        }
+      }
     },
 
     /**
@@ -596,6 +695,15 @@
      */
     setupToolbar: function () {
       const toolBtns = document.querySelectorAll('.overlay-toolbar .tool-btn');
+
+      const toolNames = {
+        'move': 'Ta\u015f\u0131ma Arac\u0131',
+        'color': 'Renk Arac\u0131',
+        'pan': 'Kayd\u0131rma Arac\u0131',
+        'eraser': 'Silgi Arac\u0131',
+        'text': 'Metin Arac\u0131',
+        'crop': 'K\u0131rpma Arac\u0131'
+      };
 
       toolBtns.forEach(btn => {
         btn.addEventListener('click', () => {
@@ -609,12 +717,37 @@
           // Change cursor based on tool
           const dropzone = document.getElementById('imageDropzone');
           if (dropzone) {
-            dropzone.style.cursor = this.activeTool === 'pan' ? 'grab' :
-              this.activeTool === 'color' ? 'crosshair' : 'default';
+            const cursors = { 'pan': 'grab', 'color': 'crosshair', 'eraser': 'pointer', 'text': 'text', 'crop': 'crosshair', 'move': 'default' };
+            dropzone.style.cursor = cursors[this.activeTool] || 'default';
           }
 
-          console.log('[ImageOverlay] Active tool:', this.activeTool);
+          // Update topbar label
+          const label = document.getElementById('topbarToolLabel');
+          if (label) label.textContent = toolNames[this.activeTool] || this.activeTool;
+
+          // Update status bar
+          if (window.EditorStatusBar) window.EditorStatusBar.update();
         });
+      });
+
+      // Keyboard shortcuts for tools
+      document.addEventListener('keydown', (e) => {
+        if (this.currentMode !== 'overlay') return;
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        const keyMap = { 'v': 'move', 'c': 'color', 'h': 'pan', 'e': 'eraser', 't': 'text' };
+        let tool = keyMap[e.key.toLowerCase()];
+        
+        if (e.shiftKey && e.key.toLowerCase() === 'c') {
+           tool = 'crop';
+        }
+        
+        if (tool) {
+          const btn = document.querySelector(`.overlay-toolbar .tool-btn[data-tool="${tool}"]`);
+          if (btn) btn.click();
+        }
       });
     },
 
@@ -663,6 +796,78 @@
           innerLine.classList.add(colorClass);
         }
       });
+    },
+
+    /**
+     * Setup top action bar (undo/redo buttons, fit, reset)
+     */
+    setupTopbar: function () {
+      const undoBtn = document.getElementById('editorUndoBtn');
+      const redoBtn = document.getElementById('editorRedoBtn');
+      const fitBtn = document.getElementById('editorFitBtn');
+      const resetAllBtn = document.getElementById('editorResetAllBtn');
+
+      if (undoBtn) {
+        undoBtn.addEventListener('click', () => {
+          if (window.EditorHistory) window.EditorHistory.undo();
+        });
+      }
+
+      if (redoBtn) {
+        redoBtn.addEventListener('click', () => {
+          if (window.EditorHistory) window.EditorHistory.redo();
+        });
+      }
+
+      if (fitBtn) {
+        fitBtn.addEventListener('click', () => {
+          this.imageTransform = { x: 0, y: 0, scale: 1 };
+          this.updateImageTransform();
+          if (window.EditorStatusBar) window.EditorStatusBar.update();
+        });
+      }
+
+      if (resetAllBtn) {
+        resetAllBtn.addEventListener('click', () => {
+          const oldTransforms = { ...this.lineTransforms };
+          this.lineTransforms = {};
+          this.renderChatOverlay();
+
+          if (window.EditorHistory) {
+            window.EditorHistory.push({
+              type: 'reset-all',
+              description: 'Tüm satırlar sıfırlandı',
+              undo: () => {
+                this.lineTransforms = oldTransforms;
+                this.renderChatOverlay();
+              },
+              redo: () => {
+                this.lineTransforms = {};
+                this.renderChatOverlay();
+              }
+            });
+          }
+        });
+      }
+    },
+
+    /**
+     * Setup editor integration (status bar updates on various events)
+     */
+    setupEditorIntegration: function () {
+      // Wrap updateImageTransform to also update status bar
+      const origFn = this.updateImageTransform;
+      if (origFn) {
+        const self = this;
+        this.updateImageTransform = function () {
+          origFn.call(self);
+          if (window.EditorStatusBar) window.EditorStatusBar.update();
+        };
+      }
+
+      // Save drag start positions for undo tracking
+      this._dragStartPositions = {};
+      this._draggedLineIndexes = [];
     },
 
     /**
@@ -718,10 +923,108 @@
           return;
         }
 
+        // Eraser tool — toggle line visibility on click
+        if (this.activeTool === 'eraser') {
+          if (lineWrapper) {
+            e.preventDefault();
+            const wasHidden = lineWrapper.style.display === 'none';
+            const prevDisplay = lineWrapper.style.display;
+            lineWrapper.style.display = wasHidden ? '' : 'none';
+
+            // Record in undo
+            if (window.EditorHistory) {
+              const lw = lineWrapper;
+              window.EditorHistory.push({
+                type: 'eraser-toggle',
+                description: `Satır ${lineWrapper.dataset.lineIndex} ${wasHidden ? 'gösterildi' : 'gizlendi'}`,
+                undo: () => { lw.style.display = prevDisplay; },
+                redo: () => { lw.style.display = wasHidden ? '' : 'none'; }
+              });
+            }
+          }
+          return;
+        }
+
+        // Text tool — don't interfere, text tool uses dblclick
+        if (this.activeTool === 'text') {
+          return;
+        }
+
+        // Crop tool — don't interfere, crop tool has its own overlay
+        if (this.activeTool === 'crop') {
+          return;
+        }
+
+        // Blur Box tool
+        if (this.activeTool === 'blurbox') {
+          // If clicked on an existing blur box with right click or something, handle later.
+          // Drawing a new box setup:
+          if (e.button !== 0) return; // Only left click to draw
+          
+          e.preventDefault();
+          this.isDrawingBlurBox = true;
+          this.selectElement(null);
+          
+          const rect = dropzone.getBoundingClientRect();
+          const startX = e.clientX - rect.left - (this.chatTransform?.x || 0);
+          const startY = e.clientY - rect.top - (this.chatTransform?.y || 0);
+          const scale = this.chatTransform?.scale || 1;
+
+          this.blurBoxStart = { x: startX / scale, y: startY / scale };
+
+          this.currentBlurBox = document.createElement('div');
+          this.currentBlurBox.className = 'blur-box-element';
+          this.currentBlurBox.style.position = 'absolute';
+          this.currentBlurBox.style.left = this.blurBoxStart.x + 'px';
+          this.currentBlurBox.style.top = this.blurBoxStart.y + 'px';
+          this.currentBlurBox.style.width = '0px';
+          this.currentBlurBox.style.height = '0px';
+          this.currentBlurBox.style.backdropFilter = 'blur(10px) brightness(0.9)';
+          this.currentBlurBox.style.WebkitBackdropFilter = 'blur(10px) brightness(0.9)';
+          this.currentBlurBox.style.backgroundColor = 'rgba(255,255,255,0.05)';
+          this.currentBlurBox.style.border = '1px dashed rgba(255,255,255,0.5)';
+          this.currentBlurBox.style.borderRadius = '4px';
+          this.currentBlurBox.style.zIndex = '100'; // above text
+          
+          // Allow right clicking to remove
+          this.currentBlurBox.addEventListener('contextmenu', (boxEvent) => {
+             boxEvent.preventDefault();
+             if (window.EditorHistory) {
+                const bx = this.currentBlurBox;
+                const parent = bx.parentElement;
+                window.EditorHistory.push({
+                   type: 'blurbox-remove',
+                   description: 'Sansür kutusu silindi',
+                   undo: () => parent.appendChild(bx),
+                   redo: () => bx.remove()
+                });
+             }
+             boxEvent.target.remove();
+          });
+          
+          const output = document.getElementById('output');
+          if (output) output.appendChild(this.currentBlurBox);
+          return;
+        }
+
         // Default 'move' tool behavior
         if (lineWrapper && this.isLineDraggingEnabled) {
-          // Clicked on a specific line - select and drag
           e.preventDefault();
+
+          if (clickedElement.classList.contains('handle')) {
+            // Handle resizing
+            this.isLineResizing = true;
+            this.resizeHandle = clickedElement.classList.contains('e-resize') ? 'e' : 'w';
+            this.currentDragLine = lineWrapper;
+            this.lineResizeStart = {
+               x: e.clientX,
+               width: lineWrapper.offsetWidth,
+               left: parseFloat(lineWrapper.style.left) || 0
+            };
+            return;
+          }
+
+          // Clicked on a specific line - select and drag
           const lineIndex = parseInt(lineWrapper.dataset.lineIndex);
           const addToSelection = e.shiftKey || e.ctrlKey || e.metaKey;
           this.selectElement(lineIndex, lineWrapper, addToSelection);
@@ -752,7 +1055,36 @@
       });
 
       document.addEventListener('mousemove', (e) => {
-        if (this.isPanning) {
+        if (this.isDrawingBlurBox && this.currentBlurBox) {
+           const rect = dropzone.getBoundingClientRect();
+           const currentX = e.clientX - rect.left - (this.chatTransform?.x || 0);
+           const currentY = e.clientY - rect.top - (this.chatTransform?.y || 0);
+           const scale = this.chatTransform?.scale || 1;
+           
+           const endX = currentX / scale;
+           const endY = currentY / scale;
+           
+           const minX = Math.min(this.blurBoxStart.x, endX);
+           const minY = Math.min(this.blurBoxStart.y, endY);
+           const w = Math.abs(endX - this.blurBoxStart.x);
+           const h = Math.abs(endY - this.blurBoxStart.y);
+           
+           this.currentBlurBox.style.left = minX + 'px';
+           this.currentBlurBox.style.top = minY + 'px';
+           this.currentBlurBox.style.width = w + 'px';
+           this.currentBlurBox.style.height = h + 'px';
+        } else if (this.isLineResizing && this.currentDragLine) {
+           const dx = e.clientX - this.lineResizeStart.x;
+           if (this.resizeHandle === 'e') {
+              this.currentDragLine.style.width = Math.max(20, this.lineResizeStart.width + dx) + 'px';
+           } else {
+              const newW = Math.max(20, this.lineResizeStart.width - dx);
+              if (newW > 20) {
+                 this.currentDragLine.style.width = newW + 'px';
+                 this.currentDragLine.style.left = (this.lineResizeStart.left + dx) + 'px';
+              }
+           }
+        } else if (this.isPanning) {
           this.updateImagePan(e);
         } else if (this.isChatPanning) {
           this.updateChatPan(e);
@@ -764,7 +1096,50 @@
       });
 
       document.addEventListener('mouseup', () => {
-        if (this.isPanning || this.isChatPanning || this.isLinePanning) {
+        if (this.isDrawingBlurBox) {
+           this.isDrawingBlurBox = false;
+           
+           if (this.currentBlurBox) {
+              const w = parseFloat(this.currentBlurBox.style.width) || 0;
+              const h = parseFloat(this.currentBlurBox.style.height) || 0;
+              const bx = this.currentBlurBox;
+              const parent = bx.parentElement;
+              
+              if (w < 10 || h < 10) {
+                 // Too small, remove it
+                 bx.remove();
+              } else {
+                 if (window.EditorHistory) {
+                    window.EditorHistory.push({
+                       type: 'blurbox-add',
+                       description: 'Sansür kutusu eklendi',
+                       undo: () => bx.remove(),
+                       redo: () => parent.appendChild(bx)
+                    });
+                 }
+              }
+           }
+           this.currentBlurBox = null;
+        } else if (this.isLineResizing && this.currentDragLine) {
+           const lw = this.currentDragLine;
+           const endWidth = lw.offsetWidth;
+           const endLeft = parseFloat(lw.style.left) || 0;
+           const startWidth = this.lineResizeStart.width;
+           const startLeft = this.lineResizeStart.left;
+
+           this.isLineResizing = false;
+           this.currentDragLine = null;
+
+           // Push undo for resize
+           if (window.EditorHistory && (endWidth !== startWidth || endLeft !== startLeft)) {
+              window.EditorHistory.push({
+                type: 'line-resize',
+                description: 'Satır boyutu değiştirildi',
+                undo: () => { lw.style.width = startWidth + 'px'; lw.style.left = startLeft + 'px'; },
+                redo: () => { lw.style.width = endWidth + 'px'; lw.style.left = endLeft + 'px'; }
+              });
+           }
+        } else if (this.isPanning || this.isChatPanning || this.isLinePanning) {
           this.stopPan();
         } else if (this.isMarqueeSelecting) {
           this.stopMarqueeSelection();
@@ -1096,10 +1471,46 @@
         this.saveChatSettings();
       }
 
+      // Record undo for line drag
+      if (wasLinePanning && window.EditorHistory) {
+        const startPositions = { ...this._dragStartPositions };
+        const endPositions = {};
+        const self = this;
+
+        // Capture end positions for all dragged lines
+        if (this._draggedLineIndexes) {
+          this._draggedLineIndexes.forEach(idx => {
+            if (self.lineTransforms[idx]) {
+              endPositions[idx] = { ...self.lineTransforms[idx] };
+            }
+          });
+        }
+
+        if (Object.keys(startPositions).length > 0 && Object.keys(endPositions).length > 0) {
+          window.EditorHistory.push({
+            type: 'line-drag',
+            description: 'Sat\u0131r ta\u015f\u0131nd\u0131',
+            undo: () => {
+              Object.keys(startPositions).forEach(idx => {
+                self.lineTransforms[idx] = { ...startPositions[idx] };
+              });
+              self.renderChatOverlay();
+            },
+            redo: () => {
+              Object.keys(endPositions).forEach(idx => {
+                self.lineTransforms[idx] = { ...endPositions[idx] };
+              });
+              self.renderChatOverlay();
+            }
+          });
+        }
+      }
+
       // Hide alignment guides when done dragging
       this.hideAlignmentGuides();
 
       this.updateCursor();
+      if (window.EditorStatusBar) window.EditorStatusBar.update();
     },
 
     /**
@@ -1167,6 +1578,21 @@
             opacityValue.textContent = savedOpacity + '%';
           }
         }
+      }
+
+      // Handle selection handles
+      document.querySelectorAll('.chat-line-wrapper .handle').forEach(h => h.remove());
+      if (this.selectedLineWrappers && this.selectedLineWrappers.length > 0) {
+         this.selectedLineWrappers.forEach(wrapper => {
+            if (!wrapper.querySelector('.handle')) {
+               const wHandle = document.createElement('div');
+               wHandle.className = 'handle w-resize';
+               const eHandle = document.createElement('div');
+               eHandle.className = 'handle e-resize';
+               wrapper.appendChild(wHandle);
+               wrapper.appendChild(eHandle);
+            }
+         });
       }
 
       this.updatePropertiesPanel();
@@ -1298,6 +1724,9 @@
       this.linePanStart.y = e.clientY;
       this.linePanStartPos.x = this.lineTransforms[lineIndex].x;
       this.linePanStartPos.y = this.lineTransforms[lineIndex].y;
+      
+      this._dragStartPositions = { ...this.linePanStartPositions };
+      this._draggedLineIndexes = [ ...this.linesToDrag ];
 
       this.updateCursor();
     },
@@ -1308,11 +1737,54 @@
     updateLinePan: function (e) {
       if (!this.currentDragLine) return;
 
-      const deltaX = e.clientX - this.linePanStart.x;
-      const deltaY = e.clientY - this.linePanStart.y;
+      let deltaX = e.clientX - this.linePanStart.x;
+      let deltaY = e.clientY - this.linePanStart.y;
 
       const dropzone = document.getElementById('imageDropzone');
       let dropzoneWidth = dropzone ? dropzone.offsetWidth : 800;
+
+      // Check alignment and adjust deltaX/deltaY for snapping
+      if (!this.isGroupDragEnabled) {
+        const primaryIdx = parseInt(this.currentDragLine.dataset.lineIndex);
+        let newX = this.linePanStartPos.x + deltaX;
+        let newY = this.linePanStartPos.y + deltaY;
+        
+        let snapXMatch = null;
+        let snapYMatch = null;
+
+        // Check against all other lines
+        const allLines = dropzone ? dropzone.querySelectorAll('.chat-line-wrapper') : [];
+        allLines.forEach((line, idx) => {
+          if (idx === primaryIdx || this._draggedLineIndexes.includes(idx)) return;
+          
+          const lineTransform = this.lineTransforms[idx] || { x: 0, y: 0 };
+          
+          // Vertical snap (same X edge)
+          if (Math.abs(newX - lineTransform.x) <= this.alignmentThreshold) {
+            snapXMatch = { x: lineTransform.x, idx: idx };
+          }
+          // Horizontal snap (same Y edge)
+          if (Math.abs(newY - lineTransform.y) <= this.alignmentThreshold) {
+            snapYMatch = { y: lineTransform.y, idx: idx };
+          }
+        });
+
+        // Apply snap to deltas
+        if (snapXMatch) {
+          deltaX = snapXMatch.x - this.linePanStartPos.x;
+          newX = snapXMatch.x;
+        }
+        if (snapYMatch) {
+          deltaY = snapYMatch.y - this.linePanStartPos.y;
+          newY = snapYMatch.y;
+        }
+
+        // Show guides
+        this.checkAndShowAlignmentGuides(primaryIdx, newX, newY, snapXMatch !== null, snapYMatch !== null);
+      } else {
+        // If grouped drag, hide guides
+        this.updateAlignmentGuides(null, null, dropzone);
+      }
 
       this.linesToDrag.forEach(idx => {
         const startPos = this.linePanStartPositions[idx];
@@ -1337,14 +1809,6 @@
           wrapper.style.overflowWrap = 'break-word';
         }
       });
-
-      // Check and show alignment guides for the primary dragged line
-      if (!this.isGroupDragEnabled) {
-        const primaryIdx = parseInt(this.currentDragLine.dataset.lineIndex);
-        const newX = this.linePanStartPos.x + deltaX;
-        const newY = this.linePanStartPos.y + deltaY;
-        this.checkAndShowAlignmentGuides(primaryIdx, newX, newY);
-      }
     },
 
     /**

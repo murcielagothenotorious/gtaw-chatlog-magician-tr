@@ -56,10 +56,10 @@
       console.warn('[ErrorLogger] Recursive error detected, skipping log');
       return null;
     }
-    
+
     try {
       isLoggingError = true;
-      
+
       const entry = {
         timestamp: timestamp(),
         type: type,
@@ -91,7 +91,7 @@
       }
 
       return entry;
-      
+
     } catch (e) {
       // Error logger'da hata olursa sadece console'a yaz
       console.error('[ErrorLogger] Failed to log error:', e);
@@ -265,6 +265,7 @@
       'google-analytics.com',
       'visualstudio.com',
       'dc.services.visualstudio.com',
+      'cloudflareinsights.com',
       'turnstile',
       'preload',
       '[DOM] Found',
@@ -301,22 +302,22 @@
    */
   window.addEventListener('error', function (event) {
     if (isLoggingError) return;
-    
+
     // Filter out noise from extensions and third-party scripts
     if (shouldIgnoreError(event.message, event.filename, event.error?.stack)) {
       return;
     }
 
-  try {
-    const entry = addLogEntry('errors', event.message, {
-      filename: event.filename,
-      lineno: event.lineno,
-      colno: event.colno,
-      stack: event.error?.stack,
-      errorType: event.error?.name,
-    });
+    try {
+      const entry = addLogEntry('errors', event.message, {
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        stack: event.error?.stack,
+        errorType: event.error?.name,
+      });
 
-    if (CONFIG.SHOW_CONSOLE && entry) {
+      if (CONFIG.SHOW_CONSOLE && entry) {
         console.error('🔴 [Logged Error]', entry);
       }
     } catch (e) {
@@ -552,10 +553,10 @@
         },
         memory: performance.memory
           ? {
-              usedJSHeapSize: Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB',
-              totalJSHeapSize: Math.round(performance.memory.totalJSHeapSize / 1048576) + ' MB',
-              limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576) + ' MB',
-            }
+            usedJSHeapSize: Math.round(performance.memory.usedJSHeapSize / 1048576) + ' MB',
+            totalJSHeapSize: Math.round(performance.memory.totalJSHeapSize / 1048576) + ' MB',
+            limit: Math.round(performance.memory.jsHeapSizeLimit / 1048576) + ' MB',
+          }
           : 'N/A',
       };
     }
@@ -618,11 +619,11 @@
         if (err.details.filename) {
           report.push(
             '     File:    ' +
-              err.details.filename +
-              ':' +
-              err.details.lineno +
-              ':' +
-              err.details.colno
+            err.details.filename +
+            ':' +
+            err.details.lineno +
+            ':' +
+            err.details.colno
           );
         }
         if (err.details.errorType) {
@@ -659,9 +660,9 @@
         if (err.details) {
           report.push(
             '     Status: ' +
-              (err.details.status || 'N/A') +
-              ' | URL: ' +
-              (err.details.url || 'N/A')
+            (err.details.status || 'N/A') +
+            ' | URL: ' +
+            (err.details.url || 'N/A')
           );
           if (err.details.timeout) {
             report.push('     Timeout: ' + err.details.timeoutMs + 'ms');
@@ -699,12 +700,12 @@
     report.push('  Line Length:   ' + appState.lineLength);
     report.push(
       '  Export:        ' +
-        appState.exportWidth +
-        '×' +
-        appState.exportHeight +
-        'px @ ' +
-        appState.exportPPI +
-        ' PPI'
+      appState.exportWidth +
+      '×' +
+      appState.exportHeight +
+      'px @ ' +
+      appState.exportPPI +
+      ' PPI'
     );
     report.push('  Padding:       H:' + appState.paddingH + ' V:' + appState.paddingV);
     report.push('  Background:    ' + (appState.backgroundEnabled === 'true' ? 'ON' : 'OFF'));
@@ -738,12 +739,12 @@
       if (errorLog.performance.memory !== 'N/A') {
         report.push(
           '  Memory:        ' +
-            errorLog.performance.memory.usedJSHeapSize +
-            ' / ' +
-            errorLog.performance.memory.totalJSHeapSize +
-            ' (limit: ' +
-            errorLog.performance.memory.limit +
-            ')'
+          errorLog.performance.memory.usedJSHeapSize +
+          ' / ' +
+          errorLog.performance.memory.totalJSHeapSize +
+          ' (limit: ' +
+          errorLog.performance.memory.limit +
+          ')'
         );
       }
     } else {
@@ -848,10 +849,10 @@
     if (!checkRateLimit()) {
       showToast(
         'Please wait before sending another report. Limit: ' +
-          config.RATE_LIMIT.MAX_REPORTS_PER_SESSION +
-          ' per session, ' +
-          config.RATE_LIMIT.COOLDOWN_SECONDS +
-          's cooldown.',
+        config.RATE_LIMIT.MAX_REPORTS_PER_SESSION +
+        ' per session, ' +
+        config.RATE_LIMIT.COOLDOWN_SECONDS +
+        's cooldown.',
         'warning',
         4000
       );

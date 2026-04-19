@@ -37,16 +37,17 @@
   <!-- Current version: 1.1.0 -->
 
   <!-- Preload critical assets -->
-  <link rel="preload" href="css/foundation.fixed.css?v=1.1.0" as="style" />
-  <link rel="preload" href="js/app.js?v=1.1.0" as="script" />
+  <link rel="preload" href="css/foundation.fixed.css?v=1.2.1" as="style" />
+  <link rel="preload" href="js/app.js?v=1.2.1" as="script" />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/foundation.fixed.css?v=1.1.0" />
-  <link rel="stylesheet" href="css/modern.css?v=1.1.0" />
-  <link rel="stylesheet" href="css/app.css?v=1.1.0" />
-  <link rel="stylesheet" href="css/overlay.css?v=1.1.0" />
-  <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.1.0" />
+  <link rel="stylesheet" href="css/foundation.fixed.css?v=1.2.1" />
+  <link rel="stylesheet" href="css/modern.css?v=1.2.1" />
+  <link rel="stylesheet" href="css/app.css?v=1.2.1" />
+  <link rel="stylesheet" href="css/overlay.css?v=1.2.1" />
+  <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.2.1" />
+  <link rel="stylesheet" href="css/editor.css?v=1.2.1" />
   <!-- FontAwesome 7.0.1 from CDN (includes all icon sets and fonts) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
@@ -57,10 +58,10 @@
 
   <!-- Error handling and cross-origin fixes -->
   <!-- Config is loaded via defaults in error-logger.js or Cloudflare Pages environment variables -->
-  <script src="js/error-logger.js?v=1.1.0" defer></script>
-  <script src="js/error-handler.js?v=1.1.0" defer></script>
-  <script src="js/cross-origin-fix.js?v=1.1.0" defer></script>
-  <script src="js/cors-handler.js?v=1.1.0" defer></script>
+  <script src="js/error-logger.js?v=1.2.1" defer></script>
+  <script src="js/error-handler.js?v=1.2.1" defer></script>
+  <script src="js/cross-origin-fix.js?v=1.2.1" defer></script>
+  <script src="js/cors-handler.js?v=1.2.1" defer></script>
 
 
 </head>
@@ -215,173 +216,301 @@
 
             <!-- Flex container for dropzone and sidebar -->
             <div class="overlay-workspace">
-              <!-- Left Toolbar (Photopea style) -->
-              <div class="overlay-toolbar">
-                <button type="button" class="tool-btn active" data-tool="move" title="Taşıma ve Seçim Aracı (V)">
-                  <i class="fas fa-mouse-pointer"></i>
+              <!-- Top Action Bar (Undo/Redo + tools info) -->
+              <div class="editor-topbar">
+                <button type="button" class="topbar-btn" id="editorUndoBtn" title="Geri Al (Ctrl+Z)" disabled>
+                  <i class="fas fa-undo"></i>
+                  <span class="history-count-badge" id="undoCountBadge"></span>
                 </button>
-                <button type="button" class="tool-btn" data-tool="color" title="Renk Değiştirme Aracı (T)">
-                  <i class="fas fa-fill-drip"></i>
+                <button type="button" class="topbar-btn" id="editorRedoBtn" title="İleri Al (Ctrl+Y)" disabled>
+                  <i class="fas fa-redo"></i>
+                  <span class="history-count-badge" id="redoCountBadge"></span>
                 </button>
-                <button type="button" class="tool-btn" data-tool="pan" title="Kaydırma Aracı (H)">
-                  <i class="fas fa-hand-paper"></i>
+                <div class="topbar-separator"></div>
+                <button type="button" class="topbar-btn" id="editorFitBtn" title="Ekrana Sığdır">
+                  <i class="fas fa-expand"></i>
                 </button>
+                <button type="button" class="topbar-btn" id="editorResetAllBtn" title="Tümünü Sıfırla (R)">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+                <div class="topbar-separator"></div>
+                <span class="topbar-label" id="topbarToolLabel">Taşıma Aracı</span>
               </div>
 
-              <!-- Main Dropzone Area -->
-              <div class="overlay-main">
-                <div id="imageDropzone" class="image-dropzone">
-                  <div class="dropzone-instructions">
-                    <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
-                    <p>Ekran görüntünüzü buraya bırakın</p>
-                    <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için çift tıklayın •
-                      <strong>Ctrl+V</strong>
-                      ile yapıştırın
-                    </p>
-                    <div
-                      style="margin-top: 20px; text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; font-size: 13px; max-width: 400px; margin-left: auto; margin-right: auto;">
-                      <h4 style="font-size: 14px; margin-bottom: 10px; color: #3498db; margin-top: 0;"><i
-                          class="fas fa-magic"></i> Çalışma Alanı İpuçları</h4>
-                      <ul style="margin: 0; padding-left: 15px; opacity: 0.8; line-height: 1.6;">
-                        <li>Sohbeti metin kutusuna yazdıktan sonra farenizle tutup <strong>sürükleyebilirsiniz.</strong>
-                        </li>
-                        <li>Sohbet satırlarını birbirlerinden <strong>ayırıp farklı yerlere</strong> koyabilirsiniz.
-                        </li>
-                        <li>Sağ panelden görüntünün/sohbetin <strong>solukluğunu ve rengini</strong> ayarlayabilirsiniz.
-                        </li>
-                        <li>Araç çubuklarının üzerine gelip beklediğinizde ne işe yaradıklarını görebilirsiniz.</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Image Settings Sidebar (Paint.NET style) -->
-              <div class="image-settings-sidebar">
-                <div class="sidebar-header">
-                  <span class="sidebar-title"><i class="fas fa-layer-group"></i> Katmanlar</span>
+              <!-- Workspace Body (toolbar + canvas + sidebar) -->
+              <div class="overlay-workspace-body">
+                <!-- Left Toolbar -->
+                <div class="overlay-toolbar">
+                  <button type="button" class="tool-btn active" data-tool="move" title="Taşıma ve Seçim Aracı (V)">
+                    <i class="fas fa-mouse-pointer"></i>
+                  </button>
+                  <button type="button" class="tool-btn" data-tool="text" title="Metin Aracı (T)">
+                    <i class="fas fa-font"></i>
+                  </button>
+                  <!-- <button type="button" class="tool-btn" data-tool="crop" title="Kırpma Aracı (Shfit+C)">
+                    <i class="fas fa-crop-alt"></i>
+                  </button> -->
+                  <button type="button" class="tool-btn" data-tool="color" title="Renk Değiştirme Aracı (C)">
+                    <i class="fas fa-fill-drip"></i>
+                  </button>
+                  <div class="tool-divider"></div>
+                  <button type="button" class="tool-btn" data-tool="eraser" title="Satır Gizle/Göster Aracı (E)">
+                    <i class="fas fa-eraser"></i>
+                  </button>
+                  <!-- <button type="button" class="tool-btn" data-tool="blurbox" title="Sansür (Blur) Kutusu Aracı (B)">
+                    <i class="fas fa-magic"></i>
+                  </button> -->
+                  <button type="button" class="tool-btn" data-tool="pan" title="Kaydırma Aracı (H)">
+                    <i class="fas fa-hand-paper"></i>
+                  </button>
                 </div>
 
-                <!-- Layers Section -->
-                <div class="sidebar-section layers-section">
-                  <div class="section-header">
-                    <span class="section-title">Katman Listesi</span>
-                    <button type="button" id="addLayerBtn" class="add-layer-btn" title="Yeni katman ekle">
-                      <i class="fas fa-plus"></i>
-                    </button>
-                  </div>
-                  <div class="section-content layer-list-container">
-                    <div id="layerList" class="layer-list">
-                      <!-- Layers populated by JS -->
-                      <div class="layer-empty-state">
-                        <i class="fas fa-image"></i>
-                        <p>Katman yok</p>
-                        <p class="hint">Görsel yükleyin veya + butonuna tıklayın</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Selected Layer Effects Section -->
-                <div class="sidebar-section layer-effects-section" id="layerEffectsSection">
-                  <div class="section-header">
-                    <span class="section-title">Katman Efektleri</span>
-                    <span id="selectedLayerName" class="selected-layer-badge">-</span>
-                  </div>
-                  <div class="section-content">
-                    <!-- Opacity -->
-                    <div class="effect-row" title="Katmanın görünürlük seviyesi (0% = tamamen saydam)">
-                      <div class="effect-label">
-                        <i class="fas fa-eye"></i>
-                        <span>Opaklık</span>
-                      </div>
-                      <input type="range" id="imageOpacity" min="0" max="100" value="100" step="1"
-                        class="effect-slider">
-                      <span id="opacityValue" class="effect-value">100%</span>
-                    </div>
-
-                    <!-- Blur -->
-                    <div class="effect-row" title="Bulanıklaştırma efekti (0 = net görüntü)">
-                      <div class="effect-label">
-                        <i class="fas fa-water"></i>
-                        <span>Bulanıklık</span>
-                      </div>
-                      <input type="range" id="imageBlur" min="0" max="20" value="0" step="1" class="effect-slider">
-                      <span id="blurValue" class="effect-value">0px</span>
-                    </div>
-
-                    <!-- Grayscale Toggle -->
-                    <div class="effect-row toggle-row" title="Renkli görüntüyü siyah-beyaza çevir">
-                      <div class="effect-label">
-                        <i class="fas fa-palette"></i>
-                        <span>Siyah Beyaz</span>
-                      </div>
-                      <label class="toggle-switch">
-                        <input type="checkbox" id="imageGrayscale">
-                        <span class="toggle-slider"></span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Properties Section -->
-                <div class="sidebar-section properties-section" id="propertiesSection">
-                  <div class="section-header">
-                    <span class="section-title">Özellikler</span>
-                    <i class="fas fa-sliders-h section-icon"></i>
-                  </div>
-                  <div class="section-content">
-                    <div id="noSelectionMsg" class="hint-text"
-                      style="text-align: center; opacity: 0.6; font-size: 12px; padding: 10px 0;">
-                      Özellikleri görmek için bir katman veya sohbet satırı seçin.
-                    </div>
-
-                    <!-- Chat Properties (Visible when chat lines selected) -->
-                    <div id="chatProperties" style="display: none;">
-                      <div class="property-group" style="margin-bottom: 15px;">
-                        <label
-                          style="font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 8px; display: block;">Renk
-                          Paleti <span id="selectedChatCount"
-                            style="float: right; color: rgba(52, 152, 219, 1);"></span></label>
-                        <div class="quick-color-grid" id="quickColorGrid"
-                          style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
-                          <!-- Filled dynamically by JS -->
+                <!-- Main Dropzone Area -->
+                <div class="overlay-main">
+                  <div id="imageDropzone" class="image-dropzone">
+                    <div id="cropOverlay" class="crop-overlay">
+                      <div class="crop-darkness top"></div>
+                      <div class="crop-darkness bottom"></div>
+                      <div class="crop-darkness left"></div>
+                      <div class="crop-darkness right"></div>
+                      <div class="crop-area-box" id="cropAreaBox">
+                        <div class="crop-handle nw"></div>
+                        <div class="crop-handle ne"></div>
+                        <div class="crop-handle sw"></div>
+                        <div class="crop-handle se"></div>
+                        <div class="crop-handle n"></div>
+                        <div class="crop-handle s"></div>
+                        <div class="crop-handle w"></div>
+                        <div class="crop-handle e"></div>
+                        <div class="crop-actions">
+                          <button class="crop-btn cancel" id="cropCancelBtn"><i class="fas fa-times"></i></button>
+                          <button class="crop-btn confirm" id="cropConfirmBtn"><i class="fas fa-check"></i></button>
                         </div>
                       </div>
+                    </div>
 
-                      <div class="effect-row" title="Seçili metinlerin görünürlük seviyesi">
+                    <div class="dropzone-instructions">
+                      <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                      <p>Ekran görüntünüzü buraya bırakın</p>
+                      <p style="font-size: 14px; opacity: 0.7;">veya göz atmak için çift tıklayın •
+                        <strong>Ctrl+V</strong>
+                        ile yapıştırın
+                      </p>
+                      <div
+                        style="margin-top: 20px; text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; font-size: 13px; max-width: 400px; margin-left: auto; margin-right: auto;">
+                        <h4 style="font-size: 14px; margin-bottom: 10px; color: #4fc3f7; margin-top: 0;"><i
+                            class="fas fa-magic"></i> Çalışma Alanı İpuçları</h4>
+                        <ul style="margin: 0; padding-left: 15px; opacity: 0.8; line-height: 1.6;">
+                          <li>Satırları <strong>sürükleyerek</strong> konumlandırın, <strong>Ctrl+tık</strong> ile çoklu
+                            seçin.</li>
+                          <li>Sağ tık ile <strong>bağlam menüsünü</strong> açın — gizle, sil, renk değiştir.</li>
+                          <li><strong>Ctrl+Z</strong> geri al, <strong>Ctrl+Y</strong> ileri al.</li>
+                          <li>Sağ panelden <strong>opaklık, bulanıklık</strong> ve renk ayarlayın.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Image Settings Sidebar (Paint.NET style) -->
+                <div class="image-settings-sidebar">
+                  <div class="sidebar-header">
+                    <span class="sidebar-title"><i class="fas fa-layer-group"></i> Katmanlar</span>
+                  </div>
+
+                  <!-- Layers Section -->
+                  <div class="sidebar-section layers-section">
+                    <div class="section-header">
+                      <span class="section-title">Katman Listesi</span>
+                      <button type="button" id="addLayerBtn" class="add-layer-btn" title="Yeni katman ekle">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                    <div class="section-content layer-list-container">
+                      <div id="layerList" class="layer-list">
+                        <!-- Layers populated by JS -->
+                        <div class="layer-empty-state">
+                          <i class="fas fa-image"></i>
+                          <p>Katman yok</p>
+                          <p class="hint">Görsel yükleyin veya + butonuna tıklayın</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Selected Layer Effects Section -->
+                  <div class="sidebar-section layer-effects-section" id="layerEffectsSection">
+                    <div class="section-header">
+                      <span class="section-title">Katman Efektleri</span>
+                      <span id="selectedLayerName" class="selected-layer-badge">-</span>
+                    </div>
+                    <div class="section-content">
+                      <!-- Opacity -->
+                      <div class="effect-row" title="Katmanın görünürlük seviyesi (0% = tamamen saydam)">
                         <div class="effect-label">
                           <i class="fas fa-eye"></i>
                           <span>Opaklık</span>
                         </div>
-                        <input type="range" id="chatOpacity" min="0" max="100" value="100" step="1"
+                        <input type="range" id="imageOpacity" min="0" max="100" value="100" step="1"
                           class="effect-slider">
-                        <span id="chatOpacityValue" class="effect-value">100%</span>
+                        <span id="opacityValue" class="effect-value">100%</span>
+                      </div>
+
+                      <!-- Blur -->
+                      <div class="effect-row" title="Bulanıklaştırma efekti (0 = net görüntü)">
+                        <div class="effect-label">
+                          <i class="fas fa-water"></i>
+                          <span>Bulanıklık</span>
+                        </div>
+                        <input type="range" id="imageBlur" min="0" max="20" value="0" step="1" class="effect-slider">
+                        <span id="blurValue" class="effect-value">0px</span>
+                      </div>
+
+                      <!-- Brightness -->
+                      <div class="effect-row" title="Görseli aydınlatır veya koyulaştırır">
+                        <div class="effect-label">
+                          <i class="fas fa-sun"></i>
+                          <span>Parlaklık</span>
+                        </div>
+                        <input type="range" id="imageBrightness" min="0" max="200" value="100" step="1"
+                          class="effect-slider">
+                        <span id="brightnessValue" class="effect-value">100%</span>
+                      </div>
+
+                      <!-- Contrast -->
+                      <div class="effect-row" title="Renkler arası zıtlığı artırır">
+                        <div class="effect-label">
+                          <i class="fas fa-adjust"></i>
+                          <span>Kontrast</span>
+                        </div>
+                        <input type="range" id="imageContrast" min="0" max="200" value="100" step="1"
+                          class="effect-slider">
+                        <span id="contrastValue" class="effect-value">100%</span>
+                      </div>
+
+                      <!-- Saturation -->
+                      <div class="effect-row" title="Renk yoğunluğunu ayarlar">
+                        <div class="effect-label">
+                          <i class="fas fa-tint"></i>
+                          <span>Doygunluk</span>
+                        </div>
+                        <input type="range" id="imageSaturation" min="0" max="200" value="100" step="1"
+                          class="effect-slider">
+                        <span id="saturationValue" class="effect-value">100%</span>
+                      </div>
+
+                      <!-- Vignette -->
+                      <div class="effect-row" title="Köşeleri karartarak odak oluşturur">
+                        <div class="effect-label">
+                          <i class="fas fa-circle-notch"></i>
+                          <span>Vignette</span>
+                        </div>
+                        <input type="range" id="imageVignette" min="0" max="100" value="0" step="1"
+                          class="effect-slider">
+                        <span id="vignetteValue" class="effect-value">0%</span>
+                      </div>
+
+                      <!-- Grayscale Toggle -->
+                      <div class="effect-row toggle-row" title="Renkli görüntüyü siyah-beyaza çevir">
+                        <div class="effect-label">
+                          <i class="fas fa-palette"></i>
+                          <span>Siyah Beyaz</span>
+                        </div>
+                        <label class="toggle-switch">
+                          <input type="checkbox" id="imageGrayscale">
+                          <span class="toggle-slider"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Properties Section -->
+                  <div class="sidebar-section properties-section" id="propertiesSection">
+                    <div class="section-header">
+                      <span class="section-title">Özellikler</span>
+                      <i class="fas fa-sliders-h section-icon"></i>
+                    </div>
+                    <div class="section-content">
+                      <div id="noSelectionMsg" class="hint-text"
+                        style="text-align: center; opacity: 0.6; font-size: 12px; padding: 10px 0;">
+                        Özellikleri görmek için bir katman veya sohbet satırı seçin.
+                      </div>
+
+                      <!-- Chat Properties (Visible when chat lines selected) -->
+                      <div id="chatProperties" style="display: none;">
+                        <div class="property-group" style="margin-bottom: 15px;">
+                          <label
+                            style="font-size: 11px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 8px; display: block;">Renk
+                            Paleti <span id="selectedChatCount"
+                              style="float: right; color: rgba(52, 152, 219, 1);"></span></label>
+                          <div class="quick-color-grid" id="quickColorGrid"
+                            style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
+                            <!-- Filled dynamically by JS -->
+                          </div>
+                        </div>
+
+                        <div class="effect-row" title="Seçili metinlerin görünürlük seviyesi">
+                          <div class="effect-label">
+                            <i class="fas fa-eye"></i>
+                            <span>Opaklık</span>
+                          </div>
+                          <input type="range" id="chatOpacity" min="0" max="100" value="100" step="1"
+                            class="effect-slider">
+                          <span id="chatOpacityValue" class="effect-value">100%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Export Dimensions Section -->
+                  <div class="sidebar-section">
+                    <div class="section-header">
+                      <span class="section-title">Çıktı Boyutu</span>
+                    </div>
+                    <div class="section-content">
+                      <div class="dimension-row">
+                        <label>Genişlik:</label>
+                        <input type="number" id="exportWidth" min="100" max="7680" value="1920" step="1">
+                        <span class="unit">px</span>
+                      </div>
+                      <div class="dimension-row">
+                        <label>Yükseklik:</label>
+                        <input type="number" id="exportHeight" min="100" max="4320" value="1080" step="1">
+                        <span class="unit">px</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Export Dimensions Section -->
-                <div class="sidebar-section">
-                  <div class="section-header">
-                    <span class="section-title">Çıktı Boyutu</span>
-                  </div>
-                  <div class="section-content">
-                    <div class="dimension-row">
-                      <label>Genişlik:</label>
-                      <input type="number" id="exportWidth" min="100" max="7680" value="1920" step="1">
-                      <span class="unit">px</span>
-                    </div>
-                    <div class="dimension-row">
-                      <label>Yükseklik:</label>
-                      <input type="number" id="exportHeight" min="100" max="4320" value="1080" step="1">
-                      <span class="unit">px</span>
-                    </div>
+              </div><!-- /overlay-workspace-body -->
+
+              <!-- Bottom Status Bar -->
+              <div class="editor-statusbar" id="editorStatusBar">
+                <div class="status-left">
+                  <span class="status-item"><i class="fas fa-crosshairs"></i> <span class="status-coords">X: 0 Y:
+                      0</span></span>
+                  <span class="status-separator"></span>
+                  <span class="status-item"><i class="fas fa-vector-square"></i> <span class="status-canvas-size">1920 ×
+                      1080</span></span>
+                </div>
+                <div class="status-center">
+                  <span class="status-item"><span class="status-selection"></span></span>
+                  <span class="status-item"><i class="fas fa-wrench"></i> <span class="status-tool">Taşıma</span></span>
+                </div>
+                <div class="status-right">
+                  <div class="zoom-controls">
+                    <button type="button" class="zoom-btn" data-zoom-action="out" title="Uzaklaştır"><i
+                        class="fas fa-minus"></i></button>
+                    <input type="range" class="zoom-slider" min="10" max="500" value="100" step="5">
+                    <button type="button" class="zoom-btn" data-zoom-action="in" title="Yakınlaştır"><i
+                        class="fas fa-plus"></i></button>
+                    <span class="status-separator"></span>
+                    <span class="zoom-value" title="Zoom seviyesi — tıklayarak geçiş yapın">100%</span>
+                    <button type="button" class="zoom-btn" data-zoom-action="fit" title="Ekrana Sığdır"><i
+                        class="fas fa-expand"></i></button>
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -406,15 +535,20 @@
     crossorigin="anonymous" defer onerror="console.warn('FileSaver.js failed to load from CDN')"></script>
 
   <!-- Application scripts -->
-  <script src="js/layer-manager.js?v=1.1.0" defer></script>
-  <script src="js/layer-ui.js?v=1.1.0" defer></script>
-  <script src="js/image-dropzone.js?v=1.1.0" defer></script>
-  <script src="js/image-overlay.js?v=1.1.0" defer></script>
-  <script src="js/image-renderer.js?v=1.1.0" defer></script>
-  <script src="js/chat.js?v=1.1.0" defer></script>
-  <script src="color-palette/color-palette.js?v=1.1.0" defer></script>
-  <script src="js/chatlog-parser.js?v=1.1.0" defer></script>
-  <script src="js/app.js?v=1.1.0" defer></script>
+  <script src="js/layer-manager.js?v=1.2.1" defer></script>
+  <script src="js/layer-ui.js?v=1.2.1" defer></script>
+  <script src="js/image-dropzone.js?v=1.2.1" defer></script>
+  <script src="js/editor-history.js?v=1.2.1" defer></script>
+  <script src="js/editor-context-menu.js?v=1.2.1" defer></script>
+  <script src="js/editor-statusbar.js?v=1.2.1" defer></script>
+  <script src="js/editor-text-tool.js?v=1.2.1" defer></script>
+  <script src="js/editor-crop-tool.js?v=1.2.1" defer></script>
+  <script src="js/image-overlay.js?v=1.2.1" defer></script>
+  <script src="js/image-renderer.js?v=1.2.1" defer></script>
+  <script src="js/chat.js?v=1.2.1" defer></script>
+  <script src="color-palette/color-palette.js?v=1.2.1" defer></script>
+  <script src="js/chatlog-parser.js?v=1.2.1" defer></script>
+  <script src="js/app.js?v=1.2.1" defer></script>
 
   <!-- History panel -->
   <div class="history-tab" role="button" tabindex="0" aria-label="Open chat history" aria-expanded="false"
@@ -470,7 +604,7 @@
   </div>
 
   <!-- Donate choice modal -->
-  <div id="donateModal"
+  <!-- <div id="donateModal"
     style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px;">
     <div
       style="background: #1a1d23; padding: 24px; border-radius: 0; max-width: 450px; width: 100%; text-align: center; border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.5); margin: auto;">
@@ -483,7 +617,7 @@
           style="width: 100%; border-radius: 0; margin-top: 4px;">Kapat</button>
       </div>
     </div>
-  </div>
+  </div> -->
 
   <!-- Help Modal - Nasıl Kullanılır -->
   <div id="helpModal" class="help-modal" style="display: none;">
@@ -693,7 +827,7 @@
       <h2 style="margin: 0; font-size: 16px; color: #f1f1f1; display: flex; align-items: center;">
         <i class="fas fa-history" style="margin-right: 10px; color: #2ecc71;"></i>
         Son Güncellemeler <span
-          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.1.0</span>
+          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.2.1</span>
       </h2>
       <button type="button" id="closeChangelogModal"
         style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 5px;">
@@ -702,13 +836,62 @@
     </div>
 
     <div style="padding: 25px; overflow-y: auto; flex: 1;">
-      <ul
-        style="margin: 0; padding-left: 18px; opacity: 0.85; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 12px;">
-        <li>Sohbeti yapıştırdıktan sonra karakterini girersen renkler artık anında değişiyor.</li>
-        <li>İsimleri kapatma butonu düzeltildi, artık direkt standart beyaza dönüyor.</li>
-        <li>Tüm özellik renkleri, butonlar ve yönlendiriciler Türkçeleştirildi.</li>
-        <li>Renk hafızası sıfırdan yazıldı, manuel ayarladığın renkler asla bozulmuyor.</li>
-      </ul>
+      <div
+        style="background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 6px; padding: 12px 15px; margin-bottom: 24px;">
+        <p style="margin: 0; color: #e74c3c; font-size: 13px; line-height: 1.5;">
+          <i class="fas fa-bug" style="margin-right: 6px;"></i>
+          <strong>Hataları Bildirmeyi Unutmayın!</strong><br>
+          <span style="color: rgba(255,255,255,0.7); display: block; margin-top: 4px; font-size: 12px;">Fotoğraf editörü
+            büyük bir güncelleme aldı ve bir sürü yeni mekanik eklendi. Eğer çalışmayan, garip davranan veya
+            düzenlenmesi gereken bir özellik fark ederseniz bildirmekten çekinmeyin.</span>
+        </p>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3
+          style="color: #2ecc71; font-size: 13px; margin: 0 0 10px 0; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">
+          v1.2.1 (Editör Güncellemesi)</h3>
+        <ul
+          style="margin: 0; padding-left: 18px; opacity: 0.85; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <li><strong>"Parlaklık", "Kontrast", "Doygunluk" ve "Vignette"</strong> ayarları eklendi. Artık fotoğrafınızın
+            birçok görüntü
+            ayarını bunları kullanarak gerçekleştirebileceksiniz.</li>
+          <li><strong>Satır Gizle/Göster aracı</strong> eklendi. Fazladan eklediğiniz veya istemediğiniz satırları
+            bu araç ile gizleyebilirsiniz.</li>
+          <li>Fotoğraf editörüne <strong>Ctrl+Z / Ctrl+Y</strong> ile çalışan kapsamlı Undo/Redo (Geri/İleri Alma)
+            sistemi eklendi.</li>
+          <li>Sağ tık bağlam menüsü, kırpma aracı, özel metin ekleme aracı tamamen baştan yazılarak aktif hale
+            getirildi.</li>
+          <li>Seçili satırları büyütüp küçültmeyi sağlayan "Seçim/Boyutlandırma Çerçeveleri" (Handles) sisteme entegre
+            edildi.</li>
+          <li>Alt kısımdaki durum çubuğu (Status bar) aktif araç, boyut ve koordinat takiplerini yapacak şekilde
+            canlandırıldı.</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3
+          style="color: rgba(255,255,255,0.5); font-size: 13px; margin: 0 0 10px 0; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">
+          v1.2.0</h3>
+        <ul
+          style="margin: 0; padding-left: 18px; opacity: 0.6; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <li>UCP'den alınan chatloglarında gözüken !{#C2A2DA} tarzındaki hex kodları artık algılanıp yazıyı otomatik
+            olarak belirtilen renge boyuyor.</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <h3
+          style="color: rgba(255,255,255,0.5); font-size: 13px; margin: 0 0 10px 0; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">
+          v1.1.0</h3>
+        <ul
+          style="margin: 0; padding-left: 18px; opacity: 0.6; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <li>Sohbet eklendikten sonra karakter adı girildiğinde renklerin eş zamanlı yenilenmesi sağlandı.</li>
+          <li>İsimleri kapatma butonu düzeltildi, artık direkt standart beyaza dönüyor.</li>
+          <li>Tüm özellik renkleri, butonlar ve yönlendiriciler Türkçeleştirildi.</li>
+          <li>Renk hafızası sıfırdan yazıldı, manuel ayarlanan renkler asla bozulmuyor.</li>
+        </ul>
+      </div>
     </div>
   </div>
 
@@ -864,7 +1047,7 @@
     }
   </script>
 
-  <script src="js/init.js?v=1.1.0" defer></script>
+  <script src="js/init.js?v=1.2.1" defer></script>
 
   <!-- Speed Insights removed - migrated to Cloudflare Pages -->
 
