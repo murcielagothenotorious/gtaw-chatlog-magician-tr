@@ -1626,7 +1626,7 @@ $(document).ready(function () {
 
   function wrapSpan(className, content) {
     // Normalize apostrophes and escape HTML to prevent tag injection
-    content = escapeHTML(content.replace(/['''']/g, "'")).replace(/~y~/g, '');
+    content = escapeHTML(content.replace(/['''']/g, "'")).replace(/~y~/g, '').replace(/~h~/g, '').replace(/~s~/g, '');
 
     // Split by !{#HEXCODE} - captures the hex code so it appears in the resulting array at odd indices.
     const parts = content.split(/!\{#([0-9A-Fa-f]{6})\}/i);
