@@ -77,6 +77,9 @@
       <a href="#historyPanel">Geçmiş</a>
     </nav>
   </header>
+  <button id="floatingSysMsgToggle" class="floating-sys-btn" title="Sistem Bildirimleri: Gizli (Açmak için tıkla)">
+    <i class="fas fa-filter-circle-xmark"></i>
+  </button>
   <main id="main" role="main">
     <div class="grid-container">
       <div class="grid-x grid-margin-x">
@@ -142,7 +145,8 @@
                 <button id="copyOutputImage" class="button primary"
                   aria-label="Copy chat log or overlay">Kopyala</button>
 
-                <button id="toggleMode" class="button primary active" data-mode="chat" aria-label="Toggle mode">
+                <button id="toggleMode" class="button primary active" data-mode="chat" aria-label="Toggle mode"
+                  style="display: none;">
                   <span class="mode-text">Sohbet</span>
                 </button>
 
@@ -240,9 +244,9 @@
                   <button type="button" class="tool-btn" data-tool="text" title="Metin Aracı (T)">
                     <i class="fas fa-font"></i>
                   </button>
-                  <!-- <button type="button" class="tool-btn" data-tool="crop" title="Kırpma Aracı (Shfit+C)">
+                  <button type="button" class="tool-btn" data-tool="crop" title="Kırpma Aracı (Shfit+C)">
                     <i class="fas fa-crop-alt"></i>
-                  </button> -->
+                  </button>
                   <button type="button" class="tool-btn" data-tool="color" title="Renk Değiştirme Aracı (C)">
                     <i class="fas fa-fill-drip"></i>
                   </button>
@@ -250,9 +254,9 @@
                   <button type="button" class="tool-btn" data-tool="eraser" title="Satır Gizle/Göster Aracı (E)">
                     <i class="fas fa-eraser"></i>
                   </button>
-                  <!-- <button type="button" class="tool-btn" data-tool="blurbox" title="Sansür (Blur) Kutusu Aracı (B)">
+                  <button type="button" class="tool-btn" data-tool="blurbox" title="Sansür (Blur) Kutusu Aracı (B)">
                     <i class="fas fa-magic"></i>
-                  </button> -->
+                  </button>
                   <button type="button" class="tool-btn" data-tool="pan" title="Kaydırma Aracı (H)">
                     <i class="fas fa-hand-paper"></i>
                   </button>
@@ -438,7 +442,42 @@
                               style="float: right; color: rgba(52, 152, 219, 1);"></span></label>
                           <div class="quick-color-grid" id="quickColorGrid"
                             style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
-                            <!-- Filled dynamically by JS -->
+                            <div class="quick-color-item" data-color="white" title="Normal (Beyaz)"
+                              style="background-color: #ffffff; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="me" title="Aksiyon (/me)"
+                              style="background-color: #c2a3da; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="grey" title="Kısık Ses"
+                              style="background-color: #939799; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="darkgrey" title="Alçak Ses"
+                              style="background-color: #5a5a5b; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="yellow" title="Bilgi (Sarı)"
+                              style="background-color: #fbf724; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="green" title="Başarılı (Yeşil)"
+                              style="background-color: #56d64b; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="orange" title="Uyarı (Turuncu)"
+                              style="background-color: #eda841; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="blue" title="Sistem (Mavi)"
+                              style="background-color: #3896f3; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="death" title="Ölüm/Hata (Kırmızı)"
+                              style="background-color: #f00000; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="radioColor" title="Telsiz"
+                              style="background-color: #8da4f7; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="depColor" title="Departman"
+                              style="background-color: #f0a8a8; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
+                            <div class="quick-color-item" data-color="toyou" title="Sana Yönelik"
+                              style="background-color: #ff00bc; width: 100%; aspect-ratio: 1/1; border-radius: 4px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1);">
+                            </div>
                           </div>
                         </div>
 
@@ -814,7 +853,7 @@
       <h2 style="margin: 0; font-size: 16px; color: #f1f1f1; display: flex; align-items: center;">
         <i class="fas fa-history" style="margin-right: 10px; color: #2ecc71;"></i>
         Son Güncellemeler <span
-          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.3.0</span>
+          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.4.0</span>
       </h2>
       <button type="button" id="closeChangelogModal"
         style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 5px;">
@@ -823,19 +862,39 @@
     </div>
 
     <div style="padding: 25px; overflow-y: auto; flex: 1;">
-
-
       <div style="margin-bottom: 24px;">
         <h3
           style="color: #2ecc71; font-size: 13px; margin: 0 0 10px 0; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">
-          v1.3.0 (Arayüz & Özellik Güncellemesi)</h3>
+          v1.4.0 (Altyapı Optimizasyonu & Genişletilmiş Araçlar)</h3>
         <ul
-          style="margin: 0; padding-left: 18px; opacity: 0.85; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
-          <li><strong>Pano Desteği (Copy):</strong> Sohbet çıktılarını indirmeden doğrudan kopyalamak için "Kopyala"
+          style="margin: 0; padding-left: 18px; opacity: 0.85; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 10px;">
+          <li>Sistem tarafından atanan otomatik renk kilitleri devreden çıkarıldı. Yeni "TreeWalker" altyapısı
+            sayesinde, ekrandaki spesifik kelimeler veya satırlar üzerindeki manuel renk atama kısıtlamaları tamamen
+            kaldırılarak serbest seçim mimarisine geçildi.</li>
+          <li>Rol akışını ve okunabilirliği bozan gereksiz sistem mesajlarının (kapı kilitleri, eşya/mülk uyarıları,
+            puan bildirimleri vb.) yarattığı kirliliği engellemek amacıyla, tek tıkla kontrol edilebilen "Sistem
+            Bildirimleri" filtresi entegre edildi.</li>
+          <li>Hava durumu, [STREET], departman ve interkom loglarını tarayan motor optimize edildi. Sunucu kaynaklı
+            oluşabilecek format, boşluk veya harf farklılıklarına karşı sistemin tolerans eşiği artırılarak
+            biçimlendirme hataları kesin olarak önlendi.</li>
+          <li>Çıktı ekranındaki metin dizilimi standartlara uygun olarak yeniden yapılandırıldı. Satır aralıkları
+            (spacing) normalize edilerek, sıkışık görünüm engellendi ve görsel bütünlük sağlandı.</li>
+          <li>Karakter mal varlığı ve banka verilerini içeren log satırlarındaki bölme ("/") sembollerinin, sistemin
+            italik metin formatlayıcısı ile çakışması sonucu oluşan hatalı biçimlendirme sorunu kökünden giderildi.</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3
+          style="color: rgba(255,255,255,0.5); font-size: 13px; margin: 0 0 10px 0; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">
+          v1..0 (Arayüz & Özellik Güncellemesi)</h3>
+        <ul
+          style="margin: 0; padding-left: 18px; opacity: 0.6; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <li>Sohbet çıktılarını indirmeden doğrudan kopyalamak için "Kopyala"
             düğmesi eklendi.</li>
-          <li><strong>Gelişmiş Metin Formatı:</strong> Sohbet içinde *emote* vurgulaması ve /italic/ desteği eklendi.
+          <li>Sohbet içinde *emote* vurgulaması ve /italic/ desteği eklendi.
           </li>
-          <li><strong>İtalik Tercihi:</strong> Ayarlar kısmından italik ayrıştırmayı dilediğiniz gibi kapatıp
+          <li>Ayarlar kısmından italik ayrıştırmayı dilediğiniz gibi kapatıp
             açabilirsiniz.</li>
         </ul>
       </div>
@@ -981,7 +1040,7 @@
     <p style="margin: 0; letter-spacing: 0.5px;">
       <i class="fas fa-code" style="margin-right: 5px;"></i> Made by Blanco
       <span style="margin: 0 10px; opacity: 0.5;">|</span>
-      GTA World Türkiye için <strong><a href="https://forum-tr.gta.world/index.php?/profile/8001-murcielago/"
+      GTA World Türkiye topluluğu için <strong><a href="https://forum-tr.gta.world/index.php?/profile/8001-murcielago/"
           target="_blank"
           style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3); transition: color 0.2s, text-decoration-color 0.2s;"
           onmouseover="this.style.color='#fff'; this.style.textDecorationColor='#fff'"

@@ -284,7 +284,7 @@ function generateFilename() {
   );
 }
 
-window.copyBlobToClipboard = async function(blob) {
+window.copyBlobToClipboard = async function (blob) {
   try {
     const item = new ClipboardItem({ [blob.type]: blob });
     await navigator.clipboard.write([item]);
@@ -977,6 +977,42 @@ function _escapeHtml(unsafe) {
 
 $(document).ready(function () {
   // Background state is restored by chatlog-parser.js
+
+  $('.tool-btn').on('click', function () {
+    const tool = $(this).data('tool');
+
+    // Aktif butonu vurgula
+    $('.tool-btn').removeClass('active');
+    $(this).addClass('active');
+
+    // Toolbar Label'ı güncelle
+    const toolNames = {
+      'move': 'Taşıma Aracı',
+      'text': 'Metin Aracı',
+      'crop': 'Kırpma Aracı',
+      'color': 'Renk Değiştirme Aracı',
+      'eraser': 'Satır Gizle/Göster Aracı',
+      'blurbox': 'Sansür Kutusu Aracı',
+      'pan': 'Kaydırma Aracı'
+    };
+    $('#topbarToolLabel').text(toolNames[tool] || 'Taşıma Aracı');
+
+    // Eğer Kırpma (Crop) aracı seçildiyse CSS'i tetikle
+    if (tool === 'crop') {
+      $('#cropOverlay').addClass('active');
+    } else {
+      // Başka araca geçilirse kırpma ekranını kapat
+      $('#cropOverlay').removeClass('active');
+    }
+  });
+
+  // Kırpma İptal ve Onay Butonları
+  $('#cropCancelBtn, #cropConfirmBtn').on('click', function (e) {
+    e.stopPropagation(); // Arka plana tıklamayı engelle
+    $('#cropOverlay').removeClass('active');
+    // Taşıma aracına geri dön
+    $('.tool-btn[data-tool="move"]').click();
+  });
 
   // Initialize ColorPalette after all scripts are loaded
   if (typeof window.ColorPalette !== 'undefined') {

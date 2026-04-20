@@ -7,6 +7,7 @@ $(document).ready(function () {
 
   let applyBackground = localStorage.getItem('backgroundEnabled') === 'true';
   let disableCharacterNameColoring = false;
+  let hideSystemMessages = localStorage.getItem('chatlogHideSystemMessages') !== 'false';
 
   // Censor style: 'remove' (hidden) or 'blur' (pixelated blur)
   let censorStyle = localStorage.getItem('chatlogCensorStyle') || 'remove';
@@ -60,9 +61,13 @@ $(document).ready(function () {
   const $toggleItalicParsingBtn = $('#toggleItalicParsing');
   const $lineLengthInput = $('#lineLengthInput');
   const $characterNameInput = $('#characterNameInput');
+  const $toggleSystemMessagesBtn = $('#floatingSysMsgToggle');
 
   $toggleBackgroundBtn.on('click', toggleBackground);
   $toggleCharacterNameColoringBtn.on('click', toggleCharacterNameColoring);
+  if ($toggleSystemMessagesBtn.length) {
+    $toggleSystemMessagesBtn.on('click', toggleSystemMessages);
+  }
   $censorCharButton.on('click', copyCensorChar);
   $toggleCensorStyleBtn.on('click', toggleCensorStyle);
   $toggleFontBtn.on('click', toggleFontStyle);
@@ -82,6 +87,7 @@ $(document).ready(function () {
   updateContrastStyleUI();
   applyContrastStyle();
   updateBackgroundUI();
+  updateSystemMessagesUI();
 
   // ===== TXT File Upload =====
   const $txtUploadArea = $('#txtUploadArea');
@@ -519,106 +525,111 @@ $(document).ready(function () {
     const fragment = document.createDocumentFragment();
 
     chatLines.forEach((line) => {
-      // Skip animation stop messages
-      if (line.includes('Use /anim stop to stop animations and remove items from your hands.')) {
-        return;
-      }
-
-      // Skip abuse warning messages
-      if (line.includes('Any abuse of the editor will result in harsh admin punishment.')) {
-        return;
-      }
-
-      // Skip kick/ban messages
-      if (line.includes('was kicked for:') || line.includes('was banned for:')) {
-        return;
-      }
-
-      // Skip unfreeze instructions
-      if (
-        line.includes('⚠️Artık dondurmanızı kaldırmak için K tuşuna basabilirsiniz. Bunu yaparken W tuşuna basılı tutmayın.')
-      ) {
-        return;
-      }
-
-      // Skip animation stop info
-      if (line.includes("[INFO] Animasyonları durdurmak ve elinde bulunan eşyaları kaldırmak için /anim stop komutunu kullanabilirsin.")) {
-        return;
-      }
-
-      if (line.includes("[BİLGİ] Ayrıca /anim list veya /anim2 ile modern ve gelişmiş listeyle daha hızlı ve daha iyi animasyon araması yapabilirsin! Bu bilgi sadece bir kez gösterilecektir.")) {
-        return;
-      }
-
-      if (line.includes("[BİLGİ] If you will ever want to save that or other custom animations for the future that you can later on pick from the /anim or /anim2 or by using /anim [name], use /customanim [anim_name1] [flag] [anim_name2/'none'] [flag2/'none'] [your custom anim name here]! This information will be shown once per character instance.")) {
-        return;
-      }
-
-      // Skip vehicle teleport info
-      if (
-        line.includes(
-          'Artık /vget komutunu kullanabilirsin.'
-        )
-      ) {
-        return;
-      }
-
-      if (
-        line.includes('Oyuncu(lar) bulunamadı.')
-      ) {
-        return;
-      }
-
-      // Skip fixveh warning
-      if (
-        line.includes(
-          '(( BU KOMUTUN YANLIŞ KULLANIMI SONUCUNDA YASAKLANIRSIN. ))'
-        )
-      ) {
-        return;
-      }
-
-      // Skip hat info
-      if (
-        line.includes(
-          "[BİLGİ] Kaydettiğin favori şapkanı giymek için /şapka özel1-5 komutunu kullanabilirsin."
-        )
-      ) {
-        return;
-      }
-
-      // Skip animation error
-      if (line.includes('[HATA] Belirtilen animasyon bulunamadı.')) {
-        return;
-      }
-
-      // Skip phone locked error
-      if (line.includes('[HATA] Bu telefon kilitli.')) {
-        return;
-      }
-
-      // Skip F2/F3 instructions
-      if (
-        line.includes(
-          "Sohbeti yeniden başlatmak için F2'yi ve imleci görünür yapmak için F3'ü kullanabilirsin. F3 çalışmıyorsa /pc komutunu kullanın."
-        )
-      ) {
-        return;
-      }
-
-      // [ANTI-FALL] sistem mesajları – atla
+      // =====================================================================
+      // 1. İSTENMEYEN SPAM VE SİSTEM MESAJLARINI UÇURMA (GÖZ ARDI ETME)
+      // =====================================================================
+      if (line.includes('Any abuse of the editor will result in harsh admin punishment.')) return;
+      if (line.includes('was kicked for:') || line.includes('was banned for:')) return;
       if (line.startsWith('[ANTI-FALL]')) return;
-
-      // [HATA] hata mesajları – atla
       if (line.startsWith('[HATA]')) return;
-
-      if (line.includes("Eğer birlik üyelerini eski (sohbet) üzerinden görmek istiyorsan, /fonline hayır komutunu kullan.")) return;
-
-      // Gelen / Giden PM – atla
       if (line.startsWith('(( Gelen PM') || line.startsWith('(( Giden PM')) return;
-
-      // OOC / FOOC: (( (N) İsim: Mesaj )) – atla
       if (/^\(\(\s*\(\d+\)\s*.+\)\)$/.test(line)) return;
+
+      if (hideSystemMessages) {
+        if (line.includes('Panda Point kazandın')) return;
+        if (line.includes('[XM Radio]')) return;
+        if (line.includes('Kapıyı kilitledin.') || line.includes('Kapının kilidini açtın.')) return;
+        if (line.includes('Evinizdeki eşya için /stashinfo bilgisi belirtmediniz')) return;
+        if (line.includes('/outfitname komutunu kullanabilirsin')) return;
+        if (line.includes('Mülküne hoş geldin.')) return;
+        if (line.includes('/pattributes komutuyla mülkünün özelliklerini')) return;
+        if (line.includes('edilmesi gereken detaylar) tarif edebilirsin')) return;
+        if (line.includes('kullanıma sahiptir, karıştırmayınız.')) return;
+        if (line.includes('Aracın yerini kolayca tespit edebilmen için haritanda işaretlendi.')) return;
+
+        // Orijinal Animasyon / Komut Uyarıları
+        if (line.includes('Use /anim stop to stop animations')) return;
+        if (line.includes("[BİLGİ] If you will ever want to save that or other custom animations")) return;
+        if (line.includes('Oyuncu(lar) bulunamadı.')) return;
+        if (line.includes('⚠️Artık dondurmanızı kaldırmak için K tuşuna basabilirsiniz')) return;
+        if (line.includes("⚠️K'ye basarak dondurmanı açabilirsin. Bunu yaparken W'ye basılı tutma.")) return;
+        if (line.includes("Sahibi olmadığı için kilitli bir mülke girdin. Bu mülkü dilersen satın alabilirsin.")) return;
+        if (line.includes("[INFO] Animasyonları durdurmak ve elinde bulunan eşyaları")) return;
+        if (line.includes("[BİLGİ] Ayrıca /anim list veya /anim2 ile modern ve gelişmiş")) return;
+        if (line.includes("[HATA] Belirtilen animasyon bulunamadı.")) return;
+        if (line.includes("Sohbeti yeniden başlatmak için F2'yi ve imleci görünür")) return;
+        if (line.includes('Artık /vget komutunu kullanabilirsin.')) return;
+        if (line.includes('(( BU KOMUTUN YANLIŞ KULLANIMI SONUCUNDA YASAKLANIRSIN. ))')) return;
+        if (line.includes("[BİLGİ] Kaydettiğin favori şapkanı giymek için /şapka özel")) return;
+        if (line.includes('[HATA] Bu telefon kilitli.')) return;
+        if (line.includes("Eğer birlik üyelerini eski (sohbet) üzerinden görmek istiyorsan")) return;
+
+
+        // -- YENİ EKLENEN FİLTRELER --
+        if (line.includes('Panda Point kazandın')) return;
+        if (line.includes('[XM Radio]')) return;
+        if (line.includes('Kapıyı kilitledin.') || line.includes('Kapının kilidini açtın.')) return;
+        if (line.includes('Evinizdeki eşya için /stashinfo bilgisi belirtmediniz')) return;
+        if (line.includes('/outfitname komutunu kullanabilirsin')) return;
+        if (line.includes('Mülküne hoş geldin.')) return;
+        if (line.includes('/pattributes komutuyla mülkünün özelliklerini')) return;
+        if (line.includes('edilmesi gereken detaylar) tarif edebilirsin')) return;
+        if (line.includes('kullanıma sahiptir, karıştırmayınız.')) return;
+        if (line.includes('Aracın yerini kolayca tespit edebilmen için haritanda işaretlendi.')) return;
+
+        if (line.startsWith('[ANTI-FALL]')) return;
+        if (line.startsWith('[HATA]')) return;
+        if (line.startsWith('[DATE:')) return;
+        if (line.startsWith('GTA World Türkiye')) return;
+        if (line.startsWith('Oyuncu ID')) return;
+        if (line.startsWith('[GALERI]')) return;
+        if (line.includes('GTAW Roleplay Oyuncu İstatistikleri')) return;
+        if (line.includes('ALPR bildirimlerinin')) return;
+        if (line.includes('Kapı zili ses seviyesini')) return;
+        if (line.includes('Kapı tıklatma ses seviyesini')) return;
+        if (line.includes('Sohbet yazı boyutu')) return;
+        if (line.includes('Karakter | Nakit: $') || line.includes('Sağlık | Can:')) return;
+        if (line.includes('Banka Hesap Numarası:')) return;
+        if (line.includes('Şu anki işi:')) return;
+        if (line.includes('Zaman | Toplam saat:')) return;
+        if (line.includes('Çalışılan süre:')) return;
+        if (line.includes('Mülkler | Sahip olunan mülkler:')) return;
+        if (line.includes('Custom Number:')) return;
+        if (line.includes('Main Phone Number:')) return;
+        if (line.includes('Premium:')) return;
+        if (line.includes('Obje Slotu:')) return;
+        if (line.includes('Kıyafet Slotu:')) return;
+        if (line.includes('World Point:')) return;
+        if (line.includes('Panda Point:')) return;
+        if (line.includes('TARİH: Sunucu zamanı:')) return;
+        if (line.includes('Son 15 günde geçirilen süre')) return;
+        if (line.includes('Suç Puanı:')) return;
+        if (line.includes('=========================================================')) return;
+        if (line.includes('Bu komutla camları açıp kapatabilirsin.')) return;
+        if (line.includes('/vwindow [cam], opsiyonlar: front, rear, left, right, rleft, rright.')) return;
+        if (line.includes('kWh başına fiyat: $1.32 | Kamu Kullanım Vergisi: $0.')) return;
+        if (line.startsWith('/recharge')) return;
+        if (line.startsWith('KULLANIM:')) return;
+        if (line.startsWith('DIKKAT:')) return;
+        if (line.startsWith('BAĞLANTI:')) return;
+        if (line.startsWith('Kapı kilitli.')) return;
+        if (line.startsWith('Bunu yapamazsın.')) return;
+        if (line.startsWith('Mülk/araç girişine ışınlandın.')) return;
+        if (line.startsWith('Şu an hiçbir online yönetici bulunmamaktadır.')) return;
+        if (line.startsWith('[Güvenlik]') || line.startsWith('[Genel]') || line.startsWith('[Eklentiler]') || line.startsWith('[Diğer]') || line.startsWith('[Kir]')) {
+          return;
+        }
+        if (line.includes('BİLGİ::')) return;
+        if (line.includes('Aracın ortalama benzin harcamasını görmek için /getfuelconsumption komutunu kullanabilirsin.')) return;
+        if (line.startsWith('Artık /anim smoke1 - smoke8 veya /anim joint1 - joint6 aninmasyonlarını 10 dakika')) return;
+
+        if (line.startsWith('(( Gelen PM') || line.startsWith('(( Giden PM')) return;
+        if (/^\(\(\s*\(\d+\)\s*.+\)\)$/.test(line)) return;
+      }
+
+      // =====================================================================
+      // 2. SATIR FORMATLAMA VE HTML OLUŞTURMA
+      // =====================================================================
 
       const div = document.createElement('div');
       div.className = 'generated';
@@ -692,9 +703,9 @@ $(document).ready(function () {
 
         // Only mark as no-colorable if the formatter produced HTML spans
         // (not if only censorship added spans)
-        if (hasFormattingSpans) {
-          div.classList.add('no-colorable');
-        }
+        // if (hasFormattingSpans) {
+        //   div.classList.add('no-colorable');
+        // }
       }
 
       fragment.appendChild(div);
@@ -799,153 +810,75 @@ $(document).ready(function () {
   ChatlogParser.processOutput = processOutput;
 
   function makeTextColorable() {
-    let wordCounter = 0; // Global word counter for unique IDs
+    let wordCounter = 0; // Benzersiz kelime ID'leri için sayaç
 
-    // Process each .generated div individually
     $output.find('.generated').each(function (lineIndex) {
       const generatedDiv = $(this);
 
-      // Skip if the div has the no-colorable class
-      if (generatedDiv.hasClass('no-colorable')) {
-        return;
+      // Artık satırları atlamıyoruz, çünkü her türlü HTML'in içinden geçebiliyoruz.
+      if (generatedDiv.hasClass('no-colorable')) return;
+
+      const textNodes = [];
+      // TreeWalker: Sadece saf metin (text) node'larını bulur, HTML etiketlerini es geçer
+      const walk = document.createTreeWalker(generatedDiv[0], NodeFilter.SHOW_TEXT, null, false);
+      let n;
+      while ((n = walk.nextNode())) {
+        textNodes.push(n);
       }
 
-      // Check if the div contains HTML elements (like spans)
-      const hasElements = generatedDiv.find('span, div, br').length > 0;
-      const hasSpanInHTML = generatedDiv.html().includes('<span');
-      const hasDivInHTML = generatedDiv.html().includes('<div');
-      const hasBrInHTML = generatedDiv.html().includes('<br');
+      textNodes.forEach((textNode) => {
+        const text = textNode.nodeValue;
 
-      // If the div contains HTML elements, process them for word-by-word coloring
-      if (hasElements || hasSpanInHTML || hasDivInHTML || hasBrInHTML) {
-        // Find all text nodes within existing spans and make them colorable word by word
-        generatedDiv.find('span').each(function () {
-          const span = $(this);
-          const text = span.text();
+        // Tamamen boşluktan oluşan alanları atla (kelime aralarındaki doğal boşluklar bozulmasın)
+        if (!text.trim()) return;
 
-          // For censored content, just add colorable class without splitting into words
-          if (span.hasClass('censored-content')) {
-            span.addClass('colorable');
-            return;
-          }
-
-          // CORREÇÃO: Pula spans que já foram processados para evitar duplicação.
-          if (
-            (span.hasClass('colorable') && span.text().length === 1) ||
-            span.children().length > 0
-          ) {
-            return; // Skip to the next span
-          }
-
-          // Get the existing classes from the span
-          const existingClasses = span.attr('class') || '';
-          const classArray = existingClasses.split(/\s+/).filter((cls) => cls !== 'colorable');
-
-          // Split the text into words and whitespace and wrap each word in a colorable span
-          const tokens = text.split(/(\s+)/g);
-          const html = tokens
-            .map((token) => {
-              if (token === '') return '';
-              if (/^\s+$/.test(token)) return token;
-              const normalized = token.replace(/[\u2018\u2019\u2032\u2035]/g, "'");
-              const wordId = `${lineIndex}-${wordCounter++}`;
-              return `<span class="${classArray.join(' ')} colorable" data-word-id="${wordId}">${normalized}</span>`;
-            })
-            .join('');
-
-          // Replace the span's content with the word-by-word HTML
-          span.html(html);
-        });
-        return;
-      }
-
-      // Get all child nodes (both elements and text nodes)
-      const childNodes = generatedDiv[0].childNodes;
-      const nodesToProcess = [];
-
-      // Collect text nodes that should be processed
-      for (let i = 0; i < childNodes.length; i++) {
-        const node = childNodes[i];
-
-        // Only process text nodes
-        if (node.nodeType === Node.TEXT_NODE) {
-          const text = node.textContent.trim();
-
-          // Skip empty text nodes
-          if (text.length === 0) continue;
-
-          // Skip text nodes that contain HTML-like content
-          if (/<[^>]*>/.test(text) || /&[a-zA-Z0-9#]+;/.test(text)) continue;
-
-          nodesToProcess.push(node);
-        }
-      }
-
-      // Process the collected text nodes (word-by-word)
-      nodesToProcess.forEach((textNode) => {
-        const text = textNode.textContent;
         const parent = textNode.parentNode;
 
-        const temp = document.createElement('div');
+        // Eğer bu kelime zaten boyanabilir yapıldıysa veya sansürlüyse tekrar içine girme
+        if ($(parent).hasClass('colorable') || $(parent).hasClass('censored-content') || $(parent).hasClass('unrecognized')) {
+          return;
+        }
 
-        // Split into words and whitespace for word-by-word selection
+        // Ana HTML etiketinin class'larını miras al (örn: parent "blue" ise kelime de "blue" olarak boyanabilir kalsın)
+        let parentClasses = '';
+        if (parent.nodeName.toLowerCase() === 'span' && !$(parent).hasClass('generated')) {
+          parentClasses = ($(parent).attr('class') || '').replace('colorable', '').trim();
+        }
+
+        // Eğer kelimenin hiçbir ebeveyn rengi yoksa 'unrecognized' (tanımsız) say
+        const classString = parentClasses ? `${parentClasses} colorable` : 'colorable unrecognized';
+
+        const tempDiv = document.createElement('div');
         const tokens = text.split(/(\s+)/g);
+
         const html = tokens
           .map((token) => {
             if (token === '') return '';
-            if (/^\s+$/.test(token)) return token;
-            const normalized = token.replace(/[\u2018\u2019\u2032\u2035]/g, "'");
+            if (/^\s+$/.test(token)) return token; // Boşlukları saf olarak bırak
+
+            // HTML karakterlerini (<, >, vs) bozmaması için güvenli hale getir
+            const safeToken = token.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+            const normalized = safeToken.replace(/[\u2018\u2019\u2032\u2035]/g, "'");
+
             const wordId = `${lineIndex}-${wordCounter++}`;
-            return `<span class="colorable" data-word-id="${wordId}">${normalized}</span>`;
+            return `<span class="${classString}" data-word-id="${wordId}">${normalized}</span>`;
           })
           .join('');
 
-        temp.innerHTML = html;
+        tempDiv.innerHTML = html;
 
         const fragment = document.createDocumentFragment();
-        while (temp.firstChild) {
-          fragment.appendChild(temp.firstChild);
+        while (tempDiv.firstChild) {
+          fragment.appendChild(tempDiv.firstChild);
         }
 
+        // Eski saf metni, iç içe geçmiş yeni boyanabilir span'larımızla değiştir
         parent.replaceChild(fragment, textNode);
       });
     });
 
-    // NEW: Make ALL remaining text colorable, word-by-word, even if not recognized by parser
-    $output.find('.generated').each(function () {
-      const generatedDiv = $(this);
-
-      // Skip if already processed or has no-colorable class
-      if (generatedDiv.hasClass('no-colorable') || generatedDiv.find('.colorable').length > 0) {
-        return;
-      }
-
-      // Get all text content that hasn't been processed yet
-      const textContent = generatedDiv.text().trim();
-      if (textContent.length === 0) return;
-
-      // Split into words and whitespace for word-by-word selection
-      const tokens = textContent.split(/(\s+)/g);
-      const html = tokens
-        .map((token) => {
-          if (token === '') return '';
-          if (/^\s+$/.test(token)) return token;
-          const normalized = token.replace(/[\u2018\u2019\u2032\u2035]/g, "'");
-          return `<span class="colorable unrecognized">${normalized}</span>`;
-        })
-        .join('');
-
-      // Apply line breaks to the HTML with individual character spans
-      const htmlWithLineBreaks = addLineBreaksAndHandleSpans(html);
-
-      // Replace the entire content with the character-by-character HTML that has line breaks
-      generatedDiv.html(htmlWithLineBreaks);
-    });
-
     if (DEBUG_MODE)
-      console.log(
-        'Made text colorable - total colorable elements: ' + $output.find('.colorable').length
-      );
+      console.log('Made text colorable - total colorable elements: ' + $output.find('.colorable').length);
   }
 
   // Make makeTextColorable accessible for the color palette
@@ -1062,6 +995,11 @@ $(document).ready(function () {
       if (itemMatch) return wrapSpan('orange', itemMatch[1] || '') + wrapSpan('white', itemMatch[2] + ' içerisinden ') + wrapSpan('white', itemMatch[3]) + wrapSpan('white', ' aldın.');
     }
 
+    if (lowerLine.includes('[TELEFON]')) {
+      const match = line.match(/^(\[TELEFON\])\s*(.+)$/);
+      if (match) return wrapSpan('yellow', line);
+    }
+
     if (line.startsWith('[BİLGİ]') || line.startsWith('BİLGİ:')) {
       const isBracket = line.startsWith('[BİLGİ]');
       const prefix = isBracket ? '[BİLGİ]' : 'BİLGİ:';
@@ -1069,6 +1007,8 @@ $(document).ready(function () {
       if (isBracket) message = message.replace(/\s+\(\(\d+\)\)$/, '');
       return wrapSpan('blue', prefix) + ' ' + wrapSpan('white', message);
     }
+
+    if (line.startsWith('[GPS]')) return wrapSpan('green', '[GPS]') + wrapSpan('white', line.substring(5));
 
     if (lowerLine.startsWith('[info]')) return colorInfoLine(line);
     if (line.startsWith('[INFO]:') && line.includes('/')) {
@@ -1108,7 +1048,7 @@ $(document).ready(function () {
       return lowerLine.includes(currentCharacterName) ? wrapSpan('radioColor', line) : wrapSpan('radioColor2', line);
     }
 
-    if (lowerLine.includes('(telefon) *')) return wrapSpan('me', line); // Eksik olan Telefon * düzeltmesi eklendi
+    if (lowerLine.includes('(telefon) *')) return wrapSpan('me', line);
     if (lowerLine.includes('says (phone):') || lowerLine.includes('says (loudspeaker):')) return handleCellphone(line);
     if (line.includes('(Telefon - Hoparlör):')) return wrapSpan('yellow', line);
     if (line.includes('(kısık ses) (Telefon):')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('lightgrey', line) : wrapSpan('yellow', line);
@@ -1147,7 +1087,22 @@ $(document).ready(function () {
     // 6. TÜRKÇE (TR) ENVANTER VE AKSİYON İŞLEMLERİ
     // =====================================================================
 
-    // Sola yeşil, sağa beyaz basan "kullandın" düzeltmesi
+    // Biri sana para veya eşya verdi (Tarihi silmez, komple yeşil yapar)
+    if (lowerLine.includes('sana') && lowerLine.includes('verdi') && !lowerLine.includes('gösterdi')) {
+      const noTimeLine = lowerLine.replace(/\d{1,2}:\d{2}(:\d{2})?/g, '');
+      if (!noTimeLine.includes(':')) {
+        return wrapSpan('green', line);
+      }
+    }
+
+    // Sen birine para veya eşya verdin (Tarihi silmez, komple yeşil yapar)
+    if (lowerLine.includes('verdin') && (lowerLine.includes('kişiye') || lowerLine.includes('kişisine'))) {
+      const noTimeLine = lowerLine.replace(/\d{1,2}:\d{2}(:\d{2})?/g, '');
+      if (!noTimeLine.includes(':')) {
+        return wrapSpan('green', line);
+      }
+    }
+
     if (lowerLine.includes('kullandın') && lowerLine.includes('etkilerini yakında hissedeceksin')) {
       const match = line.match(/^(.+?)\s*(kullandın\s*,\s*etkilerini yakında hissedeceksin\.?)$/i);
       if (match) return wrapSpan('green', match[1]) + ' ' + wrapSpan('white', match[2]);
@@ -1285,12 +1240,17 @@ $(document).ready(function () {
     }
     if (line.includes('[STREET]')) {
       if (line.includes(' / ')) {
-        const parts = line.match(/\[STREET\] Sokak ismi: (.+?) \/ (.+?) \| Zone: ([^.]+)(\.)/);
-        if (parts) return `${wrapSpan('blue', '[STREET]')} Sokak ismi: ${wrapSpan('orange', parts[1])} / ${wrapSpan('orange', parts[2])} | Zone: ${wrapSpan('orange', parts[3])}${parts[4]}`;
+        const parts = line.match(/\[STREET\] Sokak [İi]smi:\s*(.+?)\s*\/\s*(.+?)\s*\|\s*Zone:\s*([^.]+)(\.?)/i);
+        if (parts) {
+          return `${wrapSpan('blue', '[STREET]')} Sokak İsmi: ${wrapSpan('orange', parts[1])} / ${wrapSpan('orange', parts[2])} | Zone: ${wrapSpan('orange', parts[3])}${parts[4] || ''}`;
+        }
       } else {
-        const parts = line.match(/\[STREET\] Sokak ismi: (.+?) \| Zone: ([^.]+)(\.)/);
-        if (parts) return `${wrapSpan('blue', '[STREET]')} Sokak ismi: ${wrapSpan('orange', parts[1])} | Zone: ${wrapSpan('orange', parts[2])}${parts[3]}`;
+        const parts = line.match(/\[STREET\] Sokak [İi]smi:\s*(.+?)\s*\|\s*Zone:\s*([^.]+)(\.?)/i);
+        if (parts) {
+          return `${wrapSpan('blue', '[STREET]')} Sokak İsmi: ${wrapSpan('orange', parts[1])} | Zone: ${wrapSpan('orange', parts[2])}${parts[3] || ''}`;
+        }
       }
+      return wrapSpan('blue', line);
     }
     if (line.startsWith('*')) return wrapSpan('me', line);
     if (line.startsWith('>')) return wrapSpan('ame', line);
@@ -1534,89 +1494,65 @@ $(document).ready(function () {
   }
 
   function formatWeatherLine(line) {
-    const weatherPattern =
-      /^Sıcaklık:\s*([\d.]+°C)\s*\(([\d.]+°?F)\),\s*it\s*is\s*currently\s*([^.]+)\.\s*Rüzgar:\s*([\d.]+)\s*km\/h\s*\(([\d.]+)\s*mph\),\s*humidity:\s*([\d.]+%),\s*rain\s*precipitation:\s*([\d.]+)\s*mm\.\s*Current\s*time:\s*([\d\/A-Z\s-]+:\d{2}:\d{2}:\d{2})$/;
+    const lowerLine = line.toLowerCase();
 
-    const match = line.match(weatherPattern);
-    if (match) {
-      const [_, tempC, tempF, condition, windKmh, windMph, humidity, rain, time] = match;
-
-      return (
-        wrapSpan('white', 'Sıcaklık: ') +
-        wrapSpan('green', tempC) +
-        ' ' +
-        wrapSpan('white', '(') +
-        wrapSpan('green', tempF) +
-        wrapSpan('white', ')') +
-        wrapSpan('white', ', it is currently ') +
-        wrapSpan('green', condition) +
-        wrapSpan('white', '. Wind: ') +
-        wrapSpan('green', windKmh + ' km/h') +
-        ' ' +
-        wrapSpan('white', '(') +
-        wrapSpan('green', windMph + ' mph') +
-        wrapSpan('white', ')') +
-        wrapSpan('white', ', humidity: ') +
-        wrapSpan('green', humidity) +
-        wrapSpan('white', ', rain precipitation: ') +
-        wrapSpan('green', rain + ' mm') +
-        wrapSpan('white', '. Current time: ') +
-        wrapSpan('white', time)
-      );
+    // 1. Performans: Eğer hava durumu kelimeleri yoksa direkt çık, fonksiyonu yorma
+    if (!lowerLine.includes('sıcaklık:') && !lowerLine.includes('wind:') && !lowerLine.includes('rüzgar:')) {
+      return null;
     }
 
-    if (line.startsWith('Sıcaklık:')) {
-      const tempMatch = line.match(
-        /^Sıcaklık:\s*([\d.]+°C)\s*\(([\d.]+°?F)\).\s*Şu\s*anda\s*hava\s*([^.]+)\.?$/
-      );
-      if (tempMatch) {
-        const [_, tempC, tempF, condition] = tempMatch;
+    // 2. Güvenlik: Satırın başındaki görünmez boşlukları, yıldızları (*) temizle ki kod çökmesin
+    const cleanLine = line.replace(/^[\s*]+/, '');
+
+    // --- SENARYO A: TAM FORMAT (Sıcaklık + Rüzgar bir arada) ---
+    if (cleanLine.includes('Sıcaklık:') && (cleanLine.includes('Rüzgar:') || cleanLine.includes('Wind:'))) {
+
+      // Çok esnek Regex: Sadece anahtar kelimeler arası blokları yakalar, 
+      // içindeki sayıların/sembollerin formatı değişse bile çökmez.
+      const match = cleanLine.match(/Sıcaklık:\s*(.+?),\s*(?:it is currently|şu anda hava)\s*(.+?)\.\s*(?:Rüzgar|Wind):\s*(.+?),\s*(?:humidity|nem):\s*(.+?),\s*(?:rain precipitation|yağış):\s*(.+?)\.\s*(?:Current time|Zaman):\s*(.+)/i);
+
+      if (match) {
         return (
-          wrapSpan('white', 'Sıcaklık: ') +
-          wrapSpan('green', tempC) +
-          ' ' +
-          wrapSpan('white', '(') +
-          wrapSpan('green', tempF) +
-          wrapSpan('white', ')') +
-          wrapSpan('white', '. Şu anda hava ') +
-          wrapSpan('green', condition) +
-          '.'
+          wrapSpan('white', 'Sıcaklık: ') + wrapSpan('green', match[1]) +
+          wrapSpan('white', ', it is currently ') + wrapSpan('green', match[2]) +
+          wrapSpan('white', '. Rüzgar: ') + wrapSpan('green', match[3]) +
+          wrapSpan('white', ', humidity: ') + wrapSpan('green', match[4]) +
+          wrapSpan('white', ', rain precipitation: ') + wrapSpan('green', match[5]) +
+          wrapSpan('white', '. Current time: ') + wrapSpan('white', match[6])
         );
       }
-      return (
-        wrapSpan('white', 'Sıcaklık: ') +
-        wrapSpan('green', line.replace('Sıcaklık:', '').trim())
-      );
     }
 
-    if (line.startsWith('Wind:')) {
-      const windMatch = line.match(
-        /^Wind:\s*([\d.]+)\s*km\/h\s*\(([\d.]+)\s*mph\),\s*humidity:\s*([\d.]+%),\s*rain\s*precipitation:\s*([\d.]+)\s*mm\.?$/
-      );
-      if (windMatch) {
-        const [_, windKmh, windMph, humidity, rain] = windMatch;
+    // --- SENARYO B: SADECE SICAKLIK ---
+    if (cleanLine.startsWith('Sıcaklık:')) {
+      const match = cleanLine.match(/Sıcaklık:\s*(.+?)\.\s*(?:Şu anda hava|it is currently)\s*(.+?)\.?$/i);
+      if (match) {
         return (
-          wrapSpan('white', 'Rüzgar: ') +
-          wrapSpan('green', windKmh + ' km/h') +
-          ' ' +
-          wrapSpan('white', '(') +
-          wrapSpan('green', windMph + ' mph') +
-          wrapSpan('white', ')') +
-          wrapSpan('white', ', Nem: ') +
-          wrapSpan('green', humidity) +
-          wrapSpan('white', ', Yağış: ') +
-          wrapSpan('green', rain + ' mm') +
-          '.'
+          wrapSpan('white', 'Sıcaklık: ') + wrapSpan('green', match[1]) +
+          wrapSpan('white', '. Şu anda hava ') + wrapSpan('green', match[2]) + '.'
         );
       }
-      return wrapSpan('white', 'Rüzgar: ') + wrapSpan('green', line.replace('Wind:', '').trim());
+
+      // Hiçbir regex'e uymazsa bile beyaz renge boğulmasın diye son çare (Fallback):
+      return wrapSpan('white', 'Sıcaklık: ') + wrapSpan('green', cleanLine.replace('Sıcaklık:', '').trim());
     }
 
-    if (line.startsWith('Current time:')) {
-      return (
-        wrapSpan('white', 'Current time: ') +
-        wrapSpan('white', line.replace('Current time:', '').trim())
-      );
+    // --- SENARYO C: SADECE RÜZGAR ---
+    if (cleanLine.startsWith('Wind:') || cleanLine.startsWith('Rüzgar:')) {
+      const prefixMatch = cleanLine.match(/^(Wind|Rüzgar):/i);
+      const prefix = prefixMatch ? prefixMatch[1] : 'Rüzgar';
+
+      const match = cleanLine.match(/(?:Wind|Rüzgar):\s*(.+?),\s*(?:humidity|nem):\s*(.+?),\s*(?:rain precipitation|yağış):\s*(.+?)\.?$/i);
+      if (match) {
+        return (
+          wrapSpan('white', prefix + ': ') + wrapSpan('green', match[1]) +
+          wrapSpan('white', ', Nem: ') + wrapSpan('green', match[2]) +
+          wrapSpan('white', ', Yağış: ') + wrapSpan('green', match[3]) + '.'
+        );
+      }
+
+      // Son çare (Fallback):
+      return wrapSpan('white', prefix + ': ') + wrapSpan('green', cleanLine.replace(new RegExp(`^${prefix}:`, 'i'), '').trim());
     }
 
     return null;
@@ -2267,6 +2203,27 @@ $(document).ready(function () {
 
     if (applyBackground) {
       $('.generated').css('background-color', '#000000');
+    }
+  }
+
+  function toggleSystemMessages() {
+    hideSystemMessages = !hideSystemMessages;
+    localStorage.setItem('chatlogHideSystemMessages', hideSystemMessages ? 'true' : 'false');
+    updateSystemMessagesUI();
+    processOutput();
+  }
+
+  function updateSystemMessagesUI() {
+    if (!$toggleSystemMessagesBtn.length) return;
+
+    if (hideSystemMessages) {
+      $toggleSystemMessagesBtn.removeClass('inactive').addClass('active');
+      $toggleSystemMessagesBtn.attr('title', 'Sistem Bildirimleri: GİZLİ (Açmak için tıkla)');
+      $toggleSystemMessagesBtn.html('<i class="fas fa-filter-circle-xmark"></i>');
+    } else {
+      $toggleSystemMessagesBtn.removeClass('active').addClass('inactive');
+      $toggleSystemMessagesBtn.attr('title', 'Sistem Bildirimleri: GÖRÜNÜR (Gizlemek için tıkla)');
+      $toggleSystemMessagesBtn.html('<i class="fas fa-filter"></i>');
     }
   }
 
