@@ -1034,11 +1034,73 @@ $(document).ready(function () {
       return wrapSpan('blue', line);
     }
 
+    if (/^\(\(.*\[ID: \d+\].*\)\)$/.test(line)) {
+      return wrapSpan('yellow', line);
+    }
+
+    if (line.includes('[ID: +%d')) {
+      const match = line.match(/^(\[ID: \+%d\]\s+)(.+?)(?:\s+\(\(\d+\)\))?$/);
+      if (match) {
+        return wrapSpan('yellow', line);
+      }
+    }
+
+    if (line.startsWith('[HATA]')) {
+      const match = line.match(/^(\[HATA\]\s+)(.+?)(?:\s+\(\(\d+\)\))?$/);
+      if (match) {
+        const [_, prefix, message] = match;
+        return wrapSpan('red', prefix) + wrapSpan('white', message);
+      }
+    }
+
+    if (line.startsWith('[BİLGİ]')) {
+      const match = line.match(/^(\[BİLGİ\]\s+)(.+?)(?:\s+\(\(\d+\)\))?$/);
+      if (match) {
+        const [_, prefix, message] = match;
+        return wrapSpan('blue', prefix) + wrapSpan('white', message);
+      }
+    }
+
+    if (line.includes("Şu an yaralı durumdasın.")) {
+      const timeMatch = line.match(/^(\[\d{2}:\d{2}:\d{2}\]\s*|\d{2}:\d{2}:\d{2}\s*)/);
+      const timePrefix = timeMatch ? timeMatch[1] : '';
+
+      const durum = "yaralı";
+      const bekleme = "İki dakika bekledikten sonra ";
+      const cmdDeath = "/acceptdeath";
+      const aciklama1 = " komutunu kullanıp ölümü kabul edebilir ya da birinin sana yardım etmesini bekleyebilirsin. Eğer yaralarını diğer oyunculara belirtmek istiyorsan ";
+      const cmdInjuries = "/setinjuries";
+      const aciklama2 = " komutunu kullanabilirsin.";
+
+      return (
+        (timePrefix ? wrapSpan('white', timePrefix) : '') +
+        wrapSpan('white', "Şu an ") +
+        wrapSpan('death', durum) +
+        wrapSpan('white', " durumdasın. ") +
+        wrapSpan('white', bekleme) +
+        wrapSpan('yellow', cmdDeath) +
+        wrapSpan('white', aciklama1) +
+        wrapSpan('yellow', cmdInjuries) +
+        wrapSpan('white', aciklama2)
+      );
+    }
+
+    if (line.includes("Öldürüldünüz. 10 dakikanın ardından otomatik olarak tekrar doğabilir ya da iki dakika bekledikten sonra /respawn komutunu kullanabilirsiniz.")) {
+      return `<span class="death">Öldürüldünüz.</span> <span class="white">10 dakikanın ardından otomatik olarak tekrar doğabilir ya da iki dakika bekledikten sonra <span class="yellow">/respawn</span> komutunu kullanabilirsiniz.</span>`;
+    }
+
     if (/(?:^\[\d{2}:\d{2}:\d{2}\] )?CHAT LOG: > .+/.test(line)) {
       let cleanMessage = line.replace(/^\[\d{2}:\d{2}:\d{2}\] /, '');
 
       cleanMessage = cleanMessage.replace(/^CHAT LOG: /, '');
       return wrapSpan('ame', cleanMessage);
+    }
+
+    const youBeenShotPattern = /(.+?)\s+bölgesinden\s+(.+?)\s+tarafından\s+(.+?)\s+silahıyla\s+([\d.]+)\s+hasar\s+aldın\.\s+\(\(Can:\s+([\d.]+)\)\)/;
+    const youBeenShotMatch = line.match(youBeenShotPattern);
+    if (youBeenShotMatch) {
+      const [_, bolge, oyuncu, silah, hasar, can] = youBeenShotMatch;
+      return `<span class="death">${escapeHTML(bolge)}</span> <span class="white">bölgesinden</span> <span class="death">${escapeHTML(oyuncu)}</span> <span class="white">tarafından</span> <span class="death">${escapeHTML(silah)}</span> <span class="white">silahıyla</span> <span class="death">${escapeHTML(hasar)}</span> <span class="white">hasar aldın. ((Can:</span> <span class="white">${escapeHTML(can)}</span><span class="white">))</span>`;
     }
 
     if (line.includes("'s attempt has")) {
@@ -1276,14 +1338,6 @@ $(document).ready(function () {
       const namePart = escapeHTML(corpseDamageMatch[1]);
       const restOfLine = escapeHTML(line.slice(corpseDamageMatch[1].length));
       return `<span class="blue">${namePart}</span><span class="white">${restOfLine}</span>`;
-    }
-
-    const youBeenShotPattern =
-      /(.+?) bölgesinden (.+?) tarafından (.+?) silahıyla (\d+) hasar aldın\. \(\(Can: (\d+)\)\)/;
-    const youBeenShotMatch = line.match(youBeenShotPattern);
-    if (youBeenShotMatch) {
-      const [_, bolge, oyuncu, silah, hasar, can] = youBeenShotMatch;
-      return `<span class="death">${escapeHTML(bolge)}</span> <span class="white">bölgesinden</span> <span class="death">${escapeHTML(oyuncu)}</span> <span class="white">tarafından</span> <span class="death">${escapeHTML(silah)}</span> <span class="white">silahıyla</span> <span class="death">${escapeHTML(hasar)}</span> <span class="white">hasar aldın. ((Can:</span> <span class="death">${escapeHTML(can)}</span><span class="white">))</span>`;
     }
 
     if (line === '********** ACİL ÇAĞRI **********') {
