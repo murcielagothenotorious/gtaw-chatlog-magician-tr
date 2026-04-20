@@ -1988,3 +1988,193 @@ label {
 .txt-file-clear:hover {
 	color: #dc3545;
 }
+
+/* ========================================
+   MOVED FROM index.html INLINE <style>
+   ======================================== */
+
+/* Fix for bottom footer positioning */
+html,
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#main {
+  flex: 1 0 auto;
+}
+
+.minimal-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.minimal-group .button {
+  margin: 0 !important;
+  padding: 0.4rem 0.6rem !important;
+  font-size: 0.8rem !important;
+  border-radius: 2px !important;
+  line-height: 1 !important;
+}
+
+.site-signature {
+  background: var(--background);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 12px 15px;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.25);
+  flex-shrink: 0;
+}
+
+.changelog-tab {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 88px;
+  background-color: #6c757d;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  cursor: pointer;
+  z-index: 1001;
+  transition: background-color 0.25s ease-out;
+  border: none;
+}
+
+.changelog-tab:hover {
+  background-color: #868e96;
+}
+
+.changelog-tab i {
+  font-size: 20px;
+}
+
+.changelog-drawer {
+  position: fixed;
+  top: 0;
+  left: -400px;
+  width: 400px;
+  max-width: 85vw;
+  height: 100vh;
+  background: #1a1d23;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  z-index: 10001;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.changelog-drawer.open {
+  left: 0;
+}
+
+.changelog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  backdrop-filter: blur(2px);
+}
+
+.changelog-backdrop.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.feature-card:hover {
+  border-color: rgba(52, 152, 219, 0.4);
+  transform: translateY(-2px);
+}
+
+.feature-media {
+  width: 100%;
+  background: #000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.feature-media video,
+.feature-media img {
+  width: 115%;
+  height: auto;
+  display: block;
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
+.feature-card:hover .feature-media video,
+.feature-card:hover .feature-media img {
+  opacity: 1;
+}
+
+.feature-info {
+  padding: 16px 20px;
+}
+
+.feature-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  color: #f1f1f1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feature-info h3 i {
+  color: #3498db;
+}
+
+.feature-info p {
+  margin: 0;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.6;
+}
+
+/* Küçük İpuçları için mini liste */
+.mini-tips-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mini-tips-list li {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  padding-left: 20px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.mini-tips-list li::before {
+  content: '•';
+  color: #2ecc71;
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
