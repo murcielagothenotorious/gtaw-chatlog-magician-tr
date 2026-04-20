@@ -284,13 +284,36 @@ function generateFilename() {
   );
 }
 
+window.copyBlobToClipboard = async function(blob) {
+  try {
+    const item = new ClipboardItem({ [blob.type]: blob });
+    await navigator.clipboard.write([item]);
+    const btn = document.getElementById('copyOutputImage');
+    if (btn) {
+      const origText = btn.textContent;
+      const origBg = btn.style.backgroundColor;
+      btn.textContent = 'Kopyalandı!';
+      btn.style.backgroundColor = '#a8f0c6';
+      btn.style.color = '#111';
+      setTimeout(() => {
+        btn.textContent = origText;
+        btn.style.backgroundColor = origBg;
+        btn.style.color = '';
+      }, 2000);
+    }
+  } catch (error) {
+    console.error('Failed to copy image: ', error);
+    alert('Kopyalama başarısız oldu. Tarayıcınız resim kopyalamayı desteklemiyor olabilir veya siteye kopyalama izni verilmemiş olabilir.');
+  }
+};
+
 /**
  * Exports the formatted chat log as a PNG image
  * Handles cleanup of UI elements, canvas generation, and file download
  * Saves the current chat log to history automatically
  * @returns {void}
  */
-function downloadOutputImage() {
+function downloadOutputImage(action = 'download') {
   // QoL: clear any active selections before generating the image
   let hadColoringMode = false;
   try {
@@ -382,7 +405,7 @@ function downloadOutputImage() {
       .toBlob(output[0], domtoimageOptions)
       .then(function (blob) {
         output.css('padding-bottom', originalPadding);
-        processGeneratedBlob(blob);
+        processGeneratedBlob(blob, action);
       })
       .catch(function (error) {
         console.error('Error generating image with original output:', error);
@@ -425,7 +448,7 @@ function downloadOutputImage() {
             .toBlob(cleanOutput, domtoimageOptions)
             .then(function (blob) {
               output.css('padding-bottom', originalPadding);
-              processGeneratedBlob(blob);
+              processGeneratedBlob(blob, action);
             })
             .catch(function (fallbackError) {
               console.error('Fallback also failed:', fallbackError);
@@ -435,8 +458,7 @@ function downloadOutputImage() {
           handleImageGenerationError(error);
         }
       });
-
-    function processGeneratedBlob(blob) {
+    function processGeneratedBlob(blob, action) {
       // Validate blob before processing
       if (!blob) {
         console.error('Error: Blob is null or undefined');
@@ -498,7 +520,7 @@ function downloadOutputImage() {
           ctx.drawImage(img, 0, 0);
 
           const trimmedCanvas = trimCanvas(canvas);
-          trimmedCanvas.toBlob(function (trimmedBlob) {
+          trimmedCanvas.toBlob(async function (trimmedBlob) {
             if (!trimmedBlob) {
               console.error('Error: Failed to create trimmed blob');
               if (window.ErrorLogger) {
@@ -506,7 +528,11 @@ function downloadOutputImage() {
               }
               alert('Failed to process the image. Please try again.');
             } else {
-              window.saveAs(trimmedBlob, generateFilename());
+              if (action === 'copy') {
+                await window.copyBlobToClipboard(trimmedBlob);
+              } else {
+                window.saveAs(trimmedBlob, generateFilename());
+              }
             }
             cleanup();
             hideLoadingIndicator();
@@ -1147,10 +1173,33 @@ $(document).ready(function () {
       }
 
       // Use overlay renderer
-      await window.OverlayRenderer.renderAndDownload();
+      await window.OverlayRenderer.renderAndDownload('download');
     } else {
       // Use regular download
-      downloadOutputImage();
+      downloadOutputImage('download');
+    }
+  });
+
+  $('#copyOutputImage').click(async function () {
+    // Check if we're in overlay mode and have an image
+    if (
+      window.ImageOverlayState &&
+      window.ImageOverlayState.currentMode === 'overlay' &&
+      window.ImageOverlayState.imageElement &&
+      window.OverlayRenderer
+    ) {
+      // Save to history before downloading
+      const text = $('#chatlogInput').val().trim();
+      if (text) {
+        saveToHistory(text);
+        refreshHistoryPanel();
+      }
+
+      // Use overlay renderer to copy
+      await window.OverlayRenderer.renderAndDownload('copy');
+    } else {
+      // Use regular copy
+      downloadOutputImage('copy');
     }
   });
   // toggleBackground binding removed - handled by chatlog-parser.js

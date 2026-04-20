@@ -33,20 +33,20 @@
     rel="stylesheet">
 
   <!-- Cache version - bump this when deploying updates -->
-  <!-- Current version: 1.1.0 -->
+  <!-- Current version: 1.3.0 -->
 
   <!-- Preload critical assets -->
-  <link rel="preload" href="css/foundation.fixed.css?v=1.2.1" as="style" />
-  <link rel="preload" href="js/app.js?v=1.2.1" as="script" />
+  <link rel="preload" href="css/foundation.fixed.css?v=1.3.0" as="style" />
+  <link rel="preload" href="js/app.js?v=1.3.0" as="script" />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/foundation.fixed.css?v=1.2.1" />
-  <link rel="stylesheet" href="css/modern.css?v=1.2.1" />
-  <link rel="stylesheet" href="css/app.css?v=1.2.1" />
-  <link rel="stylesheet" href="css/overlay.css?v=1.2.1" />
-  <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.2.1" />
-  <link rel="stylesheet" href="css/editor.css?v=1.2.1" />
+  <link rel="stylesheet" href="css/foundation.fixed.css?v=1.3.0" />
+  <link rel="stylesheet" href="css/modern.css?v=1.3.0" />
+  <link rel="stylesheet" href="css/app.css?v=1.3.0" />
+  <link rel="stylesheet" href="css/overlay.css?v=1.3.0" />
+  <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.3.0" />
+  <link rel="stylesheet" href="css/editor.css?v=1.3.0" />
   <!-- FontAwesome 7.0.1 from CDN (includes all icon sets and fonts) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
@@ -57,10 +57,10 @@
 
   <!-- Error handling and cross-origin fixes -->
   <!-- Config is loaded via defaults in error-logger.js or Cloudflare Pages environment variables -->
-  <script src="js/error-logger.js?v=1.2.1" defer></script>
-  <script src="js/error-handler.js?v=1.2.1" defer></script>
-  <script src="js/cross-origin-fix.js?v=1.2.1" defer></script>
-  <script src="js/cors-handler.js?v=1.2.1" defer></script>
+  <script src="js/error-logger.js?v=1.3.0" defer></script>
+  <script src="js/error-handler.js?v=1.3.0" defer></script>
+  <script src="js/cross-origin-fix.js?v=1.3.0" defer></script>
+  <script src="js/cors-handler.js?v=1.3.0" defer></script>
 
 
 </head>
@@ -137,16 +137,18 @@
 
           <div class="grid-x grid-margin-x align-middle">
             <div class="cell auto">
-              <div class="button-group">
+              <div class="button-group minimal-group">
                 <button id="downloadOutputTransparent" class="button success"
                   aria-label="Download chat log or overlay">İndir</button>
+                <button id="copyOutputImage" class="button primary"
+                  aria-label="Copy chat log or overlay">Kopyala</button>
 
                 <button id="toggleMode" class="button primary active" data-mode="chat" aria-label="Toggle mode">
                   <span class="mode-text">Sohbet</span>
                 </button>
 
                 <button id="toggleBackground" class="button warning" aria-label="Toggle background color">
-                  <span class="bg-text">Arka Plan: Kapalı</span>
+                  <span class="bg-text">AP: Kapalı</span>
                 </button>
 
                 <button id="toggleCharacterNameColoring" class="button warning active"
@@ -156,34 +158,35 @@
 
                 <button id="toggleColorPalette" class="button info" aria-label="Toggle color palette">Renk</button>
 
+                <button id="censorCharButton" class="button secondary censor-char-button"
+                  aria-label="Copy censor character" title="Sansür karakterini kopyala">÷</button>
+
+                <button id="toggleCensorStyle" class="button secondary" aria-label="Toggle censor style">
+                  <span class="censor-text">Sansür: Yok</span>
+                </button>
+
                 <button id="toggleFont" class="button secondary" aria-label="Toggle font">
                   <span class="font-text">Arial</span>
                 </button>
 
-                <button id="toggleCensorStyle" class="button secondary" aria-label="Toggle censor style">
-                  <span class="censor-text">Sansür: Kaldır</span>
+                <button id="toggleContrast" class="button secondary" aria-label="Toggle text contrast">
+                  <span class="contrast-text">Knt: Kapalı</span>
                 </button>
 
-                <button id="censorCharButton" class="button secondary censor-char-button"
-                  aria-label="Copy censor character" title="Sansür karakterini kopyala">÷</button>
-
-                <button id="toggleContrast" class="button secondary" aria-label="Toggle text contrast">
-                  <span class="contrast-text">Kontrast: Kapalı</span>
+                <button id="toggleItalicParsing" class="button secondary active" aria-label="Toggle italic parsing">
+                  <span class="italic-parsing-text">İtalik: Açık</span>
                 </button>
 
                 <button id="clearImageBtn" class="button alert overlay-control button-hidden" type="button"
-                  title="Remove image">
-                  <i class="fas fa-times" aria-hidden="true"></i> Görüntüyü Temizle
+                  title="Remove image">Temizle
                 </button>
 
                 <button id="openFeaturesBtn" class="button secondary" aria-label="Özellikler"
-                  title="İpuçları ve Özellikler">
-                  <i class="fas fa-lightbulb"></i> İpuçları
+                  title="İpuçları ve Yardım">Yardım
                 </button>
 
                 <button id="openFeedbackBtn" class="button secondary" aria-label="İstek ve Hata Bildir"
-                  title="Bize Ulaşın">
-                  <i class="fas fa-bug"></i> Bize Ulaşın
+                  title="Bize Ulaşın">İstek & Öneri
                 </button>
               </div>
             </div>
@@ -726,46 +729,6 @@
     </div>
   </div>
 
-  <!-- Feedback Modal - İstek ve Hata Bildir -->
-  <div id="feedbackModal" class="help-modal" style="display: none; z-index: 10000;">
-    <div class="help-modal-backdrop" id="feedbackBackdrop"></div>
-    <div class="help-modal-content" style="max-width: 500px;">
-      <div class="help-modal-header">
-        <h2><i class="fas fa-bug"></i> İstek ve Hata Bildir</h2>
-        <button type="button" id="closeFeedbackModal" class="help-modal-close" aria-label="Kapat">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-
-      <div class="help-modal-body">
-        <form id="feedbackForm">
-          <div style="margin-bottom: 15px;">
-            <label for="feedbackType" style="display: block; margin-bottom: 5px; color:#ffffff">Tür Seçin:</label>
-            <select id="feedbackType" class="form-control" style="width: 100%; border-radius: 4px; padding: 8px;"
-              required>
-              <option value="Bug">Hata (Bug)</option>
-              <option value="Feature Request">Yeni İstek</option>
-              <option value="Other">Diğer</option>
-            </select>
-          </div>
-          <div style="margin-bottom: 15px;">
-            <label for="feedbackMessage" style="display: block; margin-bottom: 5px; color:#ffffff">Mesajınız:</label>
-            <textarea id="feedbackMessage" class="form-control" rows="5"
-              style="width: 100%; resize: vertical; border-radius: 4px; padding: 8px;"
-              placeholder="Lütfen karşılaştığınız sorunu veya isteğinizi buraya detaylıca yazın..." required></textarea>
-          </div>
-        </form>
-        <div id="feedbackStatus"
-          style="display: none; padding: 10px; border-radius: 4px; margin-top: 10px; text-align: center;"></div>
-      </div>
-
-      <div class="help-modal-footer" style="justify-content: flex-end; display: flex; gap: 10px;">
-        <button type="button" id="closeFeedbackBtn" class="button secondary">İptal</button>
-        <button type="button" id="submitFeedbackBtn" class="button primary success">Gönder</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Features/Tips Modal -->
   <div id="featuresModal" class="help-modal" style="display: none; z-index: 10000;">
     <div class="help-modal-backdrop" id="featuresBackdrop"></div>
@@ -781,7 +744,7 @@
 
         <div class="feature-card">
           <div class="feature-media">
-            <video src="assets/videos/renk.webm" autoplay loop muted playsinline></video>
+            <video src="assets/videos/renk.webm" loop muted playsinline></video>
           </div>
           <div class="feature-info">
             <h3>Chatlog Renklendirme</h3>
@@ -792,7 +755,7 @@
 
         <div class="feature-card">
           <div class="feature-media">
-            <video src="assets/videos/karakter.webm" autoplay loop muted playsinline></video>
+            <video src="assets/videos/karakter.webm" loop muted playsinline></video>
           </div>
           <div class="feature-info">
             <h3>Karakter Adı Vurgulama</h3>
@@ -804,13 +767,25 @@
 
         <div class="feature-card">
           <div class="feature-media">
-            <video src="assets/videos/sansur.webm" autoplay loop muted playsinline></video>
+            <video src="assets/videos/sansur.webm" loop muted playsinline></video>
           </div>
           <div class="feature-info">
             <h3>Sansür Kullanımı</h3>
             <p>Gizlemek istediğiniz metinlerin sağına ve soluna <strong>÷</strong> karakterini koyduğunuzda otomatik
               olarak sansür eklenir. Sansürün modunu üstteki <strong>Sansür: Kaldır</strong> veya <strong>Sansür:
                 Bulanık</strong> butonundan değiştirebilirsiniz.</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-media">
+            <img src="assets/images/image.png" alt="Metin Formatlandırma">
+          </div>
+          <div class="feature-info">
+            <h3>Hızlı Metin Formatlandırma</h3>
+            <p>Metinlerinizi görselleştirmek için sembolleri kullanın:<br>
+              • <strong>*Metin*</strong> : Yazıyı <em>ame/me</em> rengine boyar.<br>
+              • <strong>/Metin/</strong> : Yazıyı <em>italik</em> yapar (butondan kapatılabilir).</p>
           </div>
         </div>
 
@@ -856,7 +831,7 @@
       <h2 style="margin: 0; font-size: 16px; color: #f1f1f1; display: flex; align-items: center;">
         <i class="fas fa-history" style="margin-right: 10px; color: #2ecc71;"></i>
         Son Güncellemeler <span
-          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.2.2</span>
+          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.3.0</span>
       </h2>
       <button type="button" id="closeChangelogModal"
         style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 5px;">
@@ -865,23 +840,29 @@
     </div>
 
     <div style="padding: 25px; overflow-y: auto; flex: 1;">
-      <div
-        style="background: rgba(231, 76, 60, 0.1); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 6px; padding: 12px 15px; margin-bottom: 24px;">
-        <p style="margin: 0; color: #e74c3c; font-size: 13px; line-height: 1.5;">
-          <i class="fas fa-bug" style="margin-right: 6px;"></i>
-          <strong>Hataları Bildirmeyi Unutmayın!</strong><br>
-          <span style="color: rgba(255,255,255,0.7); display: block; margin-top: 4px; font-size: 12px;">Fotoğraf editörü
-            büyük bir güncelleme aldı ve bir sürü yeni mekanik eklendi. Eğer çalışmayan, garip davranan veya
-            düzenlenmesi gereken bir özellik fark ederseniz bildirmekten çekinmeyin.</span>
-        </p>
-      </div>
+
 
       <div style="margin-bottom: 24px;">
         <h3
           style="color: #2ecc71; font-size: 13px; margin: 0 0 10px 0; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">
-          v1.2.2 (Hata Düzeltmesi)</h3>
+          v1.3.0 (Arayüz & Özellik Güncellemesi)</h3>
         <ul
           style="margin: 0; padding-left: 18px; opacity: 0.85; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <li><strong>Pano Desteği (Copy):</strong> Sohbet çıktılarını indirmeden doğrudan kopyalamak için "Kopyala"
+            düğmesi eklendi.</li>
+          <li><strong>Gelişmiş Metin Formatı:</strong> Sohbet içinde *emote* vurgulaması ve /italic/ desteği eklendi.
+          </li>
+          <li><strong>İtalik Tercihi:</strong> Ayarlar kısmından italik ayrıştırmayı dilediğiniz gibi kapatıp
+            açabilirsiniz.</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3
+          style="color: rgba(255,255,255,0.5); font-size: 13px; margin: 0 0 10px 0; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">
+          v1.2.2 (Hata Düzeltmesi)</h3>
+        <ul
+          style="margin: 0; padding-left: 18px; opacity: 0.6; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
           <li>Özellikle <strong>UCP'den alınan chatloglarında</strong> sıkça karşılaşılan ve metnin arasına karışarak
             metni bozan <strong>~y~</strong> etiketleri sorunu tamamen çözüldü. Bu ibareler artık sihirbaza
             girdiği an otomatik olarak temizleniyor.</li>
@@ -935,6 +916,78 @@
     </div>
   </div>
 
+  <div id="feedbackModal" class="help-modal" style="display: none; align-items: center; justify-content: center;">
+    <div class="help-modal-backdrop" id="feedbackBackdrop"
+      style="background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);"></div>
+    <div class="help-modal-content"
+      style="max-width: 500px; width: 90%; background: #1a1d23; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; position: relative; z-index: 10002; display: flex; flex-direction: column; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+
+      <div class="help-modal-header"
+        style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0; font-size: 18px; color: #f1f1f1;"><i class="fas fa-bug"
+            style="color: #3498db; margin-right: 10px;"></i> İstek & Öneri</h2>
+        <button type="button" id="closeFeedbackModal" class="help-modal-close"
+          style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 20px;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="help-modal-body" style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+        <div id="feedbackStatus"
+          style="display: none; padding: 12px; border-radius: 4px; margin-bottom: 20px; font-size: 14px; text-align: center;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label for="feedbackSummary"
+            style="display: block; margin-bottom: 6px; color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 600; text-transform: uppercase;">Başlık
+            *</label>
+          <input type="text" id="feedbackSummary" placeholder="Hatanın / İsteğin kısa özeti"
+            style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 12px; color: #f1f1f1; border-radius: 4px; font-size: 14px; outline: none; transition: border-color 0.2s;">
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label for="feedbackDescription"
+            style="display: block; margin-bottom: 6px; color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 600; text-transform: uppercase;">Açıklama
+            *</label>
+          <textarea id="feedbackDescription" rows="4" placeholder="Detaylı açıklamanızı buraya yazın..."
+            style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 12px; color: #f1f1f1; border-radius: 4px; font-size: 14px; resize: vertical; min-height: 100px; outline: none; transition: border-color 0.2s;"></textarea>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+          <label for="feedbackPriority"
+            style="display: block; margin-bottom: 6px; color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 600; text-transform: uppercase;">Önem
+            Derecesi</label>
+          <select id="feedbackPriority"
+            style="width: 100%; background: #252930; border: 1px solid rgba(255,255,255,0.1); padding: 10px; color: #f1f1f1; border-radius: 4px; font-size: 14px; cursor: pointer;">
+            <option value="Low">Pek şart değil</option>
+            <option value="Medium" selected>Düzeltilse iyi olur</option>
+            <option value="High">Önemli</option>
+            <option value="Critical">Acil müdahale lazım</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <label for="feedbackDiscord"
+            style="display: block; margin-bottom: 6px; color: rgba(255,255,255,0.8); font-size: 13px; font-weight: 600; text-transform: uppercase;">Discord
+            Adı (İsteğe Bağlı)</label>
+          <input type="text" id="feedbackDiscord"
+            style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 12px; color: #f1f1f1; border-radius: 4px; font-size: 14px; outline: none;">
+          <p style="margin-top: 6px; font-size: 12px; color: rgba(255,255,255,0.5);">
+            Bu bilgiyi sadece sizinle iletişime geçebilmek için kullanacağız.
+          </p>
+        </div>
+      </div>
+
+      <div class="help-modal-footer"
+        style="padding: 15px 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; gap: 12px; background: rgba(0,0,0,0.1);">
+        <button type="button" id="closeFeedbackBtn" class="button secondary"
+          style="margin: 0; padding: 10px 20px; background: #3c414a; border: none; color: white; cursor: pointer; border-radius: 4px;">İptal</button>
+        <button type="button" id="submitFeedbackBtn" class="button primary"
+          style="margin: 0; padding: 10px 20px; background: #3498db; border: none; color: white; cursor: pointer; border-radius: 4px; font-weight: 600;">Gönder</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Donate modal handler
     document.getElementById('donateBtn')?.addEventListener('click', function () {
@@ -971,11 +1024,24 @@
     const featuresBackdrop = document.getElementById('featuresBackdrop');
 
     function showFeaturesModal() {
-      if (featuresModal) featuresModal.style.display = 'flex';
+      if (featuresModal) {
+        featuresModal.style.display = 'flex';
+        // Play all videos when showing
+        featuresModal.querySelectorAll('video').forEach(v => {
+          v.play().catch(() => {}); // Catch potential browser policy errors
+        });
+      }
     }
 
     function hideFeaturesModal() {
-      if (featuresModal) featuresModal.style.display = 'none';
+      if (featuresModal) {
+        featuresModal.style.display = 'none';
+        // Pause and reset all videos when hiding
+        featuresModal.querySelectorAll('video').forEach(v => {
+          v.pause();
+          v.currentTime = 0;
+        });
+      }
     }
 
     if (openFeaturesBtn) openFeaturesBtn.addEventListener('click', showFeaturesModal);
@@ -1004,50 +1070,52 @@
     if (changelogBackdrop) changelogBackdrop.addEventListener('click', hideChangelogModal);
 
     // Feedback modal handler
-    const feedbackModal = document.getElementById('feedbackModal');
-    const openFeedbackBtn = document.getElementById('openFeedbackBtn');
-    const closeFeedbackModal = document.getElementById('closeFeedbackModal');
-    const closeFeedbackBtn = document.getElementById('closeFeedbackBtn');
-    const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
-    const feedbackBackdrop = document.getElementById('feedbackBackdrop');
-    const feedbackStatus = document.getElementById('feedbackStatus');
+    const feedbackModalEl = document.getElementById('feedbackModal');
+    const openFeedbackBtnEl = document.getElementById('openFeedbackBtn');
+    const closeFeedbackModalEl = document.getElementById('closeFeedbackModal');
+    const closeFeedbackBtnEl = document.getElementById('closeFeedbackBtn');
+    const submitFeedbackBtnEl = document.getElementById('submitFeedbackBtn');
+    const feedbackBackdropEl = document.getElementById('feedbackBackdrop');
+    const feedbackStatusEl = document.getElementById('feedbackStatus');
 
     function showFeedbackModal() {
-      if (feedbackModal) feedbackModal.style.display = 'flex';
-      if (feedbackStatus) {
-        feedbackStatus.style.display = 'none';
-        feedbackStatus.className = '';
-        feedbackStatus.textContent = '';
+      if (feedbackModalEl) feedbackModalEl.style.display = 'flex';
+      if (feedbackStatusEl) {
+        feedbackStatusEl.style.display = 'none';
+        feedbackStatusEl.className = '';
+        feedbackStatusEl.textContent = '';
       }
     }
 
     function hideFeedbackModal() {
-      if (feedbackModal) feedbackModal.style.display = 'none';
+      if (feedbackModalEl) feedbackModalEl.style.display = 'none';
     }
 
-    if (openFeedbackBtn) openFeedbackBtn.addEventListener('click', showFeedbackModal);
-    if (closeFeedbackModal) closeFeedbackModal.addEventListener('click', hideFeedbackModal);
-    if (closeFeedbackBtn) closeFeedbackBtn.addEventListener('click', hideFeedbackModal);
-    if (feedbackBackdrop) feedbackBackdrop.addEventListener('click', hideFeedbackModal);
+    if (openFeedbackBtnEl) openFeedbackBtnEl.onclick = showFeedbackModal;
+    if (closeFeedbackModalEl) closeFeedbackModalEl.onclick = hideFeedbackModal;
+    if (closeFeedbackBtnEl) closeFeedbackBtnEl.onclick = hideFeedbackModal;
+    if (feedbackBackdropEl) feedbackBackdropEl.onclick = hideFeedbackModal;
 
-    if (submitFeedbackBtn) {
-      submitFeedbackBtn.addEventListener('click', async function () {
-        const typeSelect = document.getElementById('feedbackType');
-        const msgArea = document.getElementById('feedbackMessage');
+    if (submitFeedbackBtnEl) {
+      submitFeedbackBtnEl.onclick = async function () {
+        const summary = document.getElementById('feedbackSummary')?.value.trim() || '';
+        const desc = document.getElementById('feedbackDescription')?.value.trim() || '';
+        const priority = document.getElementById('feedbackPriority')?.value || 'Low';
+        const discord = document.getElementById('feedbackDiscord')?.value.trim() || '';
 
-        if (!typeSelect || !msgArea || !msgArea.value.trim()) {
+        if (!summary || !desc) {
           if (feedbackStatus) {
             feedbackStatus.style.display = 'block';
             feedbackStatus.className = 'alert';
-            feedbackStatus.textContent = 'Lütfen bir mesaj girin.';
+            feedbackStatus.textContent = 'Lütfen Summary ve Description alanlarını zorunlu olarak doldurun.';
             feedbackStatus.style.backgroundColor = '#ff5252';
             feedbackStatus.style.color = 'white';
           }
           return;
         }
 
-        submitFeedbackBtn.disabled = true;
-        submitFeedbackBtn.textContent = 'Gönderiliyor...';
+        submitFeedbackBtnEl.disabled = true;
+        submitFeedbackBtnEl.textContent = 'Gönderiliyor...';
 
         try {
           const response = await fetch('/api/report-bug', {
@@ -1060,30 +1128,32 @@
               errorCount: 0,
               warningCount: 0,
               errors: [],
-              fullReport: `[${typeSelect.value}] ${msgArea.value}`
+              fullReport: `[${priority}] ${summary}\n\nDescription:\n${desc}\n\nDiscord: ${discord || 'Not provided'}`
             })
           });
 
           if (response.ok) {
-            feedbackStatus.style.display = 'block';
-            feedbackStatus.style.backgroundColor = '#4caf50';
-            feedbackStatus.style.color = 'white';
-            feedbackStatus.textContent = 'Geri bildiriminiz başarıyla gönderildi. Teşekkürler!';
-            msgArea.value = '';
+            feedbackStatusEl.style.display = 'block';
+            feedbackStatusEl.style.backgroundColor = '#4caf50';
+            feedbackStatusEl.style.color = 'white';
+            feedbackStatusEl.textContent = 'Geri bildiriminiz başarıyla gönderildi. Teşekkürler!';
+            document.getElementById('feedbackSummary').value = '';
+            document.getElementById('feedbackDescription').value = '';
+            document.getElementById('feedbackDiscord').value = '';
             setTimeout(hideFeedbackModal, 3000);
           } else {
             throw new Error('Sunucu hatası');
           }
         } catch (error) {
-          feedbackStatus.style.display = 'block';
-          feedbackStatus.style.backgroundColor = '#ff5252';
-          feedbackStatus.style.color = 'white';
-          feedbackStatus.textContent = 'Bir hata oluştu, lütfen daha sonra tekrar deneyin.';
+          feedbackStatusEl.style.display = 'block';
+          feedbackStatusEl.style.backgroundColor = '#ff5252';
+          feedbackStatusEl.style.color = 'white';
+          feedbackStatusEl.textContent = 'Bir hata oluştu, lütfen daha sonra tekrar deneyin.';
         } finally {
-          submitFeedbackBtn.disabled = false;
-          submitFeedbackBtn.textContent = 'Gönder';
+          submitFeedbackBtnEl.disabled = false;
+          submitFeedbackBtnEl.textContent = 'Gönder';
         }
-      });
+      };
     }
   </script>
 
@@ -1104,14 +1174,28 @@
       flex: 1 0 auto;
     }
 
+    .minimal-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+    }
+
+    .minimal-group .button {
+      margin: 0 !important;
+      padding: 0.4rem 0.6rem !important;
+      font-size: 0.8rem !important;
+      border-radius: 2px !important;
+      line-height: 1 !important;
+    }
+
     .site-signature {
       background: var(--background);
       border-top: 1px solid rgba(255, 255, 255, 0.05);
-      padding: 20px 15px;
-      margin-top: 40px;
+      padding: 12px 15px;
+      margin-top: 20px;
       text-align: center;
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.3);
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.25);
       flex-shrink: 0;
     }
 
@@ -1277,6 +1361,12 @@
           onmouseout="this.style.color='inherit'; this.style.textDecorationColor='rgba(255,255,255,0.3)'">murcielago</a></strong>
       tarafından adapte edildi.
     </p>
+    <div style="margin-top: 10px; font-size: 11px; opacity: 0.5; display: flex; flex-direction: column; gap: 4px;">
+      <p style="margin: 0;">Bu, resmi olmayan, hayran yapımı bir araçtır. GTA World veya GTA World Türkiye ile
+        bağlantısı yoktur, desteklenmez veya ilişkilendirilemez.</p>
+      <p style="margin: 0;">This is an unofficial fan-made tool. Not affiliated with, endorsed by, or connected to GTA
+        World or GTA World Türkiye.</p>
+    </div>
   </footer>
 </body>
 

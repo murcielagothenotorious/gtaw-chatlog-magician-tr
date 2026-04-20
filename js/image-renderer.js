@@ -87,7 +87,7 @@
     /**
      * Render and download overlay image
      */
-    renderAndDownload: async function () {
+    renderAndDownload: async function (action = 'download') {
       try {
         // Validate prerequisites
         if (!window.ImageOverlayState) {
@@ -145,8 +145,16 @@
           throw error;
         }
 
-        const filename = this.generateFilename();
-        window.saveAs(blob, filename);
+        if (action === 'copy') {
+          if (window.copyBlobToClipboard) {
+             await window.copyBlobToClipboard(blob);
+          } else {
+             alert('Kopyalama desteklenmiyor.');
+          }
+        } else {
+          const filename = this.generateFilename();
+          window.saveAs(blob, filename);
+        }
 
         if (window.ErrorLogger) {
           window.ErrorLogger.logInfo('Overlay image rendered successfully', {

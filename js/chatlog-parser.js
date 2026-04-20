@@ -42,8 +42,8 @@ $(document).ready(function () {
   if (fontStyle === 'arial') fontStyle = '0';
   if (fontStyle === 'trebuchet') fontStyle = '1';
 
-  // Contrast style: 'off', 'low', 'medium', 'high'
   let contrastStyle = localStorage.getItem('chatlogContrastStyle') || 'off';
+  let enableItalicParsing = localStorage.getItem('chatlogItalicParsing') !== 'false'; // default true
 
   // Store user color overrides: Map<wordId, colorClass>
   // This preserves user-applied colors across re-renders
@@ -57,6 +57,7 @@ $(document).ready(function () {
   const $toggleCensorStyleBtn = $('#toggleCensorStyle');
   const $toggleFontBtn = $('#toggleFont');
   const $toggleContrastBtn = $('#toggleContrast');
+  const $toggleItalicParsingBtn = $('#toggleItalicParsing');
   const $lineLengthInput = $('#lineLengthInput');
   const $characterNameInput = $('#characterNameInput');
 
@@ -66,6 +67,8 @@ $(document).ready(function () {
   $toggleCensorStyleBtn.on('click', toggleCensorStyle);
   $toggleFontBtn.on('click', toggleFontStyle);
   $toggleContrastBtn.on('click', toggleContrastStyle);
+  $toggleItalicParsingBtn.on('click', toggleItalicParsing);
+  
   $lineLengthInput.on('input', processOutput);
   $characterNameInput.on('input', applyFilter);
   // Use CONFIG if available, fallback to 200ms
@@ -208,6 +211,21 @@ $(document).ready(function () {
       .text(disableCharacterNameColoring ? 'İsimler: Kapalı' : 'İsimler: Açık');
     processOutput();
   }
+
+  function toggleItalicParsing() {
+    enableItalicParsing = !enableItalicParsing;
+    localStorage.setItem('chatlogItalicParsing', enableItalicParsing ? 'true' : 'false');
+    updateItalicParsingUI();
+    processOutput();
+  }
+
+  function updateItalicParsingUI() {
+    $toggleItalicParsingBtn.toggleClass('active', enableItalicParsing);
+    $toggleItalicParsingBtn.find('.italic-parsing-text').text(enableItalicParsing ? 'İtalik: Açık' : 'İtalik: Kapalı');
+  }
+
+  // Initialize UI components
+  updateItalicParsingUI();
 
   function toggleCensorStyle() {
     // Toggle between 'remove' and 'blur'
@@ -1628,22 +1646,39 @@ $(document).ready(function () {
     // Normalize apostrophes and escape HTML to prevent tag injection
     content = escapeHTML(content.replace(/['''']/g, "'")).replace(/~y~/g, '').replace(/~h~/g, '').replace(/~s~/g, '');
 
+    // Pre-process matched pairs for emote and italic using special control characters
+    // \x01: Start Emote, \x02: End Emote
+    // \x03: Start Italic, \x04: End Italic
+    content = content.replace(/\*([^\*]+)\*/g, '\x01$1\x02');
+    
+    if (enableItalicParsing) {
+      content = content.replace(/(^|[\s\(\[\{])\/([^\/]+)\/(?=$|[\s.,!?\)\]\}])/g, '$1\x03$2\x04');
+    }
+
     // Split by !{#HEXCODE} - captures the hex code so it appears in the resulting array at odd indices.
     const parts = content.split(/!\{#([0-9A-Fa-f]{6})\}/i);
 
     let html = '';
     let censoring = false;
+    let isEmote = false;
+    let isItalic = false;
     let censorBuffer = '';
     let visibleBuffer = '';
     let activeInlineColor = null;
 
     const flushCensor = () => {
       if (censorBuffer.length > 0) {
-        const styleAttr = activeInlineColor ? ` style="color: ${activeInlineColor};"` : '';
+        let styles = [];
+        if (activeInlineColor) styles.push(`color: ${activeInlineColor};`);
+        if (isItalic) styles.push(`font-style: italic;`);
+        const styleAttr = styles.length > 0 ? ` style="${styles.join(' ')}"` : '';
+        
+        let currentClass = isEmote ? 'ame' : className;
+
         if (censorStyle === 'blur') {
-          html += `<span class="${className} censored-content blur-mode colorable" data-original="${censorBuffer}"${styleAttr}>${censorBuffer}</span>`;
+          html += `<span class="${currentClass} censored-content blur-mode colorable" data-original="${censorBuffer}"${styleAttr}>${censorBuffer}</span>`;
         } else {
-          html += `<span class="${className} censored-content censored-remove" data-original="${censorBuffer}"${styleAttr}>${censorBuffer}</span>`;
+          html += `<span class="${currentClass} censored-content censored-remove" data-original="${censorBuffer}"${styleAttr}>${censorBuffer}</span>`;
         }
         censorBuffer = '';
       }
@@ -1651,8 +1686,14 @@ $(document).ready(function () {
 
     const flushVisible = () => {
       if (visibleBuffer.length > 0) {
-        const styleAttr = activeInlineColor ? ` style="color: ${activeInlineColor};"` : '';
-        html += `<span class="${className} colorable"${styleAttr}>${visibleBuffer}</span>`;
+        let styles = [];
+        if (activeInlineColor) styles.push(`color: ${activeInlineColor};`);
+        if (isItalic) styles.push(`font-style: italic;`);
+        const styleAttr = styles.length > 0 ? ` style="${styles.join(' ')}"` : '';
+        
+        let currentClass = isEmote ? 'ame' : className;
+
+        html += `<span class="${currentClass} colorable"${styleAttr}>${visibleBuffer}</span>`;
         visibleBuffer = '';
       }
     };
@@ -1696,6 +1737,18 @@ $(document).ready(function () {
               flushVisible();
               censoring = true;
             }
+          } else if (char === '\x01') {
+            if (censoring) flushCensor(); else flushVisible();
+            isEmote = true;
+          } else if (char === '\x02') {
+            if (censoring) flushCensor(); else flushVisible();
+            isEmote = false;
+          } else if (char === '\x03') {
+            if (censoring) flushCensor(); else flushVisible();
+            isItalic = true;
+          } else if (char === '\x04') {
+            if (censoring) flushCensor(); else flushVisible();
+            isItalic = false;
           } else if (censoring) {
             censorBuffer += char;
           } else {
@@ -1713,6 +1766,9 @@ $(document).ready(function () {
       // unmatched delimiter, append as plain text
       html += censorBuffer;
     }
+    
+    // Also append unmatched styles
+    if (visibleBuffer.length > 0) flushVisible();
 
     return html;
   }

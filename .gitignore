@@ -71,6 +71,10 @@ supabase/functions/.env
 platforms/
 hooks/
 
+# Old Favicon
+favicon1.png
+logo.png
+
 # Tailwind
 .tailwindcache/
 
