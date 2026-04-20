@@ -138,60 +138,52 @@
           <div class="grid-x grid-margin-x align-middle">
             <div class="cell auto">
               <div class="button-group">
-                <!-- Primary action - Download (Green = Success/Go) -->
                 <button id="downloadOutputTransparent" class="button success"
                   aria-label="Download chat log or overlay">İndir</button>
 
-                <!-- Mode toggle (Blue = Information/Primary) -->
                 <button id="toggleMode" class="button primary active" data-mode="chat" aria-label="Toggle mode">
                   <span class="mode-text">Sohbet</span>
                 </button>
 
-                <!-- Toggle background (Yellow = Warning/Toggle) -->
                 <button id="toggleBackground" class="button warning" aria-label="Toggle background color">
                   <span class="bg-text">Arka Plan: Kapalı</span>
                 </button>
 
-                <!-- Name colors toggle (Yellow = Warning/Toggle) -->
                 <button id="toggleCharacterNameColoring" class="button warning active"
                   aria-label="Toggle character name coloring">
                   <span class="name-color-text">İsimler: Açık</span>
                 </button>
 
-                <!-- Color text (Blue = Info/Tool) -->
                 <button id="toggleColorPalette" class="button info" aria-label="Toggle color palette">Renk</button>
 
-                <!-- Censor character (Secondary = Utility) -->
-                <button id="censorCharButton" class="button secondary censor-char-button"
-                  aria-label="Copy censor character" title="Copy censor character">÷</button>
-
-                <!-- Censor style toggle (Secondary = Utility) -->
-                <button id="toggleCensorStyle" class="button secondary" aria-label="Toggle censor style">
-                  <span class="censor-text">Sansür: Kaldır</span>
-                </button>
-
-                <!-- Font toggle (Secondary = Utility) -->
                 <button id="toggleFont" class="button secondary" aria-label="Toggle font">
                   <span class="font-text">Arial</span>
                 </button>
 
-                <!-- Contrast toggle (Secondary = Utility) - Experimental -->
+                <button id="toggleCensorStyle" class="button secondary" aria-label="Toggle censor style">
+                  <span class="censor-text">Sansür: Kaldır</span>
+                </button>
+
+                <button id="censorCharButton" class="button secondary censor-char-button"
+                  aria-label="Copy censor character" title="Sansür karakterini kopyala">÷</button>
+
                 <button id="toggleContrast" class="button secondary" aria-label="Toggle text contrast">
                   <span class="contrast-text">Kontrast: Kapalı</span>
                 </button>
 
-                <!-- Feedback/Bug Report Button -->
-                <button id="openFeedbackBtn" class="button info" aria-label="İstek ve Hata Bildir"
-                  style="background-color: #7289da;">Bize Ulaşın</button>
-
-                <!-- Features/Tips Button -->
-                <button id="openFeaturesBtn" class="button" aria-label="Özellikler"
-                  style="background-color: #3498db; color: white;">İpuçları</button>
-
-                <!-- Clear image (Red = Alert/Remove) - Only visible in overlay mode -->
                 <button id="clearImageBtn" class="button alert overlay-control button-hidden" type="button"
                   title="Remove image">
                   <i class="fas fa-times" aria-hidden="true"></i> Görüntüyü Temizle
+                </button>
+
+                <button id="openFeaturesBtn" class="button secondary" aria-label="Özellikler"
+                  title="İpuçları ve Özellikler">
+                  <i class="fas fa-lightbulb"></i> İpuçları
+                </button>
+
+                <button id="openFeedbackBtn" class="button secondary" aria-label="İstek ve Hata Bildir"
+                  title="Bize Ulaşın">
+                  <i class="fas fa-bug"></i> Bize Ulaşın
                 </button>
               </div>
             </div>
@@ -777,7 +769,7 @@
   <!-- Features/Tips Modal -->
   <div id="featuresModal" class="help-modal" style="display: none; z-index: 10000;">
     <div class="help-modal-backdrop" id="featuresBackdrop"></div>
-    <div class="help-modal-content" style="max-width: 600px;">
+    <div class="help-modal-content" style="max-width: 650px;">
       <div class="help-modal-header">
         <h2><i class="fas fa-lightbulb"></i> Tüm Özellikler ve İpuçları</h2>
         <button type="button" id="closeFeaturesModal" class="help-modal-close" aria-label="Kapat">
@@ -785,18 +777,44 @@
         </button>
       </div>
 
-      <div class="help-modal-body" style="max-height: 400px; overflow-y: auto;">
-        <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-          <li><strong>Chatlog Renklendirme:</strong> Sohbet modunda hatalı renklendirilen veya renklendirmek istediğiniz
-            bir kelimeye tıklayarak kendiniz manuel olarak rengini değiştirebilirsiniz. (Çoklu seçim için CTRL+ Sol Fare
-            Tıklaması veya
-            sürükleme)</li>
+      <div class="help-modal-body" style="max-height: 450px; overflow-y: auto; padding-right: 10px;">
+
+        <div class="feature-card">
+          <div class="feature-media">
+            <video src="assets/videos/renk.webm" autoplay loop muted playsinline></video>
+          </div>
+          <div class="feature-info">
+            <h3>Chatlog Renklendirme</h3>
+            <p>Sohbet modunda hatalı renklendirilen veya renklendirmek istediğiniz bir kelimeye tıklayarak kendiniz
+              manuel olarak rengini değiştirebilirsiniz. (Çoklu seçim için CTRL+ Sol Fare Tıklaması veya sürükleme)</p>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-media">
+            <video src="assets/videos/sansur.webm" autoplay loop muted playsinline></video>
+          </div>
+          <div class="feature-info">
+            <h3>Sansür Kullanımı</h3>
+            <p>Gizlemek istediğiniz metinlerin sağına ve soluna <strong>÷</strong> karakterini koyduğunuzda otomatik
+              olarak sansür eklenir. Sansürün modunu üstteki <strong>Sansür: Kaldır</strong> veya <strong>Sansür:
+                Bulanık</strong> butonundan değiştirebilirsiniz.</p>
+          </div>
+        </div>
+
+        <h4
+          style="margin: 20px 0 12px 0; font-size: 14px; color: rgba(255,255,255,0.8); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+          Diğer Özellikler ve İpuçları</h4>
+        <ul class="mini-tips-list">
           <li><strong>Karakter İsmi Vurgulama:</strong> Karakter adınızı metin kutusundaki ilgili alana girerek [!] gibi
             direkt size yönelik mesajların <em>toyou (parlak beyaz)</em> şekilde parlamasını sağlayabilirsiniz.</li>
           <li><strong>İsimler Aç/Kapa:</strong> İsimler butonu kapalıyken oyundaki karakter adları ("Karakter Adı:")
             algılanmaz ve direkt beyaz standart mesaj olarak gizlenir; temiz bir chat deneyimi sağlanır.</li>
           <li><strong>Opaklık Ayarı:</strong> Fotoğraf modunda, katmanlar bölümünden arka plan fotoğrafının opaklığını
             kısıp (örneğin %50) sohbetin daha kolay okunmasını sağlayabilirsiniz.</li>
+          <li><strong>Kontrast:</strong> Kontrast butonuna tıklayarak Düşük, Orta, Yüksek ve Kapalı seçenekleri
+            arasında geçiş yapabilirsiniz. Bu özellik, sohbet çıktılarının arkasına hafif bir siyahlık ekleyerek
+            aydınlık fotoğraflarda yazının çok daha net ve kolay okunmasını sağlar.</li>
           <li><strong>Siyah-Beyaz Modu:</strong> Siyah-Beyaz butonu ile oyun içi görüntünüzü tek tıkla renksiz hale
             getirip dramatik bir etki yaratabilirsiniz.</li>
           <li><strong>Satırları Sürükleme:</strong> Fotoğraf modunda, metin satırları blok halinde gelse de fareyle
@@ -826,7 +844,7 @@
       <h2 style="margin: 0; font-size: 16px; color: #f1f1f1; display: flex; align-items: center;">
         <i class="fas fa-history" style="margin-right: 10px; color: #2ecc71;"></i>
         Son Güncellemeler <span
-          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.2.1</span>
+          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.2.2</span>
       </h2>
       <button type="button" id="closeChangelogModal"
         style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 5px;">
@@ -849,14 +867,25 @@
       <div style="margin-bottom: 24px;">
         <h3
           style="color: #2ecc71; font-size: 13px; margin: 0 0 10px 0; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px;">
-          v1.2.1 (Editör Güncellemesi)</h3>
+          v1.2.2 (Hata Düzeltmesi)</h3>
         <ul
           style="margin: 0; padding-left: 18px; opacity: 0.85; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+          <li>Özellikle <strong>UCP'den alınan chatloglarında</strong> sıkça karşılaşılan ve metnin arasına karışarak
+            metni bozan <strong>~y~</strong> etiketleri sorunu tamamen çözüldü. Bu ibareler artık sisteme
+            girdiği an otomatik olarak temizleniyor.</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 24px;">
+        <h3
+          style="color: rgba(255,255,255,0.5); font-size: 13px; margin: 0 0 10px 0; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">
+          v1.2.1 (Editör Güncellemesi)</h3>
+        <ul
+          style="margin: 0; padding-left: 18px; opacity: 0.6; line-height: 1.7; color: #dedede; font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
           <li><strong>"Parlaklık", "Kontrast", "Doygunluk" ve "Vinyet"</strong> ayarları eklendi. Artık fotoğrafınızın
-            birçok görüntü
-            ayarını bunları kullanarak gerçekleştirebileceksiniz.</li>
-          <li><strong>Satır Gizle/Göster aracı</strong> eklendi. Fazladan eklediğiniz veya istemediğiniz satırları
-            bu araç ile gizleyebilirsiniz.</li>
+            birçok görüntü ayarını bunları kullanarak gerçekleştirebileceksiniz.</li>
+          <li><strong>Satır Gizle/Göster aracı</strong> eklendi. Fazladan eklediğiniz veya istemediğiniz satırları bu
+            araç ile gizleyebilirsiniz.</li>
           <li>Fotoğraf editörüne <strong>Ctrl+Z / Ctrl+Y</strong> ile çalışan kapsamlı Undo/Redo (Geri/İleri Alma)
             sistemi eklendi.</li>
           <li>Sağ tık bağlam menüsü, kırpma aracı, özel metin ekleme aracı tamamen baştan yazılarak aktif hale
@@ -1137,6 +1166,91 @@
     .changelog-backdrop.open {
       opacity: 1;
       pointer-events: all;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(52, 152, 219, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .feature-media {
+      width: 100%;
+      background: #000;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .feature-media video,
+    .feature-media img {
+      width: 115%;
+      height: auto;
+      display: block;
+      opacity: 0.9;
+      transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover .feature-media video,
+    .feature-card:hover .feature-media img {
+      opacity: 1;
+      /* Üzerine gelince görsel aydınlansın */
+    }
+
+    .feature-info {
+      padding: 16px 20px;
+    }
+
+    .feature-info h3 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+      color: #f1f1f1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-info h3 i {
+      color: #3498db;
+    }
+
+    .feature-info p {
+      margin: 0;
+      font-size: 13.5px;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 1.6;
+    }
+
+    /* Küçük İpuçları için mini liste (Görselsiz olanlar için) */
+    .mini-tips-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .mini-tips-list li {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+      padding-left: 20px;
+      position: relative;
+      line-height: 1.5;
+    }
+
+    .mini-tips-list li::before {
+      content: '•';
+      color: #2ecc71;
+      position: absolute;
+      left: 0;
+      font-weight: bold;
     }
   </style>
 

@@ -1572,11 +1572,11 @@ $(document).ready(function () {
 
   function wrapSpan(className, content) {
     // Normalize apostrophes and escape HTML to prevent tag injection
-    content = escapeHTML(content.replace(/['''']/g, "'"));
+    content = escapeHTML(content.replace(/['''']/g, "'")).replace(/~y~/g, '');
 
     // Split by !{#HEXCODE} - captures the hex code so it appears in the resulting array at odd indices.
     const parts = content.split(/!\{#([0-9A-Fa-f]{6})\}/i);
-    
+
     let html = '';
     let censoring = false;
     let censorBuffer = '';
@@ -1616,7 +1616,7 @@ $(document).ready(function () {
       if (!textSegment) continue;
 
       const tokens = textSegment.split(/(\s+)/g);
-      
+
       tokens.forEach((token) => {
         if (token === '') return;
         if (/^\s+$/.test(token)) {
