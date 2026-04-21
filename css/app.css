@@ -151,10 +151,27 @@
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.feedbackModal input::placeholder,
+.feedbackModal textarea::placeholder {
+	color: rgba(255, 255, 255, 0.6);
+}
+
+/* Daha iyi tarayıcı desteği için */
+.feedbackModal input::-webkit-input-placeholder,
+.feedbackModal textarea::-webkit-input-placeholder {
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.feedbackModal input::-moz-placeholder,
+.feedbackModal textarea::-moz-placeholder {
+	color: rgba(255, 255, 255, 0.6);
+}
+
 .generated {
 	display: inline;
 	position: relative;
 	padding: 0.1em 0.2em 0.1em 0.2em;
+	padding-bottom: 2px !important;
 	white-space: pre-line;
 	word-wrap: break-word;
 	line-height: 1.3;

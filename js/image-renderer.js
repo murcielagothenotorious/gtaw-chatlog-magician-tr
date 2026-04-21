@@ -147,9 +147,9 @@
 
         if (action === 'copy') {
           if (window.copyBlobToClipboard) {
-             await window.copyBlobToClipboard(blob);
+            await window.copyBlobToClipboard(blob);
           } else {
-             alert('Kopyalama desteklenmiyor.');
+            alert('Kopyalama desteklenmiyor.');
           }
         } else {
           const filename = this.generateFilename();
@@ -295,66 +295,66 @@
           exportHeight,
           scaleRatioX,
           scaleRatioY,
-          { 
-            opacity: imageOpacity, 
-            blur: imageBlur, 
+          {
+            opacity: imageOpacity,
+            blur: imageBlur,
             brightness: imageBrightness,
             contrast: imageContrast,
             saturation: imageSaturation,
-            grayscale: imageGrayscale 
+            grayscale: imageGrayscale
           }
         );
-        
+
         // 2.5 Draw Vignette if active (before chat overlays)
         if (imageVignette > 0) {
-           this.drawVignette(ctx, exportWidth, exportHeight, imageVignette);
+          this.drawVignette(ctx, exportWidth, exportHeight, imageVignette);
         }
 
         // 2.6 Draw Blur boxes
         const output = document.getElementById('output');
         const blurBoxes = output ? output.querySelectorAll('.blur-box-element') : [];
         if (blurBoxes.length > 0) {
-           ctx.save();
-           const chatX = state?.chatTransform?.x || 0;
-           const chatY = state?.chatTransform?.y || 0;
-           const chatScale = state?.chatTransform?.scale || 1;
-           
-           // Build clipping path matching the blur boxes
-           ctx.scale(scaleRatioX, scaleRatioY);
-           ctx.translate(chatX, chatY);
-           ctx.scale(chatScale, chatScale);
-           
-           ctx.beginPath();
-           blurBoxes.forEach(box => {
-              const left = parseFloat(box.style.left) || 0;
-              const top = parseFloat(box.style.top) || 0;
-              const w = parseFloat(box.style.width) || box.offsetWidth;
-              const h = parseFloat(box.style.height) || box.offsetHeight;
-              ctx.rect(left, top, w, h);
-           });
-           
-           // Restore transform to canvas global before setting clip to keep Redraw identical
-           ctx.restore();
-           ctx.save();
-           ctx.clip();
-           
-           // Redraw the background masked to blur boxes heavily blurred
-           await this.drawImageWithTransforms(
-             ctx,
-             exportWidth,
-             exportHeight,
-             scaleRatioX,
-             scaleRatioY,
-             { 
-               opacity: imageOpacity, 
-               blur: (imageBlur > 0 ? imageBlur : 0) + 15,
-               brightness: (imageBrightness !== 100 ? imageBrightness : 100) * 0.9,
-               contrast: imageContrast,
-               saturation: imageSaturation,
-               grayscale: imageGrayscale 
-             }
-           );
-           ctx.restore();
+          ctx.save();
+          const chatX = state?.chatTransform?.x || 0;
+          const chatY = state?.chatTransform?.y || 0;
+          const chatScale = state?.chatTransform?.scale || 1;
+
+          // Build clipping path matching the blur boxes
+          ctx.scale(scaleRatioX, scaleRatioY);
+          ctx.translate(chatX, chatY);
+          ctx.scale(chatScale, chatScale);
+
+          ctx.beginPath();
+          blurBoxes.forEach(box => {
+            const left = parseFloat(box.style.left) || 0;
+            const top = parseFloat(box.style.top) || 0;
+            const w = parseFloat(box.style.width) || box.offsetWidth;
+            const h = parseFloat(box.style.height) || box.offsetHeight;
+            ctx.rect(left, top, w, h);
+          });
+
+          // Restore transform to canvas global before setting clip to keep Redraw identical
+          ctx.restore();
+          ctx.save();
+          ctx.clip();
+
+          // Redraw the background masked to blur boxes heavily blurred
+          await this.drawImageWithTransforms(
+            ctx,
+            exportWidth,
+            exportHeight,
+            scaleRatioX,
+            scaleRatioY,
+            {
+              opacity: imageOpacity,
+              blur: (imageBlur > 0 ? imageBlur : 0) + 15,
+              brightness: (imageBrightness !== 100 ? imageBrightness : 100) * 0.9,
+              contrast: imageContrast,
+              saturation: imageSaturation,
+              grayscale: imageGrayscale
+            }
+          );
+          ctx.restore();
         }
 
         // 3. Draw the chat overlay - use manual canvas drawing to properly capture per-line positions
@@ -631,23 +631,23 @@
 
       ctx.restore();
     },
-    
+
     /**
      * Draw vignette effect over canvas
      */
-    drawVignette: function(ctx, w, h, strength) {
-       ctx.save();
-       // Create radial gradient for vignette
-       // The 'strength' goes from 0-100. We map it to alpha
-       const maxAlpha = strength / 100.0;
-       
-       const gradient = ctx.createRadialGradient(w/2, h/2, Math.min(w,h) * 0.4, w/2, h/2, Math.max(w,h) * 0.7);
-       gradient.addColorStop(0, 'rgba(0,0,0,0)');
-       gradient.addColorStop(1, `rgba(0,0,0,${maxAlpha})`);
-       
-       ctx.fillStyle = gradient;
-       ctx.fillRect(0, 0, w, h);
-       ctx.restore();
+    drawVignette: function (ctx, w, h, strength) {
+      ctx.save();
+      // Create radial gradient for vignette
+      // The 'strength' goes from 0-100. We map it to alpha
+      const maxAlpha = strength / 100.0;
+
+      const gradient = ctx.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.4, w / 2, h / 2, Math.max(w, h) * 0.7);
+      gradient.addColorStop(0, 'rgba(0,0,0,0)');
+      gradient.addColorStop(1, `rgba(0,0,0,${maxAlpha})`);
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
     },
 
     /**
@@ -739,8 +739,9 @@
 
             ctx.fillStyle = BACKGROUND_COLOR;
             const bgPaddingH = 4;
-            const bgPaddingV = 1;
-            ctx.fillRect(-bgPaddingH, visualLineY - bgPaddingV, totalWidth + bgPaddingH * 2, LINE_HEIGHT + bgPaddingV * 2);
+            const bgPaddingTop = 1;
+            const bgPaddingBottom = 4;
+            ctx.fillRect(-bgPaddingH, visualLineY - bgPaddingTop, totalWidth + bgPaddingH * 2, LINE_HEIGHT + bgPaddingTop + bgPaddingBottom);
           }
 
           // Draw each text segment in this visual line
@@ -986,7 +987,7 @@
             // Draw black background bar with padding (matching CSS: padding: 1px 4px)
             const bgPaddingH = 4; // horizontal padding
             const bgPaddingTop = 1; // padding-top
-            const bgPaddingBottom = 1; // padding-bottom
+            const bgPaddingBottom = 4; // padding-bottom
             ctx.fillStyle = BACKGROUND_COLOR;
             const rectX = currentX - bgPaddingH;
             const rectY = currentY - bgPaddingTop; // Shift up to account for top padding

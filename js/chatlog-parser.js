@@ -525,6 +525,14 @@ $(document).ready(function () {
     const fragment = document.createDocumentFragment();
 
     chatLines.forEach((line) => {
+
+      if (line.startsWith('>')) {
+        const charName = $characterNameInput.val().trim();
+        if (charName !== '') {
+          const nameRegex = new RegExp(`(>\\s*${charName})([^\\s\\W])`, 'gi');
+          line = line.replace(nameRegex, '$1 $2');
+        }
+      }
       // =====================================================================
       // 1. İSTENMEYEN SPAM VE SİSTEM MESAJLARINI UÇURMA (GÖZ ARDI ETME)
       // =====================================================================
@@ -580,6 +588,8 @@ $(document).ready(function () {
         if (line.startsWith('[ANTI-FALL]')) return;
         if (line.startsWith('[HATA]')) return;
         if (line.startsWith('[DATE:')) return;
+        if (line.startsWith('Hiçbir arkadaşın çevirmiçi değil.')) return;
+        if (line.startsWith('Üzerinde bir silah yok.')) return;
         if (line.startsWith('GTA World Türkiye')) return;
         if (line.startsWith('Oyuncu ID')) return;
         if (line.startsWith('[GALERI]')) return;
@@ -972,7 +982,7 @@ $(document).ready(function () {
     const currentCharacterName = $('#characterNameInput').val().toLowerCase().trim();
 
     // =====================================================================
-    // 1. ÖZEL CİHAZLAR & ÖNCELİKLİ FORMATLAR (Says filtresine takılmamalı)
+    // 1. ÖZEL CİHAZLAR & ÖNCELİKLİ FORMATLAR 
     // =====================================================================
     if (lowerLine.includes('interkom]:') || line.includes('İnterkom]:')) return formatIntercom(line);
     if (lowerLine.includes('[mikrofon]:')) return wrapSpan('yellow', line);
@@ -985,18 +995,13 @@ $(document).ready(function () {
     if (weatherFormatted) return weatherFormatted;
 
     // =====================================================================
-    // 3. SİSTEM MESAJLARI, UYARILAR VE BİLGİ FORMATLARI
+    // 3. SİSTEM MESAJLARI VE BİLGİ FORMATLARI
     // =====================================================================
     if (line.startsWith('[ALERT] Lockdown activated!')) return wrapSpan('blue', line);
     if (line.startsWith('********** ACİL ÇAĞRI **********')) return `<span class="blue">${escapeHTML(line)}</span>`;
 
-    if (lowerLine.includes('içerisinden') && lowerLine.includes('aldın') && line.includes('BİLGİ:')) {
-      const itemMatch = line.match(/^(BİLGİ:\s+)?(.+?)\s+içerisinden\s+(.+?)\s+aldın\.?$/i);
-      if (itemMatch) return wrapSpan('orange', itemMatch[1] || '') + wrapSpan('white', itemMatch[2] + ' içerisinden ') + wrapSpan('white', itemMatch[3]) + wrapSpan('white', ' aldın.');
-    }
-
-    if (lowerLine.includes('[TELEFON]')) {
-      const match = line.match(/^(\[TELEFON\])\s*(.+)$/);
+    if (lowerLine.includes('[telefon]')) {
+      const match = line.match(/^(\[TELEFON\])\s*(.+)$/i);
       if (match) return wrapSpan('yellow', line);
     }
 
@@ -1029,14 +1034,13 @@ $(document).ready(function () {
       return `<span class="death">Öldürüldünüz.</span> <span class="white">10 dakikanın ardından otomatik olarak tekrar doğabilir ya da iki dakika bekledikten sonra <span class="yellow">/respawn</span> komutunu kullanabilirsiniz.</span>`;
     }
     if (line === 'Injuries:') return wrapSpan('blue', line);
-    if (lowerLine.includes('left in jail')) return formatJailTime(line);
-    if (lowerLine.includes('hapisten çıkmana') && lowerLine.includes('kaldı')) {
-      const match = line.match(/^\s*Hapisten çıkmana (.+?) kaldı\.?\s*$/i);
-      if (match) return wrapSpan('white', 'Hapisten çıkmana ') + wrapSpan('green', match[1]) + wrapSpan('white', ' kaldı.');
-      return wrapSpan('blue', line);
-    }
+
+    // HİBRİT TETİKLEYİCİ: Hapishane (TR & EN)
+    if (lowerLine.includes('left in jail') || lowerLine.includes('hapisten çıkmana')) return formatJailTime(line);
+
     const corpseDamageMatch = line.match(/^(.+?) \((ID)\) damages:/);
     if (corpseDamageMatch) return `<span class="blue">${escapeHTML(corpseDamageMatch[1])}</span><span class="white">${escapeHTML(line.slice(corpseDamageMatch[1].length))}</span>`;
+    
     const youBeenShotMatch = line.match(/(.+?)\s+bölgesinden\s+(.+?)\s+tarafından\s+(.+?)\s+silahıyla\s+([\d.]+)\s+hasar\s+aldın\.\s+\(\(Can:\s+([\d.]+)\)\)/);
     if (youBeenShotMatch) return `<span class="death">${escapeHTML(youBeenShotMatch[1])}</span> <span class="white">bölgesinden</span> <span class="death">${escapeHTML(youBeenShotMatch[2])}</span> <span class="white">tarafından</span> <span class="death">${escapeHTML(youBeenShotMatch[3])}</span> <span class="white">silahıyla</span> <span class="death">${escapeHTML(youBeenShotMatch[4])}</span> <span class="white">hasar aldın. ((Can:</span> <span class="white">${escapeHTML(youBeenShotMatch[5])}</span><span class="white">))</span>`;
 
@@ -1054,26 +1058,21 @@ $(document).ready(function () {
     if (line.includes('(kısık ses) (Telefon):')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('lightgrey', line) : wrapSpan('yellow', line);
     if (line.includes('(Telefon):')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('white', line) : wrapSpan('yellow', line);
 
-    if (lowerLine.includes('(alçak ses)')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('grey', line) : wrapSpan('darkgrey', line);
-    if (lowerLine.includes('(alçak sesle)')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('grey', line) : wrapSpan('darkgrey', line);
-    if (lowerLine.includes('(kısık ses):')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('lightgrey', line) : wrapSpan('grey', line);
-    if (lowerLine.includes('kısık sesle')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('lightgrey', line) : wrapSpan('grey', line);
+    if (lowerLine.includes('(alçak ses):') || lowerLine.includes('(alçak sesle)') || lowerLine.includes('alçak sesle')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('grey', line) : wrapSpan('darkgrey', line);
+    if (lowerLine.includes('(kısık ses):') || lowerLine.includes('(kısık sesle):') || lowerLine.includes('kısık sesle')) return (currentCharacterName && lowerLine.includes(currentCharacterName)) ? wrapSpan('lightgrey', line) : wrapSpan('grey', line);
     if (lowerLine.includes('says (kısık ses) (to')) {
       const saysIndex = lowerLine.indexOf('says');
       const nameBeforeSays = lowerLine.substring(0, saysIndex);
       if (currentCharacterName && nameBeforeSays.includes(currentCharacterName)) return wrapSpan('lightgrey', line);
       return wrapSpan('grey', line);
     }
-    if (lowerLine.includes('fısıldar') || line.startsWith('(Araç İçi)')) return handleWhispers(line);
+    if ((lowerLine.includes('fısıldar') && !line.startsWith('*') && !line.startsWith('>')) || line.startsWith('(Araç İçi)')) return handleWhispers(line);
 
-    // SMS İşlemleri (grubundan gelen mesaj düzeltmesi dahil)
+    // SMS ve Çağrı
     if (lowerLine.includes('grubundan gelen mesaj:')) return wrapSpan('yellow', line);
     if (/\([^\)]+\) [^:]+ kişisine mesaj gönderildi: .+/.test(line)) return formatOutgoingSmsMessage(line);
     if (/\([^\)]+\) [^:]+ kişisinden mesaj: .+/.test(line)) return formatSmsMessage(line);
-
-    // Çağrı işlemleri (Türkçe fix)
     if (/\([^\)]+\) Incoming call from .+/.test(line) || lowerLine.includes('tarafından gelen çağrı')) return formatIncomingCall(line);
-
     if (lowerLine.includes("you've set your main phone to")) return formatPhoneSet(line);
     if (lowerLine === 'çağrı cevaplandı.') return wrapSpan('yellow', line);
     if (lowerLine === 'aramayı sonlandırdın.' || lowerLine === 'karşı tarafı aramayı sonlandırdı.') return wrapSpan('white', line);
@@ -1084,53 +1083,64 @@ $(document).ready(function () {
     if (lowerLine.includes('[ch: vts - vessel traffic service]')) return formatVesselTraffic(line);
 
     // =====================================================================
-    // 6. TÜRKÇE (TR) ENVANTER VE AKSİYON İŞLEMLERİ
+    // 6. BANKA / STATS / İSTATİSTİK PANELLERİ
     // =====================================================================
+    if (lowerLine.includes('nakit: $') && lowerLine.includes('banka: $')) {
+      return `<span class="yellow">${escapeHTML(line)}</span>`;
+    }
 
-    // Biri sana para veya eşya verdi (Tarihi silmez, komple yeşil yapar)
-    if (lowerLine.includes('sana') && lowerLine.includes('verdi') && !lowerLine.includes('gösterdi')) {
-      const noTimeLine = lowerLine.replace(/\d{1,2}:\d{2}(:\d{2})?/g, '');
-      if (!noTimeLine.includes(':')) {
-        return wrapSpan('green', line);
+    if (/^\d+:\s/.test(line) && line.includes('[$')) {
+      const safeLine = escapeHTML(line);
+      const coloredLine = safeLine.replace(/(\[\$[\d,]+\])/g, '<span class="green">$1</span>');
+      return `<span class="yellow">${coloredLine}</span>`;
+    }
+
+    if (lowerLine.startsWith(("hava durumu:"))) return wrapSpan('white', line);
+
+    const isStatsMenuLine = line.includes('GTAW Roleplay Oyuncu İstatistikleri') || line.startsWith('Karakter |') || line.startsWith('Sağlık |') || line.startsWith('Banka Hesap Numarası:') || line.startsWith('Şu anki işi:') || line.startsWith('Zaman |') || line.startsWith('Çalışılan süre:') || line.startsWith('Mülkler |') || line.startsWith('Custom Number:') || line.startsWith('Main Phone Number:') || line.startsWith('Premium:') || line.startsWith('Obje Slotu:') || line.startsWith('Kıyafet Slotu:') || line.startsWith('World Point:') || line.startsWith('Panda Point:') || line.startsWith('TARİH: Sunucu zamanı:') || line.startsWith('Son 15 günde geçirilen süre') || line.startsWith('Suç Puanı:') || (line.startsWith('==============') && line.length > 20);
+
+    if (isStatsMenuLine) {
+      let safeLine = escapeHTML(line);
+      safeLine = safeLine.replace(/(GTAW Roleplay Oyuncu İstatistikleri)/g, '<span class="yellow">$1</span>');
+      safeLine = safeLine.replace(/(^|\s)([a-zA-ZÇĞİÖŞÜçğıöşü]+)\s*\|/g, '$1<span class="yellow">$2</span> |');
+      safeLine = safeLine.replace(/([a-zA-ZÇĞİÖŞÜçğıöşü][a-zA-ZÇĞİÖŞÜçğıöşü0-9\s\(\)<>=\-&;]*?)(?=:)/g, function(match) {
+        return `<span class="yellow">${match}</span>`;
+      });
+      safeLine = safeLine.replace(/(\$[\d,]+)/g, '<span class="green">$1</span>');
+      return `<span>${safeLine}</span>`;
+    }
+
+    // =====================================================================
+    // 7. HİBRİT SİSTEMLER (TR & EN ORTAK)
+    // =====================================================================
+    
+    // HİBRİT TETİKLEYİCİ: Uyuşturucu Efektleri
+    if (lowerLine.includes('etkilerini yakında hissedeceksin') || lowerLine.includes("feel the effects")) return formatDrugEffect(line);
+
+    // HİBRİT TETİKLEYİCİ: Kimlik/Eşya Gösterme
+    if (lowerLine.includes('gösterdi') || lowerLine.includes('gösterdin') || lowerLine.includes('has shown you their')) return formatShown(line);
+
+    // HİBRİT TETİKLEYİCİ: Para ve Eşya Transferleri (Vermek/Almak)
+    if (lowerLine.includes('verdi') || lowerLine.includes('verdin') || lowerLine.startsWith('transfer başarıyla') || 
+        lowerLine.includes('you gave') || lowerLine.includes('paid you') || lowerLine.includes('you paid') || lowerLine.includes('you received')) {
+      // Kimlik gösterme ile karışmaması için:
+      if (!lowerLine.includes('gösterdi') && !lowerLine.includes('gösterdin')) {
+        return handleTransaction(line);
       }
     }
 
-    // Sen birine para veya eşya verdin (Tarihi silmez, komple yeşil yapar)
-    if (lowerLine.includes('verdin') && (lowerLine.includes('kişiye') || lowerLine.includes('kişisine'))) {
-      const noTimeLine = lowerLine.replace(/\d{1,2}:\d{2}(:\d{2})?/g, '');
-      if (!noTimeLine.includes(':')) {
-        return wrapSpan('green', line);
-      }
+    // HİBRİT TETİKLEYİCİ: Info ve Dolaptan Eşya Alma
+    if (lowerLine.startsWith('info:') || (lowerLine.includes('içerisinden') && lowerLine.includes('aldın'))) {
+      if (line.includes('card reader') || line.includes('card payment') || line.includes('swiped your card')) return formatCardReader(line);
+      return formatInfo(line);
     }
 
-    if (lowerLine.includes('kullandın') && lowerLine.includes('etkilerini yakında hissedeceksin')) {
-      const match = line.match(/^(.+?)\s*(kullandın\s*,\s*etkilerini yakında hissedeceksin\.?)$/i);
-      if (match) return wrapSpan('green', match[1]) + ' ' + wrapSpan('white', match[2]);
-      return wrapSpan('white', line);
-    }
-
-    if (lowerLine.includes('sana') && lowerLine.includes('gösterdi')) {
-      const match = line.match(/^(.+? sana )(.+?)( gösterdi\.?)$/i);
-      if (match) return wrapSpan('green', match[1]) + wrapSpan('white', match[2]) + wrapSpan('green', match[3]);
-      return wrapSpan('green', line);
-    }
-
-    if (lowerLine.includes('kişisine') && lowerLine.includes('gösterdin')) {
-      const match = line.match(/^\s*(.+?) kişisine (.+?) gösterdin\.?\s*$/i);
-      if (match) return wrapSpan('blue', match[1]) + wrapSpan('blue', ' kişisine ') + wrapSpan('white', match[2]) + wrapSpan('blue', ' gösterdin.');
-      return wrapSpan('green', line);
-    }
-
-    if (lowerLine.includes('adlı kişi sana') && lowerLine.includes('verdi')) return wrapSpan('green', line);
-    if (lowerLine.includes('adlı kişiye') && lowerLine.includes('verdin')) return wrapSpan('green', line);
+    // =====================================================================
+    // 8. DİĞER ENVANTER / AKSİYONLAR
+    // =====================================================================
     if (lowerLine.includes('maske taktın.')) return wrapSpan('green', line);
     if (lowerLine.includes('maskeni çıkardın.')) return wrapSpan('death', line);
-    if (lowerLine.startsWith('transfer başarıyla tamamlandı')) return wrapSpan('green', line);
-    if (lowerLine.includes('kişisine') && lowerLine.includes('verdin') && line.includes('$')) return wrapSpan('green', line);
 
-    // =====================================================================
-    // 7. İNGİLİZCE (EN) ENVANTER VE AKSİYON İŞLEMLERİ
-    // =====================================================================
     if (/^You(?:'ve| have) unlocked (?:the )?.+ to .+\.?$/i.test(line)) return wrapSpan('green', line);
     if (line.startsWith('You seized')) {
       const match = line.match(/^(You seized )(.+?)( from )(.+)$/);
@@ -1163,25 +1173,21 @@ $(document).ready(function () {
     }
     if (lowerLine.startsWith("you've used")) return wrapSpan('green', line);
     if (lowerLine.startsWith("you've cut")) return formatDrugCut(line);
-    if (/You've just taken .+?! You will feel the effects of the drug soon\./.test(line)) return formatDrugEffect(line);
     if (lowerLine.startsWith('you placed') || lowerLine.startsWith('you took')) return wrapSpan('orange', line);
     if (lowerLine.startsWith('you dropped')) return wrapSpan('death', line);
     if (/^you took.*from the property\.$/i.test(line)) return wrapSpan('death', line);
     if (lowerLine.includes('from the property')) return wrapSpan('death', line);
     if (lowerLine.includes('you have shown your inventory')) return wrapSpan('green', line);
-    if (lowerLine.includes('has shown you their')) return formatShown(line);
     if (lowerLine.includes('konum gönderildi')) return wrapSpan('green', line);
     if (lowerLine.includes('you received a location from')) return colorLocationLine(line);
-    if (lowerLine.includes('you gave') || lowerLine.includes('paid you') || lowerLine.includes('you paid') || lowerLine.includes('you received')) return handleTransaction(line);
     if (lowerLine.includes('you have received $')) return colorMoneyLine(line);
 
     // =====================================================================
-    // 8. MESLEK & SUÇ BİLDİRİMLERİ (MDC, Hapishane, Telsiz)
+    // 9. MESLEK & SUÇ BİLDİRİMLERİ (MDC, Hapishane, Telsiz)
     // =====================================================================
     if (/^\*\* \[PRISON PA\].*\*\*$/.test(line)) return formatPrisonPA(line);
     if (line.includes('[POLICE MDC]')) return formatPoliceMDC(line);
 
-    // Departman mesajları için emote parselamasını bozan yıldız hatası düzeltmesi
     if (line.includes(' -> ') && line.startsWith('**') && line.endsWith('**')) {
       return `<span class="depColor">${escapeHTML(line)}</span>`;
     }
@@ -1192,37 +1198,46 @@ $(document).ready(function () {
     if (lowerLine.includes('[property robbery]')) return formatPropertyRobbery(line);
     if (lowerLine.includes('[ck]')) return formatCharacterKill(line);
     if (lowerLine.includes("you're being robbed, use /arob")) return formatRobbery(line);
-    if (line.startsWith('you were frisked by')) return wrapSpan('green', line);
+    if (line.match(/(.+) üstünü aradı\./)) return wrapSpan('green', line);
     const panicMatch = line.match(/^\[(LSSD|LSPD|PHMC|SADCR) PANIC ALARM\] (.+) activated their panic alarm at (.+)$/i);
     if (panicMatch) return wrapSpan('blue', `[${panicMatch[1]} PANIC ALARM]`) + wrapSpan('white', ` ${panicMatch[2]} activated their panic alarm at`) + wrapSpan('blue', ` ${panicMatch[3]}`);
 
     // =====================================================================
-    // 9. DİĞER KISA SİSTEM FORMATLARI
+    // 10. DİĞER KISA SİSTEM FORMATLARI
     // =====================================================================
     if (/^\(\(.*\[ID: \d+\].*\)\)$/.test(line)) return wrapSpan('yellow', line);
     if (line.includes('[ID: +%d')) {
       if (line.match(/^(\[ID: \+%d\]\s+)(.+?)(?:\s+\(\(\d+\)\))?$/)) return wrapSpan('yellow', line);
     }
     if (/(?:^\[\d{2}:\d{2}:\d{2}\] )?CHAT LOG: > .+/.test(line)) return wrapSpan('ame', line.replace(/^(?:\[\d{2}:\d{2}:\d{2}\] )?CHAT LOG: /, ''));
-    if (line.match(/^___Description of .+___$/) || line.match(/^___Tattoos description of .+___$/)) return wrapSpan('blue', line);
-    if (line.startsWith('Age range:')) return wrapSpan('blue', 'Age range:') + wrapSpan('white', line.substring('Age range:'.length));
+    if (line.match(/^___Açıklama Sahibi: .+___$/) || line.match(/^___Tattoos description of .+___$/)) return wrapSpan('blue', line);
+    if (line.startsWith('Yaş Aralığı:')) return wrapSpan('blue', 'Yaş Aralığı:') + wrapSpan('white', line.substring('Yaş Aralığı:'.length));
     if (line.startsWith('->')) return wrapSpan('blue', '->') + wrapSpan('white', line.substring('->'.length));
-    if (line.match(/\|------ .+'s Items \d{2}\/[A-Z]{3}\/\d{4} - \d{2}:\d{2}:\d{2} ------\|/)) return wrapSpan('green', line);
+    if (line.match(/\|------ .+kişisinin eşyaları \d{2}\/\d{2}\/\d{4} - \d{2}:\d{2}:\d{2} ------\|/)) return wrapSpan('green', line);
+    
+    if (lowerLine.includes('is wearing:') && line.includes('(')) {
+      const safeLine = escapeHTML(line);
+      let coloredLine = safeLine.replace(/(is wearing:\s*)(.*?)(\s*\()/i, '$1<span class="green">$2</span>$3');
+      if (coloredLine.startsWith('-&gt;')) {
+        coloredLine = coloredLine.replace(/^(-&gt;\s*)/, '<span class="blue">$1</span><span class="white">') + '</span>';
+      }
+      return `<span>${coloredLine}</span>`;
+    }
 
     if (line.match(/^(?:\[\d{2}:\d{2}:\d{2}\]\s+)?\d+: .+/)) {
       if (line.includes('PH:')) {
         const phoneMatch = line.trim().match(/^(\d+: .+? x\d+ \(.+?\) -) (PH: \d+)$/);
         if (phoneMatch) return wrapSpan('yellow', phoneMatch[1]) + ' ' + wrapSpan('green', phoneMatch[2]);
       }
-      if (line.includes('Money ($')) {
-        const moneyMatch = line.match(/^(\d+: Money \()(\$\d+(?:,\d{3})*)(\) \(\d+g\))$/);
+      if (line.includes('Para ($')) {
+        const moneyMatch = line.match(/^(\d+: Para \()(\$\d+(?:,\d{3})*)(\) \(\d+g\))$/);
         if (moneyMatch) return wrapSpan('yellow', moneyMatch[1]) + wrapSpan('green', moneyMatch[2]) + wrapSpan('yellow', moneyMatch[3]);
       }
       return wrapSpan('yellow', line);
     }
 
-    if (lowerLine.startsWith('total weight:')) return wrapSpan('yellow', line);
-    if (lowerLine.startsWith('money on hand:')) return wrapSpan('green', line);
+    if (lowerLine.startsWith('toplam ağırlık:')) return wrapSpan('yellow', line);
+    if (lowerLine.startsWith('elinizdeki para:')) return wrapSpan('green', line);
     if (line.startsWith('[INTERVIEW]')) return wrapSpan('green', line);
     if (lowerLine.startsWith('use /phonecursor')) return formatPhoneCursor(line);
     if (line.includes('You have received an invitation to join the')) {
@@ -1234,10 +1249,7 @@ $(document).ready(function () {
       if (parts[1]) return parts[0] + 'member of ' + wrapSpan('yellow', parts[1].split(' you')[0]) + ' you may need to /switchfactions to set it as your active faction!';
     }
     if (lowerLine.includes('(goods)') || line.match(/(.+?)\s+x(\d+)\s+\((\d+g)\)/)) return handleGoods(line);
-    if (lowerLine.startsWith('info:')) {
-      if (line.includes('card reader') || line.includes('card payment') || line.includes('swiped your card')) return formatCardReader(line);
-      return formatInfo(line);
-    }
+    
     if (line.includes('[STREET]')) {
       if (line.includes(' / ')) {
         const parts = line.match(/\[STREET\] Sokak [İi]smi:\s*(.+?)\s*\/\s*(.+?)\s*\|\s*Zone:\s*([^.]+)(\.?)/i);
@@ -1256,7 +1268,7 @@ $(document).ready(function () {
     if (line.startsWith('>')) return wrapSpan('ame', line);
 
     // =====================================================================
-    // 10. TR GENEL İŞLEM FİİLLERİ (Fallback catch)
+    // 11. TR GENEL İŞLEM FİİLLERİ (Fallback catch)
     // =====================================================================
     if (lowerLine.startsWith('mülke')) {
       if (line.match(/^\s*Mülke .+ yerleştirdin\.?\s*$/i)) return wrapSpan('orange', line);
@@ -1278,14 +1290,12 @@ $(document).ready(function () {
     const noTimeLine = lowerLine.replace(/\d{1,2}:\d{2}(:\d{2})?/g, '');
     if (!noTimeLine.includes(':')) {
       if (/\byerleştirdin\b/i.test(line)) return wrapSpan('orange', line);
-      if (/\badlı kişi sana\b.+\bverdi\b/i.test(line)) return wrapSpan('green', line);
-      if (/\badlı kişiye\b.+\bverdin\b/i.test(line)) return wrapSpan('green', line);
       if (/\bmülkün içerisinden\b.+\baldın\b/i.test(line)) return wrapSpan('death', line);
       if (/^\s*araçtan\b.+\baldın\b/i.test(line)) return wrapSpan('orange', line);
     }
 
     // =====================================================================
-    // 11. SAYS (KONUŞMA) FALLBACK KONTROLÜ
+    // 12. SAYS (KONUŞMA) FALLBACK KONTROLÜ
     // =====================================================================
     if (lowerLine.includes('(bağırır):') || lowerLine.includes('shouts (to')) {
       return wrapSpan('white', line);
@@ -1297,6 +1307,7 @@ $(document).ready(function () {
       !lowerLine.includes('(kısık ses)') &&
       !lowerLine.includes('kısık sesle') &&
       !lowerLine.includes('(alçak ses)') &&
+      !lowerLine.includes('alçak sesle') &&
       !lowerLine.includes('fısıldar') &&
       !lowerLine.includes('(telefon)') &&
       !lowerLine.includes('(hoparlör)')
@@ -1314,7 +1325,7 @@ $(document).ready(function () {
       return wrapSpan('green', line);
     }
 
-    if (lowerLine.includes('was seized by')) {
+    if (lowerLine.includes('tarafından el koyuldu')) {
       return wrapSpan('death', line);
     }
 
@@ -1347,12 +1358,13 @@ $(document).ready(function () {
   }
 
   function formatJailTime(line) {
-    const pattern = /(You have) (.*?) (left in jail\.)/;
-    const match = line.match(pattern);
-    if (match) {
-      return `<span class="white">${escapeHTML(match[1])}</span> <span class="green">${escapeHTML(match[2])}</span> <span class="white">${escapeHTML(match[3])}</span>`;
-    }
-    return line;
+    const enMatch = line.match(/(You have) (.*?) (left in jail\.)/i);
+    if (enMatch) return `<span class="white">${escapeHTML(enMatch[1])}</span> <span class="green">${escapeHTML(enMatch[2])}</span> <span class="white">${escapeHTML(enMatch[3])}</span>`;
+
+    const trMatch = line.match(/^\s*Hapisten çıkmana (.+?) kaldı\.?\s*$/i);
+    if (trMatch) return wrapSpan('white', 'Hapisten çıkmana ') + wrapSpan('green', trMatch[1]) + wrapSpan('white', ' kaldı.');
+
+    return wrapSpan('blue', line);
   }
 
   // Make formatLineWithFilter accessible for history panel
@@ -1365,7 +1377,7 @@ $(document).ready(function () {
 
   function wrapSpan(className, content) {
     // Normalize apostrophes and escape HTML to prevent tag injection
-    content = escapeHTML(content.replace(/['''']/g, "'")).replace(/~y~/g, '').replace(/~h~/g, '').replace(/~s~/g, '');
+    content = escapeHTML(content.replace(/['''']/g, "'")).replace(/~y~/g, '').replace(/~h~/g, '').replace(/~s~/g, '').replace("CHAT LOG:", '');
 
     // Pre-process matched pairs for emote and italic using special control characters
     // \x01: Start Emote, \x02: End Emote
@@ -1496,19 +1508,14 @@ $(document).ready(function () {
   function formatWeatherLine(line) {
     const lowerLine = line.toLowerCase();
 
-    // 1. Performans: Eğer hava durumu kelimeleri yoksa direkt çık, fonksiyonu yorma
     if (!lowerLine.includes('sıcaklık:') && !lowerLine.includes('wind:') && !lowerLine.includes('rüzgar:')) {
       return null;
     }
 
-    // 2. Güvenlik: Satırın başındaki görünmez boşlukları, yıldızları (*) temizle ki kod çökmesin
     const cleanLine = line.replace(/^[\s*]+/, '');
 
-    // --- SENARYO A: TAM FORMAT (Sıcaklık + Rüzgar bir arada) ---
     if (cleanLine.includes('Sıcaklık:') && (cleanLine.includes('Rüzgar:') || cleanLine.includes('Wind:'))) {
 
-      // Çok esnek Regex: Sadece anahtar kelimeler arası blokları yakalar, 
-      // içindeki sayıların/sembollerin formatı değişse bile çökmez.
       const match = cleanLine.match(/Sıcaklık:\s*(.+?),\s*(?:it is currently|şu anda hava)\s*(.+?)\.\s*(?:Rüzgar|Wind):\s*(.+?),\s*(?:humidity|nem):\s*(.+?),\s*(?:rain precipitation|yağış):\s*(.+?)\.\s*(?:Current time|Zaman):\s*(.+)/i);
 
       if (match) {
@@ -1522,8 +1529,6 @@ $(document).ready(function () {
         );
       }
     }
-
-    // --- SENARYO B: SADECE SICAKLIK ---
     if (cleanLine.startsWith('Sıcaklık:')) {
       const match = cleanLine.match(/Sıcaklık:\s*(.+?)\.\s*(?:Şu anda hava|it is currently)\s*(.+?)\.?$/i);
       if (match) {
@@ -1533,11 +1538,8 @@ $(document).ready(function () {
         );
       }
 
-      // Hiçbir regex'e uymazsa bile beyaz renge boğulmasın diye son çare (Fallback):
       return wrapSpan('white', 'Sıcaklık: ') + wrapSpan('green', cleanLine.replace('Sıcaklık:', '').trim());
     }
-
-    // --- SENARYO C: SADECE RÜZGAR ---
     if (cleanLine.startsWith('Wind:') || cleanLine.startsWith('Rüzgar:')) {
       const prefixMatch = cleanLine.match(/^(Wind|Rüzgar):/i);
       const prefix = prefixMatch ? prefixMatch[1] : 'Rüzgar';
@@ -1550,8 +1552,6 @@ $(document).ready(function () {
           wrapSpan('white', ', Yağış: ') + wrapSpan('green', match[3]) + '.'
         );
       }
-
-      // Son çare (Fallback):
       return wrapSpan('white', prefix + ': ') + wrapSpan('green', cleanLine.replace(new RegExp(`^${prefix}:`, 'i'), '').trim());
     }
 
@@ -1588,31 +1588,48 @@ $(document).ready(function () {
   }
 
   function handleTransaction(line) {
-    if (line.includes('/')) {
-      line = line.replace(/\s*\(\d{2}\/[A-Z]{3}\/\d{4}\s+-\s+\d{2}:\d{2}:\d{2}\)\.?/, '');
-      return wrapSpan('green', line + '.');
+    let cleanLine = line.replace(/\s*\(\d{2}\/[A-Z]{3}\/\d{4}\s+-\s+\d{2}:\d{2}:\d{2}\)\.?/, '');
+    const lowerLine = cleanLine.toLowerCase();
+    
+    const noTimeLine = lowerLine.replace(/\d{1,2}:\d{2}(:\d{2})?/g, '');
+    if (!noTimeLine.includes(':')) {
+      if ((lowerLine.includes('sana') && lowerLine.includes('verdi') && !lowerLine.includes('gösterdi')) ||
+          (lowerLine.includes('verdin') && (lowerLine.includes('kişiye') || lowerLine.includes('kişisine'))) ||
+          (lowerLine.includes('adlı kişi sana') && lowerLine.includes('verdi')) ||
+          (lowerLine.includes('adlı kişiye') && lowerLine.includes('verdin')) ||
+          lowerLine.startsWith('transfer başarıyla tamamlandı')) {
+        return wrapSpan('green', cleanLine);
+      }
+    }
+
+    if (lowerLine.includes('you gave') || lowerLine.includes('paid you') || lowerLine.includes('you paid') || lowerLine.includes('you received')) {
+      return wrapSpan('green', cleanLine + (cleanLine.endsWith('.') ? '' : '.'));
     }
 
     return wrapSpan('green', line);
   }
 
   function formatInfo(line) {
-    const moneyMatch = line.match(/\$(\d+)/);
-    const itemMatch = line.match(/took\s(.+?)\s\((\d+)\)\sfrom\s(the\s.+)\.$/i);
+    const lowerLine = line.toLowerCase();
+    
+    if (lowerLine.includes('info:')) {
+      const moneyMatch = line.match(/\$(\d+)/);
+      const itemMatch = line.match(/took\s(.+?)\s\((\d+)\)\sfrom\s(the\s.+)\.$/i);
 
-    if (moneyMatch) {
-      const objectMatch = line.match(/from the (.+)\.$/i);
-      return objectMatch
-        ? `<span class="orange">Info:</span> <span class="white">You took</span> <span class="green">$${escapeHTML(moneyMatch[1])}</span> <span class="white">from the ${escapeHTML(objectMatch[1])}</span>.`
-        : line;
+      if (moneyMatch) {
+        const objectMatch = line.match(/from the (.+)\.$/i);
+        if (objectMatch) return `<span class="orange">Info:</span> <span class="white">You took</span> <span class="green">$${escapeHTML(moneyMatch[1])}</span> <span class="white">from the ${escapeHTML(objectMatch[1])}</span>.`;
+      }
+      if (itemMatch) {
+        return `<span class="orange">Info:</span> <span class="white">You took</span> <span class="white">${escapeHTML(itemMatch[1])}</span> <span class="white">(${escapeHTML(itemMatch[2])})</span> <span class="white">from ${escapeHTML(itemMatch[3])}</span>.`;
+      }
     }
 
-    if (itemMatch) {
-      const itemName = escapeHTML(itemMatch[1]);
-      const itemQuantity = escapeHTML(itemMatch[2]);
-      const fromObject = escapeHTML(itemMatch[3]);
-
-      return `<span class="orange">Info:</span> <span class="white">You took</span> <span class="white">${itemName}</span> <span class="white">(${itemQuantity})</span> <span class="white">from ${fromObject}</span>.`;
+    if (lowerLine.includes('bİlgİ:') || lowerLine.includes('bilgi:')) {
+      const trItemMatch = line.match(/^(BİLGİ:\s+)?(.+?)\s+içerisinden\s+(.+?)\s+aldın\.?$/i);
+      if (trItemMatch) {
+        return wrapSpan('orange', (trItemMatch[1] || '').trim()) + ' ' + wrapSpan('white', trItemMatch[2] + ' içerisinden ') + wrapSpan('white', trItemMatch[3]) + wrapSpan('white', ' aldın.');
+      }
     }
 
     return line;
@@ -1858,12 +1875,15 @@ $(document).ready(function () {
   }
 
   function formatShown(line) {
-    const match = line.match(/^(.+) has shown you their (.+)\.$/);
-    if (match) {
-      const person = escapeHTML(match[1]);
-      const item = escapeHTML(match[2]);
-      return `<span class="green">${person} has shown you their <span class="white">${item}</span>.</span>`;
-    }
+    const enMatch = line.match(/^(.+) has shown you their (.+)\.$/i);
+    if (enMatch) return `<span class="green">${escapeHTML(enMatch[1])} has shown you their <span class="white">${escapeHTML(enMatch[2])}</span>.</span>`;
+
+    const trMatch1 = line.match(/^(.+? sana )(.+?)( gösterdi\.?)$/i);
+    if (trMatch1) return wrapSpan('green', trMatch1[1]) + wrapSpan('white', trMatch1[2]) + wrapSpan('green', trMatch1[3]);
+
+    const trMatch2 = line.match(/^\s*(.+?) kişisine (.+?) gösterdin\.?\s*$/i);
+    if (trMatch2) return wrapSpan('blue', trMatch2[1] + ' kişisine ') + wrapSpan('white', trMatch2[2]) + wrapSpan('blue', ' gösterdin.');
+
     return `<span class="green">${escapeHTML(line)}</span>`;
   }
 
@@ -1983,13 +2003,11 @@ $(document).ready(function () {
   }
 
   function formatDrugEffect(line) {
-    const pattern = /You've just taken (.+?)! You will feel the effects of the drug soon\./;
-    const match = line.match(pattern);
+    const enMatch = line.match(/You've just taken (.+?)! You will feel the effects of the drug soon\./i);
+    if (enMatch) return `<span class="white">You've just taken </span><span class="green">${escapeHTML(enMatch[1])}</span><span class="white">! You will feel the effects of the drug soon.</span>`;
 
-    if (match) {
-      const drugName = escapeHTML(match[1]);
-      return `<span class="white">You've just taken </span><span class="green">${drugName}</span><span class="white">! You will feel the effects of the drug soon.</span>`;
-    }
+    const trMatch = line.match(/^(.+?)\s*(kullandın|aldın|içtin)\s*,\s*etkilerini yakında hissedeceksin\.?$/i);
+    if (trMatch) return `<span class="green">${escapeHTML(trMatch[1])}</span> <span class="white">${escapeHTML(trMatch[2])}, etkilerini yakında hissedeceksin.</span>`;
 
     return line;
   }
