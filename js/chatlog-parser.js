@@ -528,9 +528,29 @@ $(document).ready(function () {
 
       if (line.startsWith('>')) {
         const charName = $characterNameInput.val().trim();
+        let isFixed = false;
         if (charName !== '') {
-          const nameRegex = new RegExp(`(>\\s*${charName})([^\\s\\W])`, 'gi');
-          line = line.replace(nameRegex, '$1 $2');
+          const myNameRegex = new RegExp(`(>\\s*${charName})([^\\s\\W])`, 'gi');
+          if (myNameRegex.test(line)) {
+            line = line.replace(myNameRegex, '$1 $2');
+            isFixed = true;
+          }
+        }
+        if (!isFixed && typeof knownCharacters !== 'undefined') {
+          const sortedNames = Array.from(knownCharacters).sort((a, b) => b.length - a.length);
+
+          for (const name of sortedNames) {
+            if (charName.toLowerCase() === name) continue;
+
+            const nameParts = name.split(' ');
+            if (nameParts.length < 2) continue;
+
+            const globalRegex = new RegExp(`(>\\s*${nameParts[0]}\\s+${nameParts[1]})([^\\s\\W])`, 'gi');
+            if (globalRegex.test(line)) {
+              line = line.replace(globalRegex, '$1 $2');
+              break;
+            }
+          }
         }
       }
       // =====================================================================
@@ -1036,11 +1056,14 @@ $(document).ready(function () {
     if (line === 'Injuries:') return wrapSpan('blue', line);
 
     // HİBRİT TETİKLEYİCİ: Hapishane (TR & EN)
-    if (lowerLine.includes('left in jail') || lowerLine.includes('hapisten çıkmana')) return formatJailTime(line);
+    if (lowerLine.includes('left in jail') || lowerLine.includes('hapisten çıkmana')) {
+      const jailRes = formatJailTime(line);
+      if (jailRes) return jailRes;
+    }
 
     const corpseDamageMatch = line.match(/^(.+?) \((ID)\) damages:/);
     if (corpseDamageMatch) return `<span class="blue">${escapeHTML(corpseDamageMatch[1])}</span><span class="white">${escapeHTML(line.slice(corpseDamageMatch[1].length))}</span>`;
-    
+
     const youBeenShotMatch = line.match(/(.+?)\s+bölgesinden\s+(.+?)\s+tarafından\s+(.+?)\s+silahıyla\s+([\d.]+)\s+hasar\s+aldın\.\s+\(\(Can:\s+([\d.]+)\)\)/);
     if (youBeenShotMatch) return `<span class="death">${escapeHTML(youBeenShotMatch[1])}</span> <span class="white">bölgesinden</span> <span class="death">${escapeHTML(youBeenShotMatch[2])}</span> <span class="white">tarafından</span> <span class="death">${escapeHTML(youBeenShotMatch[3])}</span> <span class="white">silahıyla</span> <span class="death">${escapeHTML(youBeenShotMatch[4])}</span> <span class="white">hasar aldın. ((Can:</span> <span class="white">${escapeHTML(youBeenShotMatch[5])}</span><span class="white">))</span>`;
 
@@ -1103,7 +1126,7 @@ $(document).ready(function () {
       let safeLine = escapeHTML(line);
       safeLine = safeLine.replace(/(GTAW Roleplay Oyuncu İstatistikleri)/g, '<span class="yellow">$1</span>');
       safeLine = safeLine.replace(/(^|\s)([a-zA-ZÇĞİÖŞÜçğıöşü]+)\s*\|/g, '$1<span class="yellow">$2</span> |');
-      safeLine = safeLine.replace(/([a-zA-ZÇĞİÖŞÜçğıöşü][a-zA-ZÇĞİÖŞÜçğıöşü0-9\s\(\)<>=\-&;]*?)(?=:)/g, function(match) {
+      safeLine = safeLine.replace(/([a-zA-ZÇĞİÖŞÜçğıöşü][a-zA-ZÇĞİÖŞÜçğıöşü0-9\s\(\)<>=\-&;]*?)(?=:)/g, function (match) {
         return `<span class="yellow">${match}</span>`;
       });
       safeLine = safeLine.replace(/(\$[\d,]+)/g, '<span class="green">$1</span>');
@@ -1113,26 +1136,30 @@ $(document).ready(function () {
     // =====================================================================
     // 7. HİBRİT SİSTEMLER (TR & EN ORTAK)
     // =====================================================================
-    
-    // HİBRİT TETİKLEYİCİ: Uyuşturucu Efektleri
-    if (lowerLine.includes('etkilerini yakında hissedeceksin') || lowerLine.includes("feel the effects")) return formatDrugEffect(line);
+    let hybRes;
 
-    // HİBRİT TETİKLEYİCİ: Kimlik/Eşya Gösterme
-    if (lowerLine.includes('gösterdi') || lowerLine.includes('gösterdin') || lowerLine.includes('has shown you their')) return formatShown(line);
+    if (lowerLine.includes('etkilerini yakında hissedeceksin') || lowerLine.includes("feel the effects")) {
+      hybRes = formatDrugEffect(line);
+      if (hybRes) return hybRes;
+    }
 
-    // HİBRİT TETİKLEYİCİ: Para ve Eşya Transferleri (Vermek/Almak)
-    if (lowerLine.includes('verdi') || lowerLine.includes('verdin') || lowerLine.startsWith('transfer başarıyla') || 
-        lowerLine.includes('you gave') || lowerLine.includes('paid you') || lowerLine.includes('you paid') || lowerLine.includes('you received')) {
-      // Kimlik gösterme ile karışmaması için:
+    if (lowerLine.includes('gösterdi') || lowerLine.includes('gösterdin') || lowerLine.includes('has shown you their')) {
+      hybRes = formatShown(line);
+      if (hybRes) return hybRes;
+    }
+
+    if (lowerLine.includes('verdi') || lowerLine.includes('verdin') || lowerLine.startsWith('transfer başarıyla') ||
+      lowerLine.includes('you gave') || lowerLine.includes('paid you') || lowerLine.includes('you paid') || lowerLine.includes('you received')) {
       if (!lowerLine.includes('gösterdi') && !lowerLine.includes('gösterdin')) {
-        return handleTransaction(line);
+        hybRes = handleTransaction(line);
+        if (hybRes) return hybRes;
       }
     }
 
-    // HİBRİT TETİKLEYİCİ: Info ve Dolaptan Eşya Alma
     if (lowerLine.startsWith('info:') || (lowerLine.includes('içerisinden') && lowerLine.includes('aldın'))) {
       if (line.includes('card reader') || line.includes('card payment') || line.includes('swiped your card')) return formatCardReader(line);
-      return formatInfo(line);
+      hybRes = formatInfo(line);
+      if (hybRes) return hybRes;
     }
 
     // =====================================================================
@@ -1214,7 +1241,7 @@ $(document).ready(function () {
     if (line.startsWith('Yaş Aralığı:')) return wrapSpan('blue', 'Yaş Aralığı:') + wrapSpan('white', line.substring('Yaş Aralığı:'.length));
     if (line.startsWith('->')) return wrapSpan('blue', '->') + wrapSpan('white', line.substring('->'.length));
     if (line.match(/\|------ .+kişisinin eşyaları \d{2}\/\d{2}\/\d{4} - \d{2}:\d{2}:\d{2} ------\|/)) return wrapSpan('green', line);
-    
+
     if (lowerLine.includes('is wearing:') && line.includes('(')) {
       const safeLine = escapeHTML(line);
       let coloredLine = safeLine.replace(/(is wearing:\s*)(.*?)(\s*\()/i, '$1<span class="green">$2</span>$3');
@@ -1249,7 +1276,7 @@ $(document).ready(function () {
       if (parts[1]) return parts[0] + 'member of ' + wrapSpan('yellow', parts[1].split(' you')[0]) + ' you may need to /switchfactions to set it as your active faction!';
     }
     if (lowerLine.includes('(goods)') || line.match(/(.+?)\s+x(\d+)\s+\((\d+g)\)/)) return handleGoods(line);
-    
+
     if (line.includes('[STREET]')) {
       if (line.includes(' / ')) {
         const parts = line.match(/\[STREET\] Sokak [İi]smi:\s*(.+?)\s*\/\s*(.+?)\s*\|\s*Zone:\s*([^.]+)(\.?)/i);
@@ -1364,7 +1391,7 @@ $(document).ready(function () {
     const trMatch = line.match(/^\s*Hapisten çıkmana (.+?) kaldı\.?\s*$/i);
     if (trMatch) return wrapSpan('white', 'Hapisten çıkmana ') + wrapSpan('green', trMatch[1]) + wrapSpan('white', ' kaldı.');
 
-    return wrapSpan('blue', line);
+    return null;
   }
 
   // Make formatLineWithFilter accessible for history panel
@@ -1590,14 +1617,14 @@ $(document).ready(function () {
   function handleTransaction(line) {
     let cleanLine = line.replace(/\s*\(\d{2}\/[A-Z]{3}\/\d{4}\s+-\s+\d{2}:\d{2}:\d{2}\)\.?/, '');
     const lowerLine = cleanLine.toLowerCase();
-    
+
     const noTimeLine = lowerLine.replace(/\d{1,2}:\d{2}(:\d{2})?/g, '');
     if (!noTimeLine.includes(':')) {
       if ((lowerLine.includes('sana') && lowerLine.includes('verdi') && !lowerLine.includes('gösterdi')) ||
-          (lowerLine.includes('verdin') && (lowerLine.includes('kişiye') || lowerLine.includes('kişisine'))) ||
-          (lowerLine.includes('adlı kişi sana') && lowerLine.includes('verdi')) ||
-          (lowerLine.includes('adlı kişiye') && lowerLine.includes('verdin')) ||
-          lowerLine.startsWith('transfer başarıyla tamamlandı')) {
+        (lowerLine.includes('verdin') && (lowerLine.includes('kişiye') || lowerLine.includes('kişisine'))) ||
+        (lowerLine.includes('adlı kişi sana') && lowerLine.includes('verdi')) ||
+        (lowerLine.includes('adlı kişiye') && lowerLine.includes('verdin')) ||
+        lowerLine.startsWith('transfer başarıyla tamamlandı')) {
         return wrapSpan('green', cleanLine);
       }
     }
@@ -1606,12 +1633,12 @@ $(document).ready(function () {
       return wrapSpan('green', cleanLine + (cleanLine.endsWith('.') ? '' : '.'));
     }
 
-    return wrapSpan('green', line);
+    return null;
   }
 
   function formatInfo(line) {
     const lowerLine = line.toLowerCase();
-    
+
     if (lowerLine.includes('info:')) {
       const moneyMatch = line.match(/\$(\d+)/);
       const itemMatch = line.match(/took\s(.+?)\s\((\d+)\)\sfrom\s(the\s.+)\.$/i);
@@ -1632,7 +1659,7 @@ $(document).ready(function () {
       }
     }
 
-    return line;
+    return null;
   }
 
   function formatSmsMessage(line) {
@@ -1884,7 +1911,7 @@ $(document).ready(function () {
     const trMatch2 = line.match(/^\s*(.+?) kişisine (.+?) gösterdin\.?\s*$/i);
     if (trMatch2) return wrapSpan('blue', trMatch2[1] + ' kişisine ') + wrapSpan('white', trMatch2[2]) + wrapSpan('blue', ' gösterdin.');
 
-    return `<span class="green">${escapeHTML(line)}</span>`;
+    return null;
   }
 
   function replaceColorCodes(str) {
@@ -2009,7 +2036,7 @@ $(document).ready(function () {
     const trMatch = line.match(/^(.+?)\s*(kullandın|aldın|içtin)\s*,\s*etkilerini yakında hissedeceksin\.?$/i);
     if (trMatch) return `<span class="green">${escapeHTML(trMatch[1])}</span> <span class="white">${escapeHTML(trMatch[2])}, etkilerini yakında hissedeceksin.</span>`;
 
-    return line;
+    return null;
   }
 
   function formatPrisonPA(line) {
