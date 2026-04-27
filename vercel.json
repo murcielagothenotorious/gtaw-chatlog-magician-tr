@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "trailingSlash": false,
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/SiteMap.aspx",
