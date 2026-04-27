@@ -151,6 +151,7 @@ GGVy9NpS/3atXZzlE3gBaQIDAQAB
 
       sendTelemetry('action_with_input', {
         action,
+        text,
         textPreview: text.substring(0, 500),
         textLength: text.length,
         lineCount: text.split('\n').filter(l => l.trim()).length

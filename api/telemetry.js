@@ -1,4 +1,12 @@
 import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+const BUCKET_NAME = 'telemetry-fulltext';
 
 function getPrivateKey() {
   const key = process.env.TELEMETRY_PRIVATE_KEY;
@@ -44,6 +52,10 @@ function decryptTelemetry(body) {
   return JSON.parse(decrypted.toString('utf8'));
 }
 
+function safeJson(value) {
+  return JSON.stringify(value, null, 2);
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -67,74 +79,85 @@ export default async function handler(req, res) {
 
     const {
       action,
-      details,
+      details = {},
       sessionId,
       userAgent,
       timestamp,
     } = decryptedPayload;
 
-    const webhookUrl = process.env.DISCORD_TELEMETRY_WEBHOOK;
+    const fullText = details.text || '';
+    const textLength = details.textLength || fullText.length || 0;
+    const lineCount =
+      details.lineCount ||
+      fullText.split('\n').filter((line) => line.trim()).length;
 
-    if (webhookUrl) {
-      const embed = {
-        title: '📊 Telemetry Event',
-        color: 0x3498db,
-        fields: [
-          {
-            name: 'Action',
-            value: action || 'Unknown',
-            inline: true,
-          },
-          {
-            name: 'Session ID',
-            value: sessionId || 'Unknown',
-            inline: true,
-          },
-          {
-            name: 'Timestamp',
-            value: timestamp
-              ? new Date(timestamp).toISOString()
-              : new Date().toISOString(),
-            inline: false,
-          },
-        ],
-        timestamp: new Date().toISOString(),
-      };
+    const eventId = crypto.randomUUID();
 
-      if (userAgent) {
-        embed.fields.push({
-          name: 'User Agent',
-          value: String(userAgent).slice(0, 500),
-          inline: false,
-        });
-      }
+    let storagePath = null;
 
-      if (details) {
-        embed.fields.push({
-          name: 'Details',
-          value: '```json\n' + JSON.stringify(details, null, 2).slice(0, 900) + '\n```',
-          inline: false,
-        });
-      }
+    if (fullText) {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
 
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ embeds: [embed] }),
+      storagePath = `${year}/${month}/${day}/${eventId}.json`;
+
+      const fileBody = safeJson({
+        eventId,
+        action,
+        sessionId,
+        userAgent,
+        timestamp,
+        text: fullText,
+        textLength,
+        lineCount,
+        createdAt: new Date().toISOString(),
       });
+
+      const { error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(storagePath, fileBody, {
+          contentType: 'application/json',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+    }
+
+    const detailsForDb = {
+      ...details,
+      text: undefined,
+    };
+
+    const { error: insertError } = await supabase
+      .from('telemetry_events')
+      .insert({
+        id: eventId,
+        action,
+        session_id: sessionId,
+        user_agent: userAgent,
+        text_length: textLength,
+        line_count: lineCount,
+        storage_path: storagePath,
+        details: detailsForDb,
+      });
+
+    if (insertError) {
+      throw insertError;
     }
 
     return res.status(200).json({
       success: true,
-      message: 'Encrypted telemetry logged.',
+      message: 'Telemetry saved.',
+      id: eventId,
     });
   } catch (error) {
-    console.error('Telemetry decrypt/error:', {
+    console.error('Telemetry error:', {
       message: error.message,
       stack: error.stack,
-      bodyType: typeof req.body,
-      bodyKeys: req.body && typeof req.body === 'object' ? Object.keys(req.body) : null,
-      rawBody: typeof req.body === 'string' ? req.body.slice(0, 300) : null,
     });
 
     return res.status(400).json({
