@@ -1194,6 +1194,11 @@ $(document).ready(function () {
   $(document).on('chatlogProcessed', function (_event, _text) { });
 
   $('#downloadOutputTransparent').click(async function () {
+    window.Telemetry?.sendActionWithInput(
+      'downloadOutputTransparent',
+      $('#chatlogInput').val() || ''
+    );
+
     // Check if we're in overlay mode and have an image
     if (
       window.ImageOverlayState &&
@@ -1201,22 +1206,24 @@ $(document).ready(function () {
       window.ImageOverlayState.imageElement &&
       window.OverlayRenderer
     ) {
-      // Save to history before downloading
       const text = $('#chatlogInput').val().trim();
       if (text) {
         saveToHistory(text);
         refreshHistoryPanel();
       }
 
-      // Use overlay renderer
       await window.OverlayRenderer.renderAndDownload('download');
     } else {
-      // Use regular download
       downloadOutputImage('download');
     }
   });
 
   $('#copyOutputImage').click(async function () {
+    window.Telemetry?.sendActionWithInput(
+      'copyOutputImage',
+      $('#chatlogInput').val() || ''
+    );
+
     // Check if we're in overlay mode and have an image
     if (
       window.ImageOverlayState &&
@@ -1224,17 +1231,14 @@ $(document).ready(function () {
       window.ImageOverlayState.imageElement &&
       window.OverlayRenderer
     ) {
-      // Save to history before downloading
       const text = $('#chatlogInput').val().trim();
       if (text) {
         saveToHistory(text);
         refreshHistoryPanel();
       }
 
-      // Use overlay renderer to copy
       await window.OverlayRenderer.renderAndDownload('copy');
     } else {
-      // Use regular copy
       downloadOutputImage('copy');
     }
   });
