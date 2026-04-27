@@ -11,6 +11,10 @@ function getPrivateKey() {
 }
 
 function decryptTelemetry(body) {
+  if (!body?.encryptedKey || !body?.iv || !body?.data) {
+    throw new Error('Missing encrypted payload fields');
+  }
+
   const privateKey = getPrivateKey();
 
   const encryptedKey = Buffer.from(body.encryptedKey, 'base64');
@@ -54,7 +58,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const decryptedPayload = decryptTelemetry(req.body);
+    const body =
+      typeof req.body === 'string'
+        ? JSON.parse(req.body)
+        : req.body;
+
+    const decryptedPayload = decryptTelemetry(body);
 
     const {
       action,
@@ -120,11 +129,18 @@ export default async function handler(req, res) {
       message: 'Encrypted telemetry logged.',
     });
   } catch (error) {
-    console.error('Telemetry decrypt/error:', error);
+    console.error('Telemetry decrypt/error:', {
+      message: error.message,
+      stack: error.stack,
+      bodyType: typeof req.body,
+      bodyKeys: req.body && typeof req.body === 'object' ? Object.keys(req.body) : null,
+      rawBody: typeof req.body === 'string' ? req.body.slice(0, 300) : null,
+    });
 
     return res.status(400).json({
       success: false,
       error: 'Invalid telemetry payload',
+      reason: error.message,
     });
   }
 }
