@@ -1717,24 +1717,20 @@ $(document).ready(function () {
 
     // Try to match the full format with commands
     const fullMatch = line.match(
-      /\(([^)]+)\)\s+(.+?)\s+tarafından gelen çağrı\. Açmak için\s+(.+?)\s+veya kapatmak için\s+(.+?)\./
+      /\(([^)]+)\)\s+(.+?)\s+tarafından gelen çağrı(.+)/i
     );
     if (fullMatch) {
       const parenthetical = escapeHTML(fullMatch[1]);
       const caller = escapeHTML(fullMatch[2]);
-      const pickupCommand = escapeHTML(fullMatch[3]);
-      const hangupCommand = escapeHTML(fullMatch[4]);
+      const restofcall = escapeHTML(fullMatch[3]);
 
       return (
         '<span class="yellow">(' +
         parenthetical +
         ') ' + caller +
-        '</span> <span class="white">tarafından gelen çağrı. </span>' +
-        '<span class="white">Açmak için ' +
-        pickupCommand +
-        ' veya kapatmak için ' +
-        hangupCommand +
-        '.</span>'
+        '</span> <span class="white">tarafından gelen çağrı</span>' +
+        '<span class="white">' +
+        restofcall
       );
     }
 
