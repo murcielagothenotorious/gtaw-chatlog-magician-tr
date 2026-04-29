@@ -1,12 +1,10 @@
 /**
  * UI Utilities and Minor Feature Logic
- * Includes: Toast notifications, Firefox warning, Support nudge (milestones), 
+ * Includes: Toast notifications, Firefox warning, Support nudge (popup after exports), 
  * Feedback category selection, and various DOM listeners.
  */
-
 (function () {
   'use strict';
-
   /* ── 1. Toast Notification Logic ── */
   function showToast(msg, icon) {
     const t = document.getElementById('cmToast');
@@ -54,69 +52,26 @@
     
     modal.style.display = 'flex';
     
-    // Set category to translation
     setTimeout(function () {
       var select = document.getElementById('feedbackCategory');
       if (select) {
         select.value = 'translation';
-        // Trigger visual update
         var btn = document.querySelector('#feedbackCategoryBtns button[data-cat="translation"]');
         if (btn) window._fbSetCat(btn);
       }
     }, 50);
   };
 
-  /* ── 3. Support Nudge (Milestones) Logic ── */
+  /* ── 3. Support Nudge (Popup every 4-5 exports) ── */
   const NudgeSystem = (function() {
     var COUNTER_KEY = 'cm_export_count';
-    var DISMISS_KEY = 'cm_nudge_dismissed';
-    var NUDGE_FIRST = 4;
-    var NUDGE_REPEAT = 8;
-    var NUDGE_MS = 8000;
-
-    var MILESTONES = [
-      { at: 3, msg: 'Hattrick! 3. export tamam', icon: 'fa-hat-wizard' },
-      { at: 5, msg: 'High five! 5. export', icon: 'fa-hand-sparkles' },
-      { at: 10, msg: '10 oldu, artık profesyonelsin!', icon: 'fa-star' },
-      { at: 15, msg: 'Rakip üçledi! 15. export', icon: 'fa-basketball' },
-      { at: 20, msg: '20 export... GTA World seni tanıyor artık', icon: 'fa-trophy' },
-      { at: 25, msg: 'Çeyrek yüz! Sihirbaz olma yolundasın', icon: 'fa-wand-magic-sparkles' },
-      { at: 30, msg: '30! Bu chatlog makinesi durdurulamıyor', icon: 'fa-fire' },
-      { at: 42, msg: 'Hayatın, evrenin ve her şeyin cevabı: 42', icon: 'fa-infinity' },
-      { at: 50, msg: 'Yarım yüz! Efsane statüsüne ulaştın', icon: 'fa-crown' },
-      { at: 69, msg: 'Nice.', icon: 'fa-face-grin-wink' },
-      { at: 75, msg: '75 export, bu ciddi bir bağımlılık', icon: 'fa-pills' },
-      { at: 100, msg: '100! YÜZÜNCÜ EXPORT! Sen bir efsanesin', icon: 'fa-meteor' },
-      { at: 150, msg: '150... Tamam sen başka bir seviyesin', icon: 'fa-rocket' },
-      { at: 200, msg: '200 export. Artık Blanco sana teşekkür borçlu', icon: 'fa-gem' },
-      { at: 250, msg: '250! Bu noktada chatlog seni kullanıyor', icon: 'fa-robot' },
-      { at: 300, msg: '300 Spartalı değil ama 300 export!', icon: 'fa-shield-halved' },
-      { at: 365, msg: 'Günde bir export, doktoru uzak tutar', icon: 'fa-calendar-check' },
-      { at: 404, msg: '404: Hayatın bulunamadı (ama export bulundu)', icon: 'fa-ghost' },
-      { at: 500, msg: '500! Yarım bin export. Efsaneler unutulmaz', icon: 'fa-landmark' },
-      { at: 666, msg: 'Şeytani bir rakam ama helal olsun', icon: 'fa-skull' },
-      { at: 777, msg: 'Jackpot! Şanslı üçlü yediler', icon: 'fa-dice' },
-      { at: 1000, msg: '1000! BİN! Tanrı seviyesi açıldı', icon: 'fa-bolt' }
-    ];
-
-    var FLAVOR_POOL = [
-      { msg: 'Bir chatlog daha kurtarıldı!', icon: 'fa-wand-magic-sparkles' },
-      { msg: 'Sihirbaz iş başında', icon: 'fa-hat-wizard' },
-      { msg: 'Chatlog sihri uygulandı', icon: 'fa-magic' },
-      { msg: 'RP kalitesi +10 arttı', icon: 'fa-arrow-up' },
-      { msg: 'Temiz iş, patron', icon: 'fa-thumbs-up' },
-      { msg: 'Screenshot game: strong', icon: 'fa-camera' },
-      { msg: 'Profesyonel dokunuş eklendi', icon: 'fa-paintbrush' },
-      { msg: 'Bu chatlog başka güzel oldu', icon: 'fa-face-smile-beam' },
-      { msg: 'Forum paylaşımına hazır!', icon: 'fa-share-from-square' },
-      { msg: '*alkışlar*', icon: 'fa-hands-clapping' }
-    ];
+    var NUDGE_INTERVAL = 4 + Math.floor(Math.random() * 2); // 4 veya 5
 
     function getCount() {
       return parseInt(localStorage.getItem(COUNTER_KEY) || '0', 10);
     }
 
-    function showNudge() {
+    function showNudgePopup() {
       var el = document.getElementById('supportNudge');
       if (!el) return;
       setTimeout(function () {
@@ -124,7 +79,7 @@
         clearTimeout(el._autoHide);
         el._autoHide = setTimeout(function () {
           el.classList.remove('show');
-        }, NUDGE_MS);
+        }, 8000);
       }, 1800);
     }
 
@@ -133,37 +88,22 @@
         var count = getCount() + 1;
         localStorage.setItem(COUNTER_KEY, count.toString());
 
-        // Milestone check
-        var milestone = MILESTONES.find(m => m.at === count);
-        if (milestone && !localStorage.getItem('cm_milestone_' + milestone.at)) {
-          localStorage.setItem('cm_milestone_' + milestone.at, '1');
-          setTimeout(() => showToast(milestone.msg, milestone.icon), 2600);
-          return;
-        }
-
-        // Flavor toast (20% chance)
-        if (count > 8 && Math.random() < 0.20) {
-          var pick = FLAVOR_POOL[Math.floor(Math.random() * FLAVOR_POOL.length)];
-          setTimeout(() => showToast(pick.msg, pick.icon), 2600);
-        }
-
-        // Support nudge
-        if (!localStorage.getItem(DISMISS_KEY)) {
-          if (count === NUDGE_FIRST || (count > NUDGE_FIRST && (count - NUDGE_FIRST) % NUDGE_REPEAT === 0)) {
-            showNudge();
-          }
+        // Her 4-5 exportta bir support nudge popup göster
+        if (count % NUDGE_INTERVAL === 0) {
+          showNudgePopup();
         }
       },
       dismissNudge: function() {
+        // Sadece o anki popup'ı kapat, bir daha göstermemeyi kaydetme
         var el = document.getElementById('supportNudge');
         if (el) el.classList.remove('show');
-        localStorage.setItem(DISMISS_KEY, '1');
       }
     };
   })();
 
   /* ── 4. Info Box Persistence ── */
   const INFO_BOX_KEY = 'cm_infobox_closed';
+
   window.closeInfoBox = function () {
     var el = document.getElementById('infoBox');
     if (el) el.style.display = 'none';
@@ -182,7 +122,6 @@
     setTimeout(function () {
       var isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
       var hasSeenWarning = localStorage.getItem('cm_firefox_warning_seen');
-
       if (isFirefox && !hasSeenWarning) {
         var modal = document.getElementById('firefoxModal');
         if (modal) modal.style.display = 'flex';
@@ -207,7 +146,7 @@
     });
     initFirefoxWarning();
 
-    // Export listeners (for milestones/nudge)
+    // Export listeners (for nudge)
     var copyBtn = document.getElementById('copyOutputImage');
     var dlBtn = document.getElementById('downloadOutputTransparent');
     if (copyBtn) copyBtn.addEventListener('click', () => setTimeout(NudgeSystem.onExport, 500));
@@ -246,7 +185,6 @@
     
     // InfoBox init
     initInfoBox();
-
 
     // infoBox feedback button fallback
     document.querySelectorAll('.openFeedbackBtn').forEach(function (btn) {
@@ -287,5 +225,4 @@
     if (drawer) new MutationObserver(syncFloating).observe(drawer, { attributes: true, attributeFilter: ['class'] });
     if (historyPanel) new MutationObserver(syncFloating).observe(historyPanel, { attributes: true, attributeFilter: ['class'] });
   });
-
 })();
