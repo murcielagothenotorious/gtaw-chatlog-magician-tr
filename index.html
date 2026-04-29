@@ -70,12 +70,10 @@
       style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
   <a class="skip-link" href="#main">Ana içeriğe geç</a>
-  <header role="banner">
-    <h1 class="visually-hidden">Chatlog Magician</h1>
-    <nav aria-label="Primary" class="visually-hidden">
-      <a href="#output">Çıktı</a>
-      <a href="#historyPanel">Geçmiş</a>
-    </nav>
+  <nav aria-label="Primary" class="visually-hidden">
+    <a href="#output">Çıktı</a>
+    <a href="#historyPanel">Geçmiş</a>
+  </nav>
   </header>
   <button id="floatingSysMsgToggle" class="floating-sys-btn" title="Sistem Bildirimleri: Gizli (Açmak için tıkla)">
     <i class="fas fa-filter-circle-xmark"></i>
@@ -104,34 +102,12 @@
                   <button class="button small secondary" id="showCharacterListBtn" type="button"
                     aria-label="Show character list">&#9660;</button>
                 </div>
-                <div id="characterNameDropdown" class="character-dropdown"
-                  style="display: none; position: absolute; top: 110%; left: 0; right: 0; background: var(--surface); color: var(--text); border: 1px solid rgba(255, 255, 255, 0.12); z-index: 1000; max-height: 150px; overflow-y: auto; border-radius: 0;"
-                  role="listbox">
+                <div id="characterNameDropdown" class="character-dropdown" role="listbox">
                 </div>
               </div>
             </div>
           </div>
           <label for="chatlogInput">Sohbet Kaydı:</label>
-          <br>
-          <div id="infoBox"
-            style="display: flex; align-items: center; gap: 14px; background: rgba(243, 156, 18, 0.07); border: 1px solid rgba(243, 156, 18, 0.2); border-left: 3px solid #f39c12; padding: 11px 38px 11px 16px; margin-bottom: 24px; border-radius: 8px; font-size: 12.5px; color: #d0d0d0; line-height: 1.5; position: relative;">
-            <i class="fas fa-language" style="color: #f39c12; font-size: 20px; flex-shrink: 0;"></i>
-            <div style="flex: 1; min-width: 0;">
-              <strong style="color: #f39c12; display: inline; margin-right: 6px;">Eksik çeviri mi var?</strong>
-              Birçok sistem mesajı zaten boyanıyor ama bazıları henüz eksik olabilir — siz de öneri gönderebilirsiniz.
-            </div>
-            <button
-              onclick="var m=document.getElementById('feedbackModal'); if(m){m.style.display='flex'; setTimeout(function(){var s=document.getElementById('feedbackCategory');if(s){s.value='translation';s.dispatchEvent(new Event('change'));}},50);}"
-              style="flex-shrink: 0; background: rgba(243,156,18,0.12); border: 1px solid rgba(243,156,18,0.3); color: #f39c12; font-size: 11px; padding: 5px 10px; border-radius: 6px; cursor: pointer; white-space: nowrap; transition: background 0.2s;"
-              onmouseover="this.style.background='rgba(243,156,18,0.25)'"
-              onmouseout="this.style.background='rgba(243,156,18,0.12)'">
-              Öneri Gönder
-            </button>
-            <span onclick="document.getElementById('infoBox').style.display='none'"
-              style="position: absolute; top: 8px; right: 10px; cursor: pointer; font-size: 15px; color: #666; line-height: 1;"
-              onmouseover="this.style.color='#bbb'" onmouseout="this.style.color='#666'">&times;</span>
-          </div>
-
           <!-- TXT Dosya Yükleme Alanı -->
           <input type="file" id="chatlogFileInput" accept=".txt,.log" style="display: none;"
             aria-label="Chatlog dosyası seç">
@@ -861,7 +837,7 @@
             style="border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); overflow: hidden; transition: background 0.18s;"
             onmouseover="this.style.background='rgba(255,255,255,0.07)'"
             onmouseout="this.style.background='rgba(255,255,255,0.03)'">
-            <img src="assets/images/image.png" style="width: 100%; height: 155px; object-fit: cover; display: block;">
+            <img src="assets/images/image.png" style="width: 100%; height: 155px; object-fit: cover; display:block;">
             <div style="padding: 11px 14px 13px;">
               <h3 style="margin: 0 0 4px 0; font-size: 13.5px; color: #fff; font-weight: 600;">Hızlı Metin Formatlama
               </h3>
@@ -1305,164 +1281,13 @@
     </div>
   </div>
 
-  <script>
-    window._fbSetCat = function (btn) {
-      var cat = btn.getAttribute('data-cat');
-      document.getElementById('feedbackCategory').value = cat;
-      var btns = document.querySelectorAll('#feedbackCategoryBtns button');
-      btns.forEach(function (b) {
-        b.style.background = 'rgba(255,255,255,0.04)';
-        b.style.borderColor = 'rgba(255,255,255,0.08)';
-        b.style.color = 'rgba(255,255,255,0.5)';
-      });
-      btn.style.background = 'rgba(52,152,219,0.15)';
-      btn.style.borderColor = 'rgba(52,152,219,0.4)';
-      btn.style.color = '#3498db';
-      var hint = document.getElementById('translationHint');
-      if (hint) hint.style.display = cat === 'translation' ? 'block' : 'none';
-    };
-  </script>
-
-
-
   <script src="js/init.js?v=1.3.0" defer></script>
-  <style>
-    /* Toast notification */
-    #cmToast {
-      position: fixed;
-      bottom: 28px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: rgba(30, 34, 44, 0.97);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #e8e8e8;
-      font-size: 13px;
-      padding: 10px 18px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.22s ease, transform 0.22s ease;
-      z-index: 99999;
-      white-space: nowrap;
-      backdrop-filter: blur(8px);
-    }
+  <script src="js/ui-utils.js" defer></script>
 
-    #cmToast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    #cmToast .toast-icon {
-      color: #2ecc71;
-      font-size: 14px;
-    }
-  </style>
-  <!-- Toast element -->
   <div id="cmToast">
     <i class="fas fa-check-circle toast-icon"></i>
     <span id="cmToastMsg">Panoya kopyalandı</span>
   </div>
-  <script>
-    (function () {
-      /* ── Toast helper ── */
-      function showToast(msg, icon) {
-        var t = document.getElementById('cmToast');
-        var m = document.getElementById('cmToastMsg');
-        var ic = t.querySelector('.toast-icon');
-        if (m) m.textContent = msg || 'Panoya kopyalandı';
-        if (ic) ic.className = 'fas ' + (icon || 'fa-check-circle') + ' toast-icon';
-        t.classList.add('show');
-        clearTimeout(t._timer);
-        t._timer = setTimeout(function () { t.classList.remove('show'); }, 2200);
-      }
-      window.showToast = showToast;
-
-      /* ── Intercept copy button ── */
-      document.addEventListener('DOMContentLoaded', function () {
-        var copyBtn = document.getElementById('copyOutputImage');
-        if (copyBtn) {
-          copyBtn.addEventListener('click', function () {
-            setTimeout(function () { showToast('Panoya kopyalandı', 'fa-check-circle'); }, 300);
-          });
-        }
-
-        var dlBtn = document.getElementById('downloadOutputTransparent');
-        if (dlBtn) {
-          dlBtn.addEventListener('click', function () {
-            setTimeout(function () { showToast('Görsel indiriliyor...', 'fa-download'); }, 200);
-          });
-        }
-
-        /* ── Changelog badge dot logic ── */
-        var SEEN_KEY = 'cm_changelog_seen_v1_4_1';
-        var badge = document.getElementById('changelogBadge');
-        var openBtn = document.getElementById('openChangelogBtn');
-        var closeBtn = document.getElementById('closeChangelogModal');
-        if (badge) {
-          if (!localStorage.getItem(SEEN_KEY)) {
-            badge.style.display = 'block';
-          }
-        }
-        function markSeen() {
-          localStorage.setItem(SEEN_KEY, '1');
-          if (badge) badge.style.display = 'none';
-        }
-        if (openBtn) openBtn.addEventListener('click', markSeen);
-        if (closeBtn) closeBtn.addEventListener('click', markSeen);
-
-        /* ── infoBox feedback button fallback ── */
-        document.querySelectorAll('.openFeedbackBtn').forEach(function (btn) {
-          btn.addEventListener('click', function () {
-            var m = document.getElementById('feedbackModal');
-            if (m) m.style.display = 'flex';
-          });
-        });
-
-        /* ── Feedback: kategori seçiliyken summary'ye prefix ekle ── */
-        var submitBtn = document.getElementById('submitFeedbackBtn');
-        if (submitBtn) {
-          submitBtn.addEventListener('click', function () {
-            var cat = document.getElementById('feedbackCategory');
-            var summary = document.getElementById('feedbackSummary');
-            if (!cat || !summary) return;
-            var labels = { suggestion: '[İstek]', bug: '[Hata]', translation: '[Çeviri]' };
-            var label = labels[cat.value] || '';
-            var val = summary.value.trim();
-            // Prefix yoksa ekle (çift eklemeyi önle)
-            if (label && !val.startsWith('[')) {
-              summary.value = label + ' ' + val;
-            }
-          }, true); // capture: true — init.js'in listener'ından önce çalışır
-        }
-
-        /* ── Floating buton gizle/göster: changelog + history ── */
-        var floatingBtn = document.getElementById('floatingSysMsgToggle');
-        var drawer = document.getElementById('changelogDrawer');
-        var historyPanel = document.getElementById('historyPanel');
-
-        function syncFloating() {
-          if (!floatingBtn) return;
-          var hidden = (drawer && drawer.classList.contains('open')) ||
-            (historyPanel && historyPanel.classList.contains('open'));
-          floatingBtn.style.transition = 'opacity 0.2s';
-          floatingBtn.style.opacity = hidden ? '0' : '';
-          floatingBtn.style.pointerEvents = hidden ? 'none' : '';
-        }
-
-        if (drawer) {
-          new MutationObserver(syncFloating).observe(drawer, { attributes: true, attributeFilter: ['class'] });
-        }
-        if (historyPanel) {
-          new MutationObserver(syncFloating).observe(historyPanel, { attributes: true, attributeFilter: ['class'] });
-        }
-      });
-    })();
-  </script>
-
-  <!-- Speed Insights removed - migrated to Cloudflare Pages -->
 
   <footer class="site-signature">
     <p style="margin: 0; letter-spacing: 0.5px;">
@@ -1474,6 +1299,12 @@
           onmouseover="this.style.color='#fff'; this.style.textDecorationColor='#fff'"
           onmouseout="this.style.color='inherit'; this.style.textDecorationColor='rgba(255,255,255,0.3)'">murcielago</a></strong>
       tarafından adapte edildi.
+      <span style="margin: 0 10px; opacity: 0.5;">|</span>
+      <strong><a href="https://forum-tr.gta.world/index.php?/topic/27368-chatlog-magician/" target="_blank"
+          style="color: inherit; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.3); transition: color 0.2s, text-decoration-color 0.2s;"
+          onmouseover="this.style.color='#fff'; this.style.textDecorationColor='#fff'"
+          onmouseout="this.style.color='inherit'; this.style.textDecorationColor='rgba(255,255,255,0.3)'">
+          Konuyu İncele</a></strong>
     </p>
     <div style="margin-top: 10px; font-size: 11px; opacity: 0.5; display: flex; flex-direction: column; gap: 4px;">
       <p style="margin: 0;">Bu, resmi olmayan, hayran yapımı bir araçtır. GTA World veya GTA World Türkiye ile
@@ -1482,6 +1313,87 @@
         World or GTA World Türkiye.</p>
     </div>
   </footer>
+  <div id="firefoxModal" class="ff-warn-backdrop" style="display:none;">
+    <div class="ff-warn-modal">
+      <div class="ff-warn-head">
+        <i class="fab fa-firefox-browser ff-warn-icon"></i>
+        <h2 class="ff-warn-title">Firefox Uyumluluk Uyarısı</h2>
+      </div>
+      <p class="ff-warn-body">
+        <strong>Firefox tarayıcısı kullanıyorsunuz.</strong> Chatlog Magician, Firefox'un tam desteklemediği bazı
+        gelişmiş görsel işleme yöntemlerini kullanır. Bu nedenle; indirdiğiniz görseller boş çıkabilir, metinlerin dış
+        çizgileri bozulabilir, "Kopyala" butonu tepki vermeyebilir veya katmanlar hatalı yüklenebilir.
+      </p>
+      <p class="ff-warn-body" style="font-weight:600;">
+        En iyi deneyim için bu sayfayı aşağıdaki Chromium tabanlı tarayıcılardan birinde açmanız önerilir:
+      </p>
+      <p class="ff-warn-note">Logolarına tıklayarak indirme sayfalarına gidebilirsiniz.</p>
+      <div class="ff-warn-grid">
+        <a href="https://www.google.com/chrome/" target="_blank" rel="noopener" class="ff-warn-card">
+          <div class="ff-warn-card__logo">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="24" r="22" fill="#4285F4" opacity="0.15" />
+              <text x="24" y="30" text-anchor="middle" font-size="20" fill="#4285F4" font-family="sans-serif"
+                font-weight="bold">C</text>
+            </svg>
+          </div>
+          <span class="ff-warn-card__name">Chrome</span>
+        </a>
+        <a href="https://www.microsoft.com/edge" target="_blank" rel="noopener" class="ff-warn-card">
+          <div class="ff-warn-card__logo">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="24" r="22" fill="#0078D7" opacity="0.15" />
+              <text x="24" y="30" text-anchor="middle" font-size="20" fill="#0078D7" font-family="sans-serif"
+                font-weight="bold">E</text>
+            </svg>
+          </div>
+          <span class="ff-warn-card__name">Edge</span>
+        </a>
+        <a href="https://brave.com/" target="_blank" rel="noopener" class="ff-warn-card">
+          <div class="ff-warn-card__logo">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="24" r="22" fill="#FF4713" opacity="0.15" />
+              <text x="24" y="30" text-anchor="middle" font-size="20" fill="#FF4713" font-family="sans-serif"
+                font-weight="bold">B</text>
+            </svg>
+          </div>
+          <span class="ff-warn-card__name">Brave</span>
+        </a>
+        <a href="https://vivaldi.com/" target="_blank" rel="noopener" class="ff-warn-card">
+          <div class="ff-warn-card__logo">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="24" r="22" fill="#EF3939" opacity="0.15" />
+              <text x="24" y="30" text-anchor="middle" font-size="20" fill="#EF3939" font-family="sans-serif"
+                font-weight="bold">V</text>
+            </svg>
+          </div>
+          <span class="ff-warn-card__name">Vivaldi</span>
+        </a>
+        <a href="https://www.opera.com/" target="_blank" rel="noopener" class="ff-warn-card">
+          <div class="ff-warn-card__logo">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="24" r="22" fill="#FF1B2D" opacity="0.15" />
+              <text x="24" y="30" text-anchor="middle" font-size="20" fill="#FF1B2D" font-family="sans-serif"
+                font-weight="bold">O</text>
+            </svg>
+          </div>
+          <span class="ff-warn-card__name">Opera</span>
+        </a>
+      </div>
+      <div class="ff-warn-actions">
+        <button id="understoodFirefoxBtn" class="ff-warn-btn">Anladım, yine de devam et</button>
+      </div>
+    </div>
+  </div>
+  <div id="supportNudge" class="support-nudge">
+    <span class="support-nudge-icon">☕</span>
+    <div class="support-nudge-body">
+      <strong>Chatlog Magician işinize yarıyor mu?</strong><br>
+      <a href="https://forum-tr.gta.world/index.php?/topic/27368-chatlog-magician/" target="_blank" rel="noopener">Forum
+        konusunda</a> bir beğeni veya yorum bırakarak destek olabilirsiniz.
+    </div>
+    <button type="button" class="support-nudge-close" aria-label="Kapat" id="supportNudgeClose">&times;</button>
+  </div>
 </body>
 
 </html>

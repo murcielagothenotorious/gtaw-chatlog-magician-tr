@@ -75,6 +75,11 @@ hooks/
 favicon1.png
 logo.png
 
+/assets/videos/sansur1.webm
+/assets/videos/renk1.webm
+/assets/videos/karakter1.webm
+
+
 # Tailwind
 .tailwindcache/
 

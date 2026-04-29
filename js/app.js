@@ -1317,25 +1317,3 @@ $(document).ready(function () {
     });
   })();
 });
-
-// Randomly shake the Buy Me a Coffee button to draw attention (non-intrusive)
-(function initBmcNudge() {
-  function nudgeOnce() {
-    const btn = document.querySelector('.bmc-btn');
-    if (!btn) return;
-    btn.classList.add('bmc-attn');
-    setTimeout(() => btn.classList.remove('bmc-attn'), CONFIG.BMC_NUDGE_ANIMATION_MS);
-  }
-  function scheduleNext() {
-    // random between min and max interval
-    const ms =
-      CONFIG.BMC_NUDGE_MIN_INTERVAL_MS +
-      Math.random() * (CONFIG.BMC_NUDGE_MAX_INTERVAL_MS - CONFIG.BMC_NUDGE_MIN_INTERVAL_MS);
-    setTimeout(() => {
-      nudgeOnce();
-      scheduleNext();
-    }, ms);
-  }
-  // start after initial delay to avoid on-load distraction
-  setTimeout(scheduleNext, CONFIG.BMC_NUDGE_INITIAL_DELAY_MS);
-})();
