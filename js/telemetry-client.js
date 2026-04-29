@@ -132,12 +132,6 @@ GGVy9NpS/3atXZzlE3gBaQIDAQAB
     });
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    sendTelemetry('page_visit', {
-      resolution: `${window.innerWidth}x${window.innerHeight}`
-    });
-  });
-
   window.Telemetry = {
     send: sendTelemetry,
 
