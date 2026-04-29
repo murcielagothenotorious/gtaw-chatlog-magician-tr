@@ -64,7 +64,6 @@
   };
 
   /* ── 3. Support Nudge (Popup every 4-5 exports) ── */
-  /* ── 3. Support Nudge (Popup every 4-5 exports) ── */
   const NudgeSystem = (function() {
     var COUNTER_KEY = 'cm_export_count';
     var NUDGE_INTERVAL = 4 + Math.floor(Math.random() * 2); // 4 veya 5
@@ -73,7 +72,6 @@
       return parseInt(localStorage.getItem(COUNTER_KEY) || '0', 10);
     }
 
-    function showNudgePopup() {
     function showNudgePopup() {
       var el = document.getElementById('supportNudge');
       if (!el) return;
@@ -94,13 +92,9 @@
         // Her 4-5 exportta bir support nudge popup göster
         if (count % NUDGE_INTERVAL === 0) {
           showNudgePopup();
-        // Her 4-5 exportta bir support nudge popup göster
-        if (count % NUDGE_INTERVAL === 0) {
-          showNudgePopup();
         }
       },
       dismissNudge: function() {
-        // Sadece o anki popup'ı kapat, bir daha göstermemeyi kaydetme
         // Sadece o anki popup'ı kapat, bir daha göstermemeyi kaydetme
         var el = document.getElementById('supportNudge');
         if (el) el.classList.remove('show');
