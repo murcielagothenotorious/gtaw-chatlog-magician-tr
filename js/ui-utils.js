@@ -172,7 +172,7 @@
     }
 
     // Changelog badge dot logic
-    var SEEN_KEY = 'cm_changelog_seen_v1_4_1';
+    var SEEN_KEY = 'cm_changelog_seen_v1_4_2';
     var badge = document.getElementById('changelogBadge');
     var openChangelogBtn = document.getElementById('openChangelogBtn');
     var closeChangelogModal = document.getElementById('closeChangelogModal');
