@@ -100,9 +100,17 @@ let processingTimeout = null;
  * Stores the font size in localStorage for persistence
  * @returns {void}
  */
+function _fontWeightForSize(px) {
+  if (px <= 12) return 700;
+  if (px <= 15) return 600;
+  if (px <= 19) return 500;
+  return 400;
+}
+
 function updateFontSize() {
-  const fontSize = parseInt($('#font-label').val()) || CONFIG.FONT_SIZE_DEFAULT;
-  $('#output').css('font-size', fontSize + 'px');
+  const fontSize = parseFloat($('#font-label').val()) || CONFIG.FONT_SIZE_DEFAULT;
+  const fontWeight = _fontWeightForSize(fontSize);
+  $('#output').css({ 'font-size': fontSize + 'px', 'font-weight': fontWeight });
 
   // Apply font smoothing for smaller sizes to make them more rounded
   if (fontSize <= CONFIG.FONT_SIZE_SMALL_THRESHOLD) {
@@ -115,6 +123,7 @@ function updateFontSize() {
   const chatOverlay = document.querySelector('.chat-overlay-container');
   if (chatOverlay) {
     chatOverlay.style.fontSize = fontSize + 'px';
+    chatOverlay.style.fontWeight = fontWeight;
 
     // Re-render chat overlay to apply font size change
     if (window.ImageOverlayState && window.ImageOverlayState.currentMode === 'overlay') {
