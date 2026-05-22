@@ -21,6 +21,11 @@ const CONFIG = {
   LINE_HEIGHT_DEFAULT: 1.45, // Default line height
   LINE_HEIGHT_LARGE: 1.35, // Line height for large fonts
 
+  // Line spacing (manual override)
+  LINE_SPACING_DEFAULT: 1.45,
+  LINE_SPACING_MIN: 0.8,
+  LINE_SPACING_MAX: 3.0,
+
   // Performance
   INPUT_THROTTLE_MS: 200, // Throttle delay for input processing
   PROCESSING_DEBOUNCE_MS: 300, // Debounce delay for text processing
@@ -74,6 +79,7 @@ try {
   const SAVE_KEYS = new Set([
     'chatlogFontSize',
     'chatlogLineLength',
+    'chatlogLineSpacing',
     'chatlogCharacterName',
     'chatlogHistory',
   ]);
@@ -192,6 +198,26 @@ function goldenHintHTML(scale) {
 function applySizeClasses(px) {
   $('#output').toggleClass('is-small', px <= CONFIG.FONT_SIZE_DEFAULT);
   $('#output').toggleClass('is-large', px >= CONFIG.FONT_SIZE_LARGE_THRESHOLD);
+}
+
+function updateLineSpacing() {
+  const spacing = parseFloat($('#lineSpacingInput').val()) || CONFIG.LINE_SPACING_DEFAULT;
+  const clamped = Math.min(CONFIG.LINE_SPACING_MAX, Math.max(CONFIG.LINE_SPACING_MIN, spacing));
+  $('#output').css('line-height', clamped);
+
+  const chatOverlay = document.querySelector('.chat-overlay-container');
+  if (chatOverlay) {
+    chatOverlay.style.lineHeight = clamped;
+    if (window.ImageOverlayState && window.ImageOverlayState.currentMode === 'overlay') {
+      window.ImageOverlayState.renderChatOverlay();
+    }
+  }
+
+  try {
+    localStorage.setItem('chatlogLineSpacing', clamped.toString());
+  } catch (e) {
+    console.warn('Could not save line spacing to localStorage:', e);
+  }
 }
 
 // Debug function to print scale's % deltas (handy for meta inspection)
@@ -1130,12 +1156,16 @@ $(document).ready(function () {
   $('#lineLengthInput').val(
     localStorage.getItem('chatlogLineLength') || CONFIG.LINE_LENGTH_DEFAULT
   );
+  $('#lineSpacingInput').val(
+    localStorage.getItem('chatlogLineSpacing') || CONFIG.LINE_SPACING_DEFAULT
+  );
   $('#characterNameInput').val(localStorage.getItem('chatlogCharacterName') || '');
 
-  // Update golden hint
-  $('.golden-sizes-hint').html(goldenHintHTML(TYPOGRAPHIC_SCALE));
+  // Update golden hint (only on font size input)
+  $('#font-label').next('.golden-sizes-hint').html(goldenHintHTML(TYPOGRAPHIC_SCALE));
 
   updateFontSize();
+  updateLineSpacing();
 
   initTooltips();
 
@@ -1173,6 +1203,16 @@ $(document).ready(function () {
     if (typeof ChatlogParser.processOutput === 'function') {
       ChatlogParser.processOutput();
     }
+    showAutoSaveIndicator();
+  });
+
+  $('#lineSpacingInput').on('input', function () {
+    const value = parseFloat($(this).val());
+    if (!isNaN(value)) {
+      if (value < CONFIG.LINE_SPACING_MIN) $(this).val(CONFIG.LINE_SPACING_MIN);
+      if (value > CONFIG.LINE_SPACING_MAX) $(this).val(CONFIG.LINE_SPACING_MAX);
+    }
+    updateLineSpacing();
     showAutoSaveIndicator();
   });
 
