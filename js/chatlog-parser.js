@@ -514,6 +514,22 @@ $(document).ready(function () {
     return result;
   }
 
+  // Extract character names from chatlog lines using reliable literal patterns.
+  // Scans "Name says" lines and correctly-spaced "> Name emote" lines.
+  function extractNamesFromChatlog(lines) {
+    const names = new Set();
+    for (const line of lines) {
+      // "Jack Russo says:" / "Jack Russo says (low):" / etc.
+      const saysMatch = line.match(/^([A-ZÇĞİÖŞÜ][a-zçğışöü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğışöü]+)+)\s+says\b/);
+      if (saysMatch) names.add(saysMatch[1]);
+
+      // "> Jack Russo devam eder." (already correctly spaced ame line)
+      const ameMatch = line.match(/^>\s+([A-ZÇĞİÖŞÜ][a-zçğışöü]+(?:\s+[A-ZÇĞİÖŞÜ][a-zçğışöü]+)+)\s+/);
+      if (ameMatch) names.add(ameMatch[1]);
+    }
+    return names;
+  }
+
   function processOutput() {
     const chatText = $textarea.val();
     const chatLines = chatText
@@ -522,34 +538,29 @@ $(document).ready(function () {
       .map(replaceDashes)
       .map(replaceCurlyApostrophes);
 
+    // Auto-detect character names from the chatlog itself for ame-line splitting
+    const chatlogNames = extractNamesFromChatlog(chatLines);
+
     const fragment = document.createDocumentFragment();
 
     chatLines.forEach((line) => {
 
       if (line.startsWith('>')) {
+        const escRx = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         const charName = $characterNameInput.val().trim();
-        let isFixed = false;
-        if (charName !== '') {
-          const myNameRegex = new RegExp(`(>\\s*${charName})([^\\s\\W])`, 'gi');
-          if (myNameRegex.test(line)) {
-            line = line.replace(myNameRegex, '$1 $2');
-            isFixed = true;
-          }
-        }
-        if (!isFixed && typeof knownCharacters !== 'undefined') {
-          const sortedNames = Array.from(knownCharacters).sort((a, b) => b.length - a.length);
+        const savedNames = JSON.parse(localStorage.getItem('characterNameList') || '[]');
 
-          for (const name of sortedNames) {
-            if (charName.toLowerCase() === name) continue;
+        // Merge: active name + saved list + auto-detected from chatlog, longest-first
+        const allNames = [...new Set(
+          [...(charName ? [charName] : []), ...savedNames, ...chatlogNames]
+        )].sort((a, b) => b.length - a.length);
 
-            const nameParts = name.split(' ');
-            if (nameParts.length < 2) continue;
-
-            const globalRegex = new RegExp(`(>\\s*${nameParts[0]}\\s+${nameParts[1]})([^\\s\\W])`, 'gi');
-            if (globalRegex.test(line)) {
-              line = line.replace(globalRegex, '$1 $2');
-              break;
-            }
+        for (const name of allNames) {
+          if (!name.trim()) continue;
+          const rx = new RegExp(`(>\\s*${escRx(name)})([^\\s])`, 'gi');
+          if (rx.test(line)) {
+            line = line.replace(new RegExp(`(>\\s*${escRx(name)})([^\\s])`, 'gi'), '$1 $2');
+            break;
           }
         }
       }
@@ -2154,7 +2165,7 @@ $(document).ready(function () {
 
   function addLineBreaksAndHandleSpans(text) {
     const maxLineLength = document.getElementById('lineLengthInput').value;
-    const currentFontSize = parseInt($('#font-label').val()) || 12;
+    const currentFontSize = parseFloat($('#font-label').val()) || 12;
     let result = '';
     let currentLineLength = 0;
     const openSpans = [];
