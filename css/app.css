@@ -415,6 +415,17 @@ label {
 	display: none;
 }
 
+label.field-label {
+	display: block;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.4px;
+	text-transform: uppercase;
+	color: rgba(255, 255, 255, 0.55);
+	margin-bottom: 4px;
+	line-height: 1.2;
+}
+
 ::-webkit-input-placeholder {
 	color: black;
 }

@@ -85,18 +85,23 @@
 
           <div class="grid-x grid-margin-x align-center">
             <div class="cell small-4 medium-2">
+              <label class="field-label" for="font-label">Yazı Boyutu</label>
               <input name="font-label" id="font-label" type="number" min="8" max="24" step="0.5" value="12"
-                aria-label="Font size" />
+                aria-label="Font size" title="Yazı boyutu (px)" />
               <div class="golden-sizes-hint">Golden: 8, 10, 12, 15, 19, 24px</div>
             </div>
             <div class="cell small-4 medium-2">
-              <input type="number" id="lineLengthInput" min="1" value="77" aria-label="Line length">
+              <label class="field-label" for="lineLengthInput">Satır Uzunluğu</label>
+              <input type="number" id="lineLengthInput" min="1" value="77" aria-label="Line length"
+                title="Bir satırda en fazla kaç karakter olacağı">
             </div>
             <div class="cell small-4 medium-2">
+              <label class="field-label" for="lineSpacingInput">Satır Aralığı</label>
               <input type="number" id="lineSpacingInput" min="0.8" max="3" step="0.05" value="1.45"
-                aria-label="Line spacing" />
+                aria-label="Line spacing" title="Satırlar arası dikey boşluk çarpanı" />
             </div>
             <div class="cell small-8 medium-6">
+              <label class="field-label" for="characterNameInput">Karakter Adı (Filtre)</label>
               <div class="input-group" style="position: relative;">
                 <input type="text" id="characterNameInput" placeholder="Karakter adı girin" autocomplete="off"
                   aria-label="Character name filter" />
@@ -655,32 +660,32 @@
               <span class="step-number">1</span>
               <div class="step-content">
                 <strong><i class="fas fa-cloud-upload-alt"
-                    style="margin-right:6px;opacity:0.7;font-size:12px;"></i>Görsel Yükle</strong>
-                <p>Ekran görüntünüzü sürükle-bırak veya <kbd>Ctrl+V</kbd> ile yapıştır</p>
+                    style="margin-right:6px;opacity:0.7;font-size:12px;"></i>Görseli Ekleyin</strong>
+                <p>Ekran görüntünüzü çalışma alanına sürükleyip bırakın veya <kbd>Ctrl+V</kbd> ile yapıştırın.</p>
               </div>
             </div>
             <div class="help-step">
               <span class="step-number">2</span>
               <div class="step-content">
                 <strong><i class="fas fa-paste" style="margin-right:6px;opacity:0.7;font-size:12px;"></i>Sohbeti
-                  Yapıştır</strong>
-                <p>Üstteki metin alanına chatlog'unuzu yapıştırın</p>
+                  Yapıştırın</strong>
+                <p>Üstteki metin kutusuna chatlog'unuzu yapıştırın; sistem biçimlendirmeyi otomatik olarak uygular.</p>
               </div>
             </div>
             <div class="help-step">
               <span class="step-number">3</span>
               <div class="step-content">
                 <strong><i class="fas fa-arrows-alt"
-                    style="margin-right:6px;opacity:0.7;font-size:12px;"></i>Konumlandır</strong>
-                <p>Sohbeti istediğiniz yere sürükleyin veya hızlı pozisyon butonlarını kullanın</p>
+                    style="margin-right:6px;opacity:0.7;font-size:12px;"></i>Konumlandırın</strong>
+                <p>Sohbeti istediğiniz yere serbestçe sürükleyin ya da hızlı pozisyon (numpad) butonlarını kullanın.</p>
               </div>
             </div>
             <div class="help-step">
               <span class="step-number">4</span>
               <div class="step-content">
                 <strong><i class="fas fa-download"
-                    style="margin-right:6px;opacity:0.7;font-size:12px;"></i>İndir</strong>
-                <p>Yeşil "İndir" butonuna tıklayın</p>
+                    style="margin-right:6px;opacity:0.7;font-size:12px;"></i>İndirin</strong>
+                <p>Her şey hazır olduğunda yeşil <strong>"İndir"</strong> butonuna tıklayarak görselinizi kaydedin.</p>
               </div>
             </div>
           </div>
@@ -691,20 +696,20 @@
           <h3><i class="fas fa-mouse-pointer"></i> Kontroller</h3>
           <table class="help-table">
             <tr>
-              <td><strong>Görüntüyü hareket ettir</strong></td>
-              <td>Boş alana tıklayıp sürükle</td>
+              <td><strong>Görüntüyü taşı</strong></td>
+              <td>Boş bir alana tıklayıp sürükleyin</td>
             </tr>
             <tr>
-              <td><strong>Sohbeti hareket ettir</strong></td>
-              <td>Sohbetin üzerine tıklayıp sürükle</td>
+              <td><strong>Sohbeti taşı</strong></td>
+              <td>Sohbet kutusunun üzerine tıklayıp sürükleyin</td>
             </tr>
             <tr>
-              <td><strong>Görüntüyü yakınlaştır</strong></td>
-              <td>Fare tekerleği (scroll)</td>
+              <td><strong>Görüntüye yakınlaş / uzaklaş</strong></td>
+              <td>Fare tekerleğini kullanın</td>
             </tr>
             <tr>
-              <td><strong>Sohbeti yakınlaştır</strong></td>
-              <td><kbd>Ctrl</kbd> + Fare tekerleği</td>
+              <td><strong>Sohbete yakınlaş / uzaklaş</strong></td>
+              <td><kbd>Ctrl</kbd> tuşu basılıyken fare tekerleği</td>
             </tr>
           </table>
         </div>
@@ -740,11 +745,17 @@
         <div class="help-section">
           <h3><i class="fas fa-lightbulb"></i> İpuçları</h3>
           <ul class="help-tips">
-            <li>Sohbet satırlarını tek tek sürükleyip istediğiniz yere koyabilirsiniz.</li>
-            <li>Ok tuşları ile seçili satırı taşıyabilirsiniz.</li>
-            <li><strong>Shift</strong> tuşuna basılı tutarak ok tuşlarını kullanırsanız daha hassas hareket eder.</li>
-            <li>"Görüntü Ayarları" panelinden bulanıklık, opaklık ve siyah-beyaz efektlerini kullanabilirsiniz.</li>
-            <li>Çıktı boyutunu değiştirmek için preset butonlarını kullanın.</li>
+            <li>Sohbet satırlarını <strong>tek tek</strong> tutup istediğiniz yere bırakabilirsiniz — kompozisyonunuza
+              tam hâkim olursunuz.</li>
+            <li>Seçili satırı taşımak için <strong>ok tuşlarını</strong>, daha hassas (1px) hareket için
+              <kbd>Shift</kbd> + ok kombinasyonunu kullanın.</li>
+            <li><strong>Görüntü Ayarları</strong> panelinden bulanıklık, opaklık ve siyah-beyaz gibi efektlerle
+              fotoğrafınızın tonunu sahneye uygun hâle getirebilirsiniz.</li>
+            <li>Çıktı boyutunu hızla değiştirmek için <strong>preset butonlarını</strong> kullanın; standart oranlara
+              tek tıkla geçiş yapabilirsiniz.</li>
+            <li>Karakter adınızı kaydederseniz isim-eylem birleşmesi (Örn: <em>&gt; John Doegülümser</em>) gibi
+              sorunlar otomatik olarak düzeltilir; üstelik diğer karakterlerin isimleri de loglardan otomatik
+              algılanır.</li>
           </ul>
         </div>
       </div>
@@ -978,7 +989,7 @@
       <h2 style="margin: 0; font-size: 16px; color: #f1f1f1; display: flex; align-items: center;">
         <i class="fas fa-history" style="margin-right: 10px; color: #2ecc71;"></i>
         Son Güncellemeler <span
-          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.4.2</span>
+          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.4.3</span>
       </h2>
       <button type="button" id="closeChangelogModal"
         style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 5px;">
@@ -1061,8 +1072,28 @@
       </style>
       <div class="cl-entry">
         <div class="cl-dot cl-dot-latest"></div>
-        <h3 class="cl-title-latest">v1.4.2 — Kontrast Motoru Güncellemesi</h3>
+        <h3 class="cl-title-latest">v1.4.3 — Otomatik İsim Algılama & Arayüz İyileştirmesi</h3>
         <ul class="cl-list cl-list-latest">
+          <li>"İsim ve eylemin bitişik yazılması" sorununa (Örn: <code>&gt; John Doegülümser</code>) yönelik çözüm
+            <strong>üç katmanlı</strong> hale getirildi: önce aktif karakter adı, ardından kayıtlı isim listesi,
+            sonra <strong>chatlog içinde geçen tüm karakter isimleri</strong> sırasıyla denenir. Hiçbiri eşleşmezse,
+            <strong>generic bir kalıp tanıma</strong> devreye girerek "<em>Büyük Harfli Ad + Büyük Harfli Soyad +
+              küçük harfli aksiyon</em>" yapısını otomatik olarak böler. Böylece hiç tanınmayan bir karakter olsa
+            bile bitişik yazılan satırlar düzgün ayrılır.</li>
+          <li>İsim tespiti <code>Ad Soyad says</code> ve <code>&gt; Ad Soyad</code> kalıplarını, Türkçe karakterler
+            (Ç, Ğ, İ, Ö, Ş, Ü) dahil olacak şekilde tanır. Adaylar <strong>en uzun isim önce</strong> mantığıyla
+            eşleştirilir; böylece "Jack" ve "Jack Russo" gibi çakışan durumlarda doğru isim seçilir.</li>
+          <li>Üst paneldeki <strong>Yazı Boyutu, Satır Uzunluğu, Satır Aralığı ve Karakter Adı</strong> alanlarına
+            artık görünür <strong>etiketler</strong> eklendi. Hangi sayı kutusunun neyi temsil ettiği bir bakışta
+            anlaşılıyor; karakter adı alanının genişliği de bu hizalamaya göre yeniden ayarlandı.</li>
+          <li>Yazı tipi boyutu okuma mantığı <code>parseFloat</code> ile güncellenerek <strong>ondalıklı font
+              boyutları (örn. 12.5)</strong> artık satır kırma hesabında doğru şekilde işleniyor.</li>
+        </ul>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-dot cl-dot-old"></div>
+        <h3 class="cl-title-old">v1.4.2 — Kontrast Motoru Güncellemesi</h3>
+        <ul class="cl-list">
           <li>Kontrast özelliği, artık sadece aşağıya değil, yazının <strong>her yönüne</strong> eşit dağılan bir gölge
             (kontur) oluşturacak şekilde güncellendi.</li>
           <li>Üç kademe (Düşük / Orta / Yüksek) yeniden ayarlandı. Yeni sistemde <strong>Düşük</strong> seviye, eski
