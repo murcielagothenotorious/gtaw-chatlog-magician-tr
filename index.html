@@ -1075,14 +1075,16 @@
         <h3 class="cl-title-latest">v1.4.3 — Otomatik İsim Algılama & Arayüz İyileştirmesi</h3>
         <ul class="cl-list cl-list-latest">
           <li>"İsim ve eylemin bitişik yazılması" sorununa (Örn: <code>&gt; John Doegülümser</code>) yönelik çözüm
-            <strong>üç katmanlı</strong> hale getirildi: önce aktif karakter adı, ardından kayıtlı isim listesi,
-            sonra <strong>chatlog içinde geçen tüm karakter isimleri</strong> sırasıyla denenir. Hiçbiri eşleşmezse,
-            <strong>generic bir kalıp tanıma</strong> devreye girerek "<em>Büyük Harfli Ad + Büyük Harfli Soyad +
-              küçük harfli aksiyon</em>" yapısını otomatik olarak böler. Böylece hiç tanınmayan bir karakter olsa
-            bile bitişik yazılan satırlar düzgün ayrılır.</li>
+            kapsamı genişletildi. Sistem artık üç kaynaktan isim eşleştirmesi yapıyor: aktif karakter adı, kayıtlı
+            isim listesi ve <strong>aynı chatlog içinde geçen diğer karakter isimleri</strong> (örn. "John Doe
+            says:" satırlarından otomatik olarak çıkartılan). Böylece kendi karakteriniz dışındaki kişilerin ame
+            satırlarında da doğru boşluklama yapılıyor.</li>
           <li>İsim tespiti <code>Ad Soyad says</code> ve <code>&gt; Ad Soyad</code> kalıplarını, Türkçe karakterler
             (Ç, Ğ, İ, Ö, Ş, Ü) dahil olacak şekilde tanır. Adaylar <strong>en uzun isim önce</strong> mantığıyla
             eşleştirilir; böylece "Jack" ve "Jack Russo" gibi çakışan durumlarda doğru isim seçilir.</li>
+          <li><em>Not: Hiç tanınmayan bir isim için (örn. tek başına yapıştırılan bozuk bir satır) sistem otomatik
+              bölme yapmaz — yanlış yerden bölmektense satırı olduğu gibi bırakmayı tercih eder. Bu durumda karakter
+              adını kayıt listesine eklemek yeterlidir.</em></li>
           <li>Üst paneldeki <strong>Yazı Boyutu, Satır Uzunluğu, Satır Aralığı ve Karakter Adı</strong> alanlarına
             artık görünür <strong>etiketler</strong> eklendi. Hangi sayı kutusunun neyi temsil ettiği bir bakışta
             anlaşılıyor; karakter adı alanının genişliği de bu hizalamaya göre yeniden ayarlandı.</li>

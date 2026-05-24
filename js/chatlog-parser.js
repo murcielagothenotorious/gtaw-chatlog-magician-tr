@@ -555,23 +555,12 @@ $(document).ready(function () {
           [...(charName ? [charName] : []), ...savedNames, ...chatlogNames]
         )].sort((a, b) => b.length - a.length);
 
-        let nameSplit = false;
         for (const name of allNames) {
           if (!name.trim()) continue;
           const rx = new RegExp(`(>\\s*${escRx(name)})([^\\s])`, 'gi');
           if (rx.test(line)) {
             line = line.replace(new RegExp(`(>\\s*${escRx(name)})([^\\s])`, 'gi'), '$1 $2');
-            nameSplit = true;
             break;
-          }
-        }
-
-        // Generic fallback: "> Firstname Lastname<lowercase>" -> insert space.
-        // Catches the malformed pattern even when no known name matches.
-        if (!nameSplit) {
-          const genericRx = /^(>\s*[A-ZÇĞİÖŞÜ][a-zçğışöü]+\s+[A-ZÇĞİÖŞÜ][a-zçğışöü]+)([a-zçğışöü])/;
-          if (genericRx.test(line)) {
-            line = line.replace(genericRx, '$1 $2');
           }
         }
       }
