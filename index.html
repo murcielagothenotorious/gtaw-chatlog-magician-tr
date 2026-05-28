@@ -1074,13 +1074,13 @@
         <div class="cl-dot cl-dot-latest"></div>
         <h3 class="cl-title-latest">v1.4.4 — Arka Plan Modu Hata Düzeltmesi</h3>
         <ul class="cl-list cl-list-latest">
-          <li><strong>Arka Plan: Açık</strong> modunda satırlar arasında oluşan ufak beyaz boşluklar giderildi.
-            Inline arka plan bantlarının üstüne ve altına 2px'lik siyah <code>box-shadow</code> uzantısı eklenerek
-            komşu satırların buluşması sağlandı; yüksek satır aralığı (örn. 1.45) değerlerinde dahi siyah arka
-            plan tek parça kesintisiz görünüyor.</li>
-          <li>Görsel üstüne yerleştirme (overlay) modu için de aynı düzeltme uygulandı; satırlar arasındaki açık
-            2px Y-koordinatı boşluğu arka plan aktifken otomatik olarak sıfırlanıyor, kapalıyken görsel için 2px
-            korunuyor.</li>
+          <li><strong>Arka Plan: Açık</strong> modunda <strong>geniş satır aralıklarında</strong> (≥ 1.4) bantlar
+            arasında oluşan ufak beyaz boşluklar giderildi. Inline arka plan bantlarının üstüne ve altına 2px'lik
+            siyah <code>box-shadow</code> uzantısı dinamik olarak ekleniyor; düşük satır aralıklarında (örn. 1.3)
+            bu shadow devre dışı kalıyor ki satırlar üst üste binmesin.</li>
+          <li>Görsel üstüne yerleştirme (overlay) modu için de aynı koşullu mantık uygulandı; satırlar arasındaki
+            açık 2px Y-koordinatı boşluğu arka plan aktifken otomatik olarak sıfırlanıyor, kapalıyken görsel için
+            2px korunuyor.</li>
           <li>Varsayılan <strong>satır aralığı</strong> değeri <code>1.45</code> → <code>1.3</code>'e geri çekildi
             (orijinal değer). Önceden ayar yapmış kullanıcıların seçimleri korunur.</li>
           <li>CSS cache-bust versiyonu <code>v=1.3.0</code> → <code>v=1.4.4</code>'e yükseltildi; tarayıcı eski

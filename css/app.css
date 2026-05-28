@@ -174,11 +174,12 @@
 	padding: 10px;
 }
 
-/* Arka plan aktifken inline .generated bantlarının arasındaki ufak boşlukları
-   kapat: yukarı/aşağı 2px düz siyah box-shadow, komşu satırla buluşur.
-   Inline genişlik davranışı (metin kadar) korunur. */
-.output.background-active .generated,
-#output.background-active .generated {
+/* Arka plan aktif VE satır aralığı geniş (≥1.4) iken inline .generated bantlarının
+   arasındaki ufak boşlukları kapat: yukarı/aşağı 2px düz siyah box-shadow, komşu
+   satırla buluşur. Sıkı satır aralıklarında shadow uygulanmaz çünkü gerek yok ve
+   üst üste binmeye yol açıyor. Inline genişlik davranışı (metin kadar) korunur. */
+.output.background-active.bg-gap-fill .generated,
+#output.background-active.bg-gap-fill .generated {
 	box-shadow: 0 2px 0 #000, 0 -2px 0 #000;
 }
 

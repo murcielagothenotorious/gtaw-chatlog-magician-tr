@@ -849,11 +849,14 @@
 /* Black Bar Background - applied when parent has data-background="active" */
 .chat-overlay-container[data-background="active"] .chat-overlay-line {
   background-color: #000000;
-  /* Komşu satırla birleşip dikey boşlukları kapatmak için ince siyah uzantı */
-  box-shadow: 0 2px 0 #000000, 0 -2px 0 #000000;
   padding: 0 4px;
   padding-top: 1px;
   padding-bottom: 1px;
+}
+
+/* Overlay modunda gap-fill yalnızca geniş satır aralıklarında devreye girer */
+.chat-overlay-container[data-background="active"].bg-gap-fill .chat-overlay-line {
+  box-shadow: 0 2px 0 #000000, 0 -2px 0 #000000;
   margin-top: 0px;
   display: inline;
   box-decoration-break: clone;

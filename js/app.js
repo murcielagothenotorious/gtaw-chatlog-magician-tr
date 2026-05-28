@@ -205,9 +205,16 @@ function updateLineSpacing() {
   const clamped = Math.min(CONFIG.LINE_SPACING_MAX, Math.max(CONFIG.LINE_SPACING_MIN, spacing));
   $('#output').css('line-height', clamped);
 
+  // Inline bg bantları arasındaki half-leading boşluğu sadece geniş aralıklarda
+  // ortaya çıkar; sıkı aralıklarda (1.3 civarı) shadow eklersek üst üste biner.
+  // Eşik: 1.4 ve üstünde gap-fill shadow'unu aktive et.
+  const needsGapFill = clamped >= 1.4;
+  $('#output').toggleClass('bg-gap-fill', needsGapFill);
+
   const chatOverlay = document.querySelector('.chat-overlay-container');
   if (chatOverlay) {
     chatOverlay.style.lineHeight = clamped;
+    chatOverlay.classList.toggle('bg-gap-fill', needsGapFill);
     if (window.ImageOverlayState && window.ImageOverlayState.currentMode === 'overlay') {
       window.ImageOverlayState.renderChatOverlay();
     }
