@@ -149,11 +149,11 @@
                 <button id="copyOutputImage" class="button primary"
                   aria-label="Copy chat log or overlay">Kopyala</button>
 
-                <button id="toggleMode" class="button primary maintenance-mode" data-mode="chat"
-                  aria-label="Fotoğraf modu — geçici olarak bakımda" disabled
-                  title="Fotoğraf (overlay) modu geçici olarak bakım nedeniyle devre dışıdır. Yakında geri dönecek.">
+                <!-- Fotoğraf (overlay) modu geçici olarak bakımda; buton tamamen gizli.
+                     Geri açmak için style="display: none;" ve disabled kaldırmak yeterli. -->
+                <button id="toggleMode" class="button primary" data-mode="chat" aria-label="Toggle mode"
+                  disabled style="display: none;">
                   <span class="mode-text">Sohbet</span>
-                  <span class="maintenance-badge"><i class="fas fa-tools" aria-hidden="true"></i> Bakımda</span>
                 </button>
 
                 <button id="toggleBackground" class="button warning" aria-label="Toggle background color"
@@ -1077,9 +1077,9 @@
         <h3 class="cl-title-latest">v1.4.5 — Fotoğraf (Overlay) Modu Bakıma Alındı</h3>
         <ul class="cl-list cl-list-latest">
           <li><strong>Fotoğraf modu</strong> (görsel üstüne chatlog yerleştirme) geçici olarak bakım nedeniyle
-            devre dışı bırakıldı. Mod butonu artık görünür ama tıklanamaz; üzerinde turuncu <em>"Bakımda"</em>
-            rozeti taşıyor. Tıklamalar ve klavye kısayolları no-op'a düşürüldü, mevcut sohbet modu işleyişi
-            etkilenmiyor.</li>
+            devre dışı bırakıldı. Mod butonu arayüzden tamamen gizlendi ve <code>disabled</code> bayrağıyla
+            korumaya alındı; olası kalan tetikleyiciler (tıklama vb.) güvenlik için no-op'a düşürüldü. Mevcut
+            sohbet modu işleyişi etkilenmiyor.</li>
           <li><em>Neden:</em> Modun bilinen eksiklikleri ve hataları kullanıcı deneyimini bozuyordu.
             Tamamlanana kadar kapalı tutulması güveni koruyor ve destek yükünü azaltıyor. Kod ve state korunuyor;
             geri açılması tek satırlık bir değişiklik.</li>

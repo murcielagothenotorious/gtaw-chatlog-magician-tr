@@ -174,45 +174,6 @@
 	padding: 10px;
 }
 
-/* Bakım modu — overlay (fotoğraf modu) geçici olarak devre dışı.
-   Buton görünür ama tıklanamaz; üzerinde "Bakımda" rozeti taşır. */
-.button.maintenance-mode {
-	position: relative;
-	opacity: 0.55;
-	cursor: not-allowed !important;
-	background-color: rgba(120, 120, 130, 0.55) !important;
-	border-color: rgba(120, 120, 130, 0.55) !important;
-	color: rgba(255, 255, 255, 0.75) !important;
-	pointer-events: auto;
-}
-
-.button.maintenance-mode:hover,
-.button.maintenance-mode:focus {
-	background-color: rgba(120, 120, 130, 0.55) !important;
-	border-color: rgba(120, 120, 130, 0.55) !important;
-	transform: none !important;
-	box-shadow: none !important;
-}
-
-.button.maintenance-mode .maintenance-badge {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	margin-left: 8px;
-	padding: 2px 6px;
-	border-radius: 3px;
-	background: rgba(255, 165, 0, 0.18);
-	color: #ffb84d;
-	font-size: 10px;
-	font-weight: 700;
-	letter-spacing: 0.4px;
-	text-transform: uppercase;
-	vertical-align: middle;
-}
-
-.button.maintenance-mode .maintenance-badge i {
-	font-size: 10px;
-}
 
 /* Arka plan aktif VE satır aralığı geniş (≥1.4) iken inline .generated bantlarının
    arasındaki ufak boşlukları kapat. Shadow boyutu --bg-gap-fill-px değişkeni

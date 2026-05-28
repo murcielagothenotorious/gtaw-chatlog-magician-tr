@@ -424,9 +424,8 @@
       }
 
       toggleButton?.addEventListener('click', (event) => {
-        // Bakım modu — fotoğraf (overlay) modu geçici olarak devre dışı.
-        // Click'i yut, mod değiştirme.
-        if (toggleButton.classList.contains('maintenance-mode') || toggleButton.disabled) {
+        // Bakım modu — fotoğraf (overlay) modu devre dışıysa click'i yut.
+        if (toggleButton.disabled) {
           event.preventDefault();
           event.stopPropagation();
           return;
