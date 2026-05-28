@@ -854,9 +854,12 @@
   padding-bottom: 1px;
 }
 
-/* Overlay modunda gap-fill yalnızca geniş satır aralıklarında devreye girer */
+/* Overlay modunda gap-fill yalnızca geniş satır aralıklarında devreye girer.
+   Shadow boyutu --bg-gap-fill-px değişkeni üzerinden JS'te dinamik hesaplanır. */
 .chat-overlay-container[data-background="active"].bg-gap-fill .chat-overlay-line {
-  box-shadow: 0 2px 0 #000000, 0 -2px 0 #000000;
+  box-shadow:
+    0 var(--bg-gap-fill-px, 2px) 0 #000000,
+    0 calc(-1 * var(--bg-gap-fill-px, 2px)) 0 #000000;
   margin-top: 0px;
   display: inline;
   box-decoration-break: clone;

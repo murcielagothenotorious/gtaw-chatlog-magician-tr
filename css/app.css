@@ -175,12 +175,14 @@
 }
 
 /* Arka plan aktif VE satır aralığı geniş (≥1.4) iken inline .generated bantlarının
-   arasındaki ufak boşlukları kapat: yukarı/aşağı 2px düz siyah box-shadow, komşu
-   satırla buluşur. Sıkı satır aralıklarında shadow uygulanmaz çünkü gerek yok ve
-   üst üste binmeye yol açıyor. Inline genişlik davranışı (metin kadar) korunur. */
+   arasındaki ufak boşlukları kapat. Shadow boyutu --bg-gap-fill-px değişkeni
+   üzerinden JS'te dinamik hesaplanır: satır aralığı ve font boyutuna göre büyür,
+   böylece 1.7+ değerlerde de yetersiz kalmaz. Inline genişlik davranışı korunur. */
 .output.background-active.bg-gap-fill .generated,
 #output.background-active.bg-gap-fill .generated {
-	box-shadow: 0 2px 0 #000, 0 -2px 0 #000;
+	box-shadow:
+		0 var(--bg-gap-fill-px, 2px) 0 #000,
+		0 calc(-1 * var(--bg-gap-fill-px, 2px)) 0 #000;
 }
 
 #output {

@@ -205,11 +205,18 @@ function updateLineSpacing() {
   const clamped = Math.min(CONFIG.LINE_SPACING_MAX, Math.max(CONFIG.LINE_SPACING_MIN, spacing));
   $('#output').css('line-height', clamped);
 
-  // Inline bg bantları arasındaki half-leading boşluğu sadece geniş aralıklarda
-  // ortaya çıkar; sıkı aralıklarda (1.3 civarı) shadow eklersek üst üste biner.
-  // Eşik: 1.4 ve üstünde gap-fill shadow'unu aktive et.
+  // Inline bg bantları arasındaki half-leading boşluğu satır aralığı arttıkça
+  // büyür. Sabit 2px shadow küçük aralıklarda taşmaya, büyük aralıklarda yetersiz
+  // kalmaya yol açıyor. Bu yüzden shadow boyutunu dinamik hesaplıyoruz:
+  //   gap-per-side ≈ (line-height - 1) * font-size / 2
+  // 1.4 altında shadow tamamen kapalı (gap yok, taşmayı önle).
   const needsGapFill = clamped >= 1.4;
+  const fontSize = parseFloat($('#font-label').val()) || CONFIG.FONT_SIZE_DEFAULT;
+  const shadowPx = needsGapFill
+    ? Math.max(2, Math.ceil(((clamped - 1) * fontSize) / 2))
+    : 0;
   $('#output').toggleClass('bg-gap-fill', needsGapFill);
+  document.documentElement.style.setProperty('--bg-gap-fill-px', shadowPx + 'px');
 
   const chatOverlay = document.querySelector('.chat-overlay-container');
   if (chatOverlay) {
@@ -1188,6 +1195,9 @@ $(document).ready(function () {
 
     // Font size is now stored automatically in updateFontSize()
     updateFontSize();
+
+    // Bg gap-fill shadow boyutu font-size'a bağlı — yeniden hesapla.
+    updateLineSpacing();
 
     // Reprocess output to recalculate line breaks with new font size
     if (typeof ChatlogParser.processOutput === 'function') {
