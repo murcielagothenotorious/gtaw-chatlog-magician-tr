@@ -423,7 +423,14 @@
         if (helpHint) helpHint.style.display = 'none';
       }
 
-      toggleButton?.addEventListener('click', () => {
+      toggleButton?.addEventListener('click', (event) => {
+        // Bakım modu — fotoğraf (overlay) modu geçici olarak devre dışı.
+        // Click'i yut, mod değiştirme.
+        if (toggleButton.classList.contains('maintenance-mode') || toggleButton.disabled) {
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
         const newMode = this.currentMode === 'chat' ? 'overlay' : 'chat';
         this.currentMode = newMode;
 

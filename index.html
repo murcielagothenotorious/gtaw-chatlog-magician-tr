@@ -35,17 +35,17 @@
   <!-- Current version: 1.3.0 -->
 
   <!-- Preload critical assets -->
-  <link rel="preload" href="css/foundation.fixed.css?v=1.4.4" as="style" />
-  <link rel="preload" href="js/app.js?v=1.4.4" as="script" />
+  <link rel="preload" href="css/foundation.fixed.css?v=1.4.5" as="style" />
+  <link rel="preload" href="js/app.js?v=1.4.5" as="script" />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/foundation.fixed.css?v=1.4.4" />
-  <link rel="stylesheet" href="css/modern.css?v=1.4.4" />
-  <link rel="stylesheet" href="css/app.css?v=1.4.4" />
-  <link rel="stylesheet" href="css/overlay.css?v=1.4.4" />
-  <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.4.4" />
-  <link rel="stylesheet" href="css/editor.css?v=1.4.4" />
+  <link rel="stylesheet" href="css/foundation.fixed.css?v=1.4.5" />
+  <link rel="stylesheet" href="css/modern.css?v=1.4.5" />
+  <link rel="stylesheet" href="css/app.css?v=1.4.5" />
+  <link rel="stylesheet" href="css/overlay.css?v=1.4.5" />
+  <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.4.5" />
+  <link rel="stylesheet" href="css/editor.css?v=1.4.5" />
   <!-- FontAwesome 7.0.1 from CDN (includes all icon sets and fonts) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
@@ -56,10 +56,10 @@
 
   <!-- Error handling and cross-origin fixes -->
   <!-- Config is loaded via defaults in error-logger.js or Cloudflare Pages environment variables -->
-  <script src="js/error-logger.js?v=1.4.4" defer></script>
-  <script src="js/error-handler.js?v=1.4.4" defer></script>
-  <script src="js/cross-origin-fix.js?v=1.4.4" defer></script>
-  <script src="js/cors-handler.js?v=1.4.4" defer></script>
+  <script src="js/error-logger.js?v=1.4.5" defer></script>
+  <script src="js/error-handler.js?v=1.4.5" defer></script>
+  <script src="js/cross-origin-fix.js?v=1.4.5" defer></script>
+  <script src="js/cors-handler.js?v=1.4.5" defer></script>
 
 
 </head>
@@ -149,9 +149,11 @@
                 <button id="copyOutputImage" class="button primary"
                   aria-label="Copy chat log or overlay">Kopyala</button>
 
-                <button id="toggleMode" class="button primary active" data-mode="chat" aria-label="Toggle mode"
-                  style="display: none;">
+                <button id="toggleMode" class="button primary maintenance-mode" data-mode="chat"
+                  aria-label="Fotoğraf modu — geçici olarak bakımda" disabled
+                  title="Fotoğraf (overlay) modu geçici olarak bakım nedeniyle devre dışıdır. Yakında geri dönecek.">
                   <span class="mode-text">Sohbet</span>
+                  <span class="maintenance-badge"><i class="fas fa-tools" aria-hidden="true"></i> Bakımda</span>
                 </button>
 
                 <button id="toggleBackground" class="button warning" aria-label="Toggle background color"
@@ -588,7 +590,7 @@
   <script src="color-palette/color-palette.js?v=1.2.1" defer></script>
   <script src="js/chatlog-parser.js?v=1.2.1" defer></script>
   <script src="js/app.js?v=1.2.1" defer></script>
-  <script src="js/telemetry-client.js?v=1.4.4" defer></script>
+  <script src="js/telemetry-client.js?v=1.4.5" defer></script>
 
   <!-- History panel -->
   <div class="history-tab" role="button" tabindex="0" aria-label="Open chat history" aria-expanded="false"
@@ -989,7 +991,7 @@
       <h2 style="margin: 0; font-size: 16px; color: #f1f1f1; display: flex; align-items: center;">
         <i class="fas fa-history" style="margin-right: 10px; color: #2ecc71;"></i>
         Son Güncellemeler <span
-          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.4.4</span>
+          style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 10px;">v1.4.5</span>
       </h2>
       <button type="button" id="closeChangelogModal"
         style="background: none; border: none; color: #aaa; cursor: pointer; font-size: 18px; padding: 5px;">
@@ -1072,8 +1074,21 @@
       </style>
       <div class="cl-entry">
         <div class="cl-dot cl-dot-latest"></div>
-        <h3 class="cl-title-latest">v1.4.4 — Arka Plan Modu Hata Düzeltmesi</h3>
+        <h3 class="cl-title-latest">v1.4.5 — Fotoğraf (Overlay) Modu Bakıma Alındı</h3>
         <ul class="cl-list cl-list-latest">
+          <li><strong>Fotoğraf modu</strong> (görsel üstüne chatlog yerleştirme) geçici olarak bakım nedeniyle
+            devre dışı bırakıldı. Mod butonu artık görünür ama tıklanamaz; üzerinde turuncu <em>"Bakımda"</em>
+            rozeti taşıyor. Tıklamalar ve klavye kısayolları no-op'a düşürüldü, mevcut sohbet modu işleyişi
+            etkilenmiyor.</li>
+          <li><em>Neden:</em> Modun bilinen eksiklikleri ve hataları kullanıcı deneyimini bozuyordu.
+            Tamamlanana kadar kapalı tutulması güveni koruyor ve destek yükünü azaltıyor. Kod ve state korunuyor;
+            geri açılması tek satırlık bir değişiklik.</li>
+        </ul>
+      </div>
+      <div class="cl-entry">
+        <div class="cl-dot cl-dot-old"></div>
+        <h3 class="cl-title-old">v1.4.4 — Arka Plan Modu Hata Düzeltmesi</h3>
+        <ul class="cl-list">
           <li><strong>Arka Plan: Açık</strong> modunda <strong>geniş satır aralıklarında</strong> (≥ 1.4) bantlar
             arasında oluşan ufak beyaz boşluklar giderildi. Inline arka plan bantlarının üstüne ve altına 2px'lik
             siyah <code>box-shadow</code> uzantısı dinamik olarak ekleniyor; düşük satır aralıklarında (örn. 1.3)
@@ -1347,7 +1362,7 @@
     </div>
   </div>
 
-  <script src="js/init.js?v=1.4.4" defer></script>
+  <script src="js/init.js?v=1.4.5" defer></script>
   <script src="js/ui-utils.js" defer></script>
 
   <div id="cmToast">
