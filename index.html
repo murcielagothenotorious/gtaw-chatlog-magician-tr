@@ -35,17 +35,17 @@
   <!-- Current version: 1.3.0 -->
 
   <!-- Preload critical assets -->
-  <link rel="preload" href="css/foundation.fixed.css?v=1.3.0" as="style" />
-  <link rel="preload" href="js/app.js?v=1.3.0" as="script" />
+  <link rel="preload" href="css/foundation.fixed.css?v=1.4.3" as="style" />
+  <link rel="preload" href="js/app.js?v=1.4.3" as="script" />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/foundation.fixed.css?v=1.3.0" />
-  <link rel="stylesheet" href="css/modern.css?v=1.3.0" />
-  <link rel="stylesheet" href="css/app.css?v=1.3.0" />
-  <link rel="stylesheet" href="css/overlay.css?v=1.3.0" />
-  <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.3.0" />
-  <link rel="stylesheet" href="css/editor.css?v=1.3.0" />
+  <link rel="stylesheet" href="css/foundation.fixed.css?v=1.4.3" />
+  <link rel="stylesheet" href="css/modern.css?v=1.4.3" />
+  <link rel="stylesheet" href="css/app.css?v=1.4.3" />
+  <link rel="stylesheet" href="css/overlay.css?v=1.4.3" />
+  <link rel="stylesheet" href="color-palette/color-palette.min.css?v=1.4.3" />
+  <link rel="stylesheet" href="css/editor.css?v=1.4.3" />
   <!-- FontAwesome 7.0.1 from CDN (includes all icon sets and fonts) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
@@ -56,10 +56,10 @@
 
   <!-- Error handling and cross-origin fixes -->
   <!-- Config is loaded via defaults in error-logger.js or Cloudflare Pages environment variables -->
-  <script src="js/error-logger.js?v=1.3.0" defer></script>
-  <script src="js/error-handler.js?v=1.3.0" defer></script>
-  <script src="js/cross-origin-fix.js?v=1.3.0" defer></script>
-  <script src="js/cors-handler.js?v=1.3.0" defer></script>
+  <script src="js/error-logger.js?v=1.4.3" defer></script>
+  <script src="js/error-handler.js?v=1.4.3" defer></script>
+  <script src="js/cross-origin-fix.js?v=1.4.3" defer></script>
+  <script src="js/cors-handler.js?v=1.4.3" defer></script>
 
 
 </head>
@@ -97,7 +97,7 @@
             </div>
             <div class="cell small-4 medium-2">
               <label class="field-label" for="lineSpacingInput">Satır Aralığı</label>
-              <input type="number" id="lineSpacingInput" min="0.8" max="3" step="0.05" value="1.45"
+              <input type="number" id="lineSpacingInput" min="0.8" max="3" step="0.05" value="1.3"
                 aria-label="Line spacing" title="Satırlar arası dikey boşluk çarpanı" />
             </div>
             <div class="cell small-8 medium-6">
@@ -588,7 +588,7 @@
   <script src="color-palette/color-palette.js?v=1.2.1" defer></script>
   <script src="js/chatlog-parser.js?v=1.2.1" defer></script>
   <script src="js/app.js?v=1.2.1" defer></script>
-  <script src="js/telemetry-client.js?v=1.3.0" defer></script>
+  <script src="js/telemetry-client.js?v=1.4.3" defer></script>
 
   <!-- History panel -->
   <div class="history-tab" role="button" tabindex="0" aria-label="Open chat history" aria-expanded="false"
@@ -1090,6 +1090,15 @@
             anlaşılıyor; karakter adı alanının genişliği de bu hizalamaya göre yeniden ayarlandı.</li>
           <li>Yazı tipi boyutu okuma mantığı <code>parseFloat</code> ile güncellenerek <strong>ondalıklı font
               boyutları (örn. 12.5)</strong> artık satır kırma hesabında doğru şekilde işleniyor.</li>
+          <li><strong>Arka Plan: Açık</strong> modunda satırlar arasında oluşan ufak beyaz boşluklar giderildi.
+            Inline arka plan bantlarının üstüne ve altına 2px'lik siyah <code>box-shadow</code> uzantısı eklenerek
+            komşu satırların buluşması sağlandı; yüksek satır aralığı (örn. 1.45) değerlerinde dahi siyah arka
+            plan tek parça kesintisiz görünüyor. Görsel üstüne yerleştirme (overlay) modu için de aynı düzeltme
+            uygulandı ve satırlar arasındaki açık 2px Y-koordinatı boşluğu arka plan aktifken sıfırlandı.</li>
+          <li>Varsayılan <strong>satır aralığı</strong> değeri <code>1.45</code> → <code>1.3</code>'e geri çekildi
+            (orijinal değer). Önceden ayar yapmış kullanıcıların seçimleri korunur.</li>
+          <li>CSS cache-bust versiyonu <code>v=1.3.0</code> → <code>v=1.4.3</code>'e yükseltildi; tarayıcı eski
+            stilleri cache'ten yüklemeyip yeni düzeltmeleri anında uyguluyor.</li>
         </ul>
       </div>
       <div class="cl-entry">
@@ -1330,7 +1339,7 @@
     </div>
   </div>
 
-  <script src="js/init.js?v=1.3.0" defer></script>
+  <script src="js/init.js?v=1.4.3" defer></script>
   <script src="js/ui-utils.js" defer></script>
 
   <div id="cmToast">

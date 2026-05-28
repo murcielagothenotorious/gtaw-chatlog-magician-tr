@@ -120,7 +120,9 @@ html::-webkit-scrollbar {
   padding: 0.1em 0.2em 0.1em 0.2em;
   white-space: pre-line;
   word-wrap: break-word;
-  line-height: 1.3;
+  /* line-height inherit — kullanıcının seçtiği satır aralığını #output'tan miras alır,
+     arka plan aktifken siyah bantlar arasında boşluk kalmaması için. */
+  line-height: inherit;
   background-color: transparent;
   color: var(--text-color);
   -webkit-box-decoration-break: clone;

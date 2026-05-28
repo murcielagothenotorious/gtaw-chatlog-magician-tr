@@ -387,7 +387,10 @@
         // Calculate next Y position based on actual rendered height
         // Fallback to estimated height only if offsetHeight is unavailable
         const actualHeight = lineWrapper.offsetHeight > 0 ? lineWrapper.offsetHeight : (lineHeight * 1.2);
-        currentY += actualHeight + 2; // 2px gap between chats
+        // Arka plan açıkken siyah bantların arasında beyaz çizgi oluşmaması için
+        // gap'i sıfırla; kapalıyken görsel breathing room için 2px bırak.
+        const bgActive = !!document.querySelector('.chat-overlay-container[data-background="active"]');
+        currentY += actualHeight + (bgActive ? 0 : 2);
       });
 
       // chatOverlay container is no longer needed since lines are independent

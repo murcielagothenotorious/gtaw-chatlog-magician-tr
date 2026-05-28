@@ -22,7 +22,7 @@ const CONFIG = {
   LINE_HEIGHT_LARGE: 1.35, // Line height for large fonts
 
   // Line spacing (manual override)
-  LINE_SPACING_DEFAULT: 1.45,
+  LINE_SPACING_DEFAULT: 1.3,
   LINE_SPACING_MIN: 0.8,
   LINE_SPACING_MAX: 3.0,
 
