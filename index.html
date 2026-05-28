@@ -1085,39 +1085,25 @@
         <div class="cl-dot cl-dot-old"></div>
         <h3 class="cl-title-old">v1.4.4 — Arka Plan Modu Hata Düzeltmesi</h3>
         <ul class="cl-list">
-          <li><strong>Arka Plan: Açık</strong> modunda <strong>geniş satır aralıklarında</strong> (≥ 1.4) bantlar
-            arasında oluşan ufak beyaz boşluklar giderildi. Inline arka plan bantlarının üstüne ve altına 2px'lik
-            siyah <code>box-shadow</code> uzantısı dinamik olarak ekleniyor; düşük satır aralıklarında (örn. 1.3)
-            bu shadow devre dışı kalıyor ki satırlar üst üste binmesin.</li>
-          <li>Görsel üstüne yerleştirme (overlay) modu için de aynı koşullu mantık uygulandı; satırlar arasındaki
-            açık 2px Y-koordinatı boşluğu arka plan aktifken otomatik olarak sıfırlanıyor, kapalıyken görsel için
-            2px korunuyor.</li>
-          <li>Varsayılan <strong>satır aralığı</strong> değeri <code>1.45</code> → <code>1.3</code>'e geri çekildi
-            (orijinal değer). Önceden ayar yapmış kullanıcıların seçimleri korunur.</li>
-          <li>CSS cache-bust versiyonu <code>v=1.3.0</code> → <code>v=1.4.4</code>'e yükseltildi; tarayıcı eski
-            stilleri cache'ten yüklemeyip yeni düzeltmeleri anında uyguluyor.</li>
+          <li><strong>Arka Plan: Açık</strong> modunda satırların arasındaki siyah arka planda görünen ufak
+            beyaz boşluklar giderildi. Yüksek satır aralıklarında dahi arka plan tek parça halinde görünüyor.</li>
+          <li>Varsayılan satır aralığı değeri eski haline (1.3) geri çekildi. Daha önce ayar yapmış olanların
+            seçimi korunur.</li>
         </ul>
       </div>
       <div class="cl-entry">
         <div class="cl-dot cl-dot-old"></div>
         <h3 class="cl-title-old">v1.4.3 — Otomatik İsim Algılama & Arayüz İyileştirmesi</h3>
         <ul class="cl-list">
-          <li>"İsim ve eylemin bitişik yazılması" sorununa (Örn: <code>&gt; John Doegülümser</code>) yönelik çözüm
-            kapsamı genişletildi. Sistem artık üç kaynaktan isim eşleştirmesi yapıyor: aktif karakter adı, kayıtlı
-            isim listesi ve <strong>aynı chatlog içinde geçen diğer karakter isimleri</strong> (örn. "John Doe
-            says:" satırlarından otomatik olarak çıkartılan). Böylece kendi karakteriniz dışındaki kişilerin ame
-            satırlarında da doğru boşluklama yapılıyor.</li>
-          <li>İsim tespiti <code>Ad Soyad says</code> ve <code>&gt; Ad Soyad</code> kalıplarını, Türkçe karakterler
-            (Ç, Ğ, İ, Ö, Ş, Ü) dahil olacak şekilde tanır. Adaylar <strong>en uzun isim önce</strong> mantığıyla
-            eşleştirilir; böylece "Jack" ve "Jack Russo" gibi çakışan durumlarda doğru isim seçilir.</li>
-          <li><em>Not: Hiç tanınmayan bir isim için (örn. tek başına yapıştırılan bozuk bir satır) sistem otomatik
-              bölme yapmaz — yanlış yerden bölmektense satırı olduğu gibi bırakmayı tercih eder. Bu durumda karakter
-              adını kayıt listesine eklemek yeterlidir.</em></li>
-          <li>Üst paneldeki <strong>Yazı Boyutu, Satır Uzunluğu, Satır Aralığı ve Karakter Adı</strong> alanlarına
-            artık görünür <strong>etiketler</strong> eklendi. Hangi sayı kutusunun neyi temsil ettiği bir bakışta
-            anlaşılıyor; karakter adı alanının genişliği de bu hizalamaya göre yeniden ayarlandı.</li>
-          <li>Yazı tipi boyutu okuma mantığı <code>parseFloat</code> ile güncellenerek <strong>ondalıklı font
-              boyutları (örn. 12.5)</strong> artık satır kırma hesabında doğru şekilde işleniyor.</li>
+          <li>İsim ve eylemin bitişik yazıldığı satırlar (örn. <em>&gt; John Doegülümser</em>) artık sadece kendi
+            karakter adınızda değil, sahnedeki diğer kişilerin satırlarında da otomatik düzeltiliyor. Sistem
+            chatlog içinde geçen tüm isimleri kendiliğinden tanıyor.</li>
+          <li>Tanınmayan bir isim için sistem yanlış yerden bölme yapmaktansa satırı olduğu gibi bırakır;
+            karakter adını kayıt listesine eklemek bu durumda yeterlidir.</li>
+          <li>Üst paneldeki <strong>Yazı Boyutu</strong>, <strong>Satır Uzunluğu</strong>,
+            <strong>Satır Aralığı</strong> ve <strong>Karakter Adı</strong> alanlarına görünür etiketler eklendi;
+            hangi kutunun neyi temsil ettiği artık bir bakışta anlaşılıyor.</li>
+          <li>Yazı tipi boyutunda ondalıklı değerler (örn. 12.5) artık satır kırma hesabında doğru işleniyor.</li>
         </ul>
       </div>
       <div class="cl-entry">
