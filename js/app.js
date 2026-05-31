@@ -18,7 +18,7 @@ const CONFIG = {
   LINE_LENGTH_MIN: 1, // Minimum line length
   LINE_LENGTH_DEFAULT: 77, // Default line length
   LINE_HEIGHT_SMALL: 1.5, // Line height for small fonts
-  LINE_HEIGHT_DEFAULT: 1.45, // Default line height
+  LINE_HEIGHT_DEFAULT: 1.3, // Default line height
   LINE_HEIGHT_LARGE: 1.35, // Line height for large fonts
 
   // Line spacing (manual override)
@@ -1170,6 +1170,9 @@ $(document).ready(function () {
   $('#lineLengthInput').val(
     localStorage.getItem('chatlogLineLength') || CONFIG.LINE_LENGTH_DEFAULT
   );
+  if (localStorage.getItem('chatlogLineSpacing') === '1.45') {
+    localStorage.setItem('chatlogLineSpacing', CONFIG.LINE_SPACING_DEFAULT.toString());
+  }
   $('#lineSpacingInput').val(
     localStorage.getItem('chatlogLineSpacing') || CONFIG.LINE_SPACING_DEFAULT
   );
