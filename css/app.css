@@ -190,6 +190,18 @@
 		0 calc(-1 * var(--bg-gap-fill-px, 2px)) 0 #000;
 }
 
+.copy-hint {
+	font-size: 11.5px;
+	color: rgba(255, 255, 255, 0.4);
+	margin: 6px 0 0;
+	line-height: 1.5;
+}
+
+.copy-hint .fa-lightbulb {
+	color: rgba(255, 200, 50, 0.55);
+	margin-right: 4px;
+}
+
 #output {
 	position: relative;
 	padding-bottom: 24px;

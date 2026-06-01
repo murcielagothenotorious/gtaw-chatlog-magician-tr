@@ -19,9 +19,9 @@
     
     t.classList.add('show');
     clearTimeout(t._timer);
-    t._timer = setTimeout(function () { 
-      t.classList.remove('show'); 
-    }, 2200);
+    t._timer = setTimeout(function () {
+      t.classList.remove('show');
+    }, 3500);
   }
   window.showToast = showToast;
 
@@ -63,39 +63,27 @@
     }, 50);
   };
 
-  /* ── 3. Support Nudge (Popup every 4-5 exports) ── */
+  /* ── 3. Support Nudge ── */
   const NudgeSystem = (function() {
-    var COUNTER_KEY = 'cm_export_count';
-    var NUDGE_INTERVAL = 4 + Math.floor(Math.random() * 2); // 4 veya 5
-
-    function getCount() {
-      return parseInt(localStorage.getItem(COUNTER_KEY) || '0', 10);
-    }
+    var sessionFirstExport = false;
 
     function showNudgePopup() {
       var el = document.getElementById('supportNudge');
       if (!el) return;
-      setTimeout(function () {
-        el.classList.add('show');
-        clearTimeout(el._autoHide);
-        el._autoHide = setTimeout(function () {
-          el.classList.remove('show');
-        }, 8000);
-      }, 1800);
+      el.classList.add('show');
+      clearTimeout(el._autoHide);
+      el._autoHide = setTimeout(function () {
+        el.classList.remove('show');
+      }, 8000);
     }
 
     return {
       onExport: function() {
-        var count = getCount() + 1;
-        localStorage.setItem(COUNTER_KEY, count.toString());
-
-        // Her 4-5 exportta bir support nudge popup göster
-        if (count % NUDGE_INTERVAL === 0) {
-          showNudgePopup();
-        }
+        if (sessionFirstExport) return;
+        sessionFirstExport = true;
+        showNudgePopup();
       },
       dismissNudge: function() {
-        // Sadece o anki popup'ı kapat, bir daha göstermemeyi kaydetme
         var el = document.getElementById('supportNudge');
         if (el) el.classList.remove('show');
       }
@@ -152,8 +140,8 @@
     // Export listeners (for nudge)
     var copyBtn = document.getElementById('copyOutputImage');
     var dlBtn = document.getElementById('downloadOutputTransparent');
-    if (copyBtn) copyBtn.addEventListener('click', () => setTimeout(NudgeSystem.onExport, 500));
-    if (dlBtn) dlBtn.addEventListener('click', () => setTimeout(NudgeSystem.onExport, 500));
+    if (copyBtn) copyBtn.addEventListener('click', () => setTimeout(NudgeSystem.onExport, 3500));
+    if (dlBtn) dlBtn.addEventListener('click', () => setTimeout(NudgeSystem.onExport, 3500));
 
     // Nudge dismissal
     var nudgeClose = document.getElementById('supportNudgeClose');
@@ -162,7 +150,7 @@
     // Toast triggers
     if (copyBtn) {
       copyBtn.addEventListener('click', function () {
-        setTimeout(() => showToast('Panoya kopyalandı', 'fa-check-circle'), 300);
+        setTimeout(() => showToast('Kopyalandı — CTRL+V ile yapıştır', 'fa-check-circle'), 300);
       });
     }
     if (dlBtn) {

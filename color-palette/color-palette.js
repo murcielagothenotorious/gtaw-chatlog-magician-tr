@@ -355,9 +355,9 @@
     if (!coloringMode || selectedElements.length === 0) return;
 
     selectedElements.forEach((element) => {
-      // Add custom class and empty inline style to override !{#HEX}
       $(element).removeClass(COLOR_CLASSES.join(' ')).addClass('colorable').addClass(colorClass).addClass('user-colored');
-      $(element).removeAttr('style');
+      // Only strip color from inline style, preserve other properties (e.g. font-style: italic)
+      element.style.color = '';
     });
 
     // Show brief feedback
